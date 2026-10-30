@@ -98,8 +98,11 @@ object PttStateMachine {
                 else -> stay
             }
 
-            PttEvent.Retry ->
-                if (phase == PttPhase.Error) Transition(PttPhase.Translating, listOf(PttEffect.Resubmit)) else stay
+            PttEvent.Retry -> when (phase) {
+                PttPhase.Idle, PttPhase.Result, PttPhase.Error ->
+                    Transition(PttPhase.Translating, listOf(PttEffect.Resubmit))
+                else -> stay
+            }
         }
     }
 

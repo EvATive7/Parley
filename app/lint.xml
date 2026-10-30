@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- Conversation hints have 15 locales; the rest of the UI intentionally falls back to
+         English outside English/Simplified Chinese/Traditional Chinese in M2.
+         Keep the report visible, but do not block builds on this planned localization work. -->
+    <issue id="MissingTranslation" severity="warning" />
+</lint>

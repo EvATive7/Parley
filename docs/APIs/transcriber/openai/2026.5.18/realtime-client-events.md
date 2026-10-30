@@ -1,0 +1,1 @@
+https://developers.openai.com/api/reference/resources/realtime/client-events

@@ -48,7 +48,7 @@ private val CancelDistance = 80.dp
 
 /**
  * The single morphing control the whole app is built around:
- * cookie (idle) → soft burst (recording) → red disc filling the ring (release to cancel) → loading indicator (busy).
+ * cookie (idle) → soft burst (recording) → idle-sized red disc (release to cancel) → loading indicator (busy).
  */
 @Composable
 fun PttButton(
@@ -105,8 +105,8 @@ fun PttButton(
     )
     val scale by animateFloatAsState(
         when {
-            // The red disc grows to cover the whole progress ring, so it reads as one big stop target.
-            armed -> RingSize / ButtonSize
+            // The red disc shrinks back to the idle size: releasing now leaves nothing behind.
+            armed -> 1f
             recording -> 1.15f
             else -> 1f
         },
@@ -200,6 +200,9 @@ fun PttButton(
                     armed -> ButtonIcon.Delete
                     else -> ButtonIcon.Mic
                 },
+                // The 72 dp loading indicator and the 36 dp icons differ in size; anchored top-start they
+                // would slide diagonally while the box resizes.
+                contentAlignment = Alignment.Center,
                 transitionSpec = {
                     (fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), 0.6f)) togetherWith
                         (fadeOut(motion.fastEffectsSpec()) + scaleOut(motion.fastSpatialSpec(), 0.6f))

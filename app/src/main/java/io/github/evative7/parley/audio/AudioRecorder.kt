@@ -13,22 +13,22 @@ import kotlinx.coroutines.isActive
 import javax.inject.Inject
 
 /** Captures 16 kHz mono PCM from the microphone in 20 ms frames. Audio never touches disk. */
-class AudioRecorder @Inject constructor() {
+class AudioRecorder @Inject constructor() : AudioSource {
 
     /**
      * Cold flow: recording starts on collection and stops when the collector is cancelled.
      * The caller must hold `RECORD_AUDIO`; otherwise this throws [SecurityException].
      */
     @SuppressLint("MissingPermission")
-    fun frames(): Flow<ShortArray> = flow {
+    override fun frames(): Flow<ShortArray> = flow {
         val minBuffer = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL, ENCODING)
         val record = AudioRecord(
             MediaRecorder.AudioSource.VOICE_RECOGNITION,
             SAMPLE_RATE, CHANNEL, ENCODING,
             maxOf(minBuffer, FRAME_SAMPLES * 2 * 4),
         )
-        check(record.state == AudioRecord.STATE_INITIALIZED) { "AudioRecord failed to initialize" }
         try {
+            check(record.state == AudioRecord.STATE_INITIALIZED) { "AudioRecord failed to initialize" }
             record.startRecording()
             val buffer = ShortArray(FRAME_SAMPLES)
             while (currentCoroutineContext().isActive) {

@@ -8,6 +8,12 @@ interface SpeechRecognizer {
     /** Whether [RecognitionSession.partials] emits text while the user is still speaking. */
     val isStreaming: Boolean
 
+    /** The screen is visible: connect ahead of the next press. Sends no audio. */
+    fun prepare() {}
+
+    /** The screen is gone: drop anything [prepare] opened. */
+    fun release() {}
+
     /** Starts a session. [lang] is a hint; `null` lets the service detect the language. */
     fun open(lang: String?): RecognitionSession
 }

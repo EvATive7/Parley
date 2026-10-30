@@ -13,8 +13,9 @@ android {
         applicationId = "io.github.evative7.parley"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 3
+        versionName = "0.2.1"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -22,7 +23,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // M1 builds are signed with the debug key so the Release APK installs directly.
+            // Development builds only; use a private release key before publishing.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -34,6 +35,11 @@ android {
 
     buildFeatures {
         compose = true
+    }
+
+    // Both conversation languages must be available offline when switching hint resources.
+    bundle {
+        language { enableSplit = false }
     }
 }
 
@@ -61,10 +67,17 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.mlkit.language.id)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockwebserver)
     testImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.junit)
 }

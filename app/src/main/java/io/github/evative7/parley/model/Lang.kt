@@ -26,13 +26,16 @@ value class Lang(val tag: String) {
         ).map(::Lang)
 
         /** The device's own language, as the closest entry in [targets]. */
-        fun defaultFirst(locale: Locale = Locale.getDefault()): Lang = when {
+        fun defaultFirst(locale: Locale = Locale.getDefault()): Lang = closest(locale) ?: Lang("en")
+
+        /** The entry in [targets] that [locale] would read, or null if none is close. */
+        fun closest(locale: Locale): Lang? = when {
             locale.language == "zh" ->
                 if (locale.script == "Hant" || locale.country in setOf("TW", "HK", "MO")) Lang("zh-TW")
                 else Lang("zh-CN")
             // Java still reports Indonesian as the legacy code `in` on some versions.
             locale.language == "in" -> Lang("id")
-            else -> targets.firstOrNull { it.base == locale.language } ?: Lang("en")
+            else -> targets.firstOrNull { it.base == locale.language }
         }
 
         /** The other party's language when nothing has been picked yet. */

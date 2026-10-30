@@ -6,6 +6,11 @@ import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +27,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,6 +53,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -53,6 +63,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.evative7.parley.R
+import io.github.evative7.parley.data.ServiceSettings
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.state.CardState
 import io.github.evative7.parley.state.Hint
@@ -60,10 +71,41 @@ import io.github.evative7.parley.state.LangPair
 import io.github.evative7.parley.state.PttPhase
 import io.github.evative7.parley.state.PttStateMachine
 import io.github.evative7.parley.state.TranslateViewModel
+import io.github.evative7.parley.state.SettingsViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
+fun TranslateScreen(vm: TranslateViewModel = viewModel(), settingsVm: SettingsViewModel = viewModel()) {
+    val settings by settingsVm.settings.collectAsStateWithLifecycle()
+    var showSettings by rememberSaveable { mutableStateOf(false) }
+
+    // Lives above both pages, so leaving the app from the settings page also releases the socket.
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { vm.onForeground() }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { vm.onBackground() }
+    // Settings finished loading or were just saved: connect with the new ones.
+    LaunchedEffect(settings) { if (settings != null) vm.onForeground() }
+
+    val motion = MaterialTheme.motionScheme
+    AnimatedContent(
+        targetState = showSettings,
+        transitionSpec = {
+            // Settings slide in from the trailing edge and back out the same way.
+            val direction = if (targetState) 1 else -1
+            (slideInHorizontally(motion.defaultSpatialSpec()) { direction * it / 4 } + fadeIn(motion.defaultEffectsSpec())) togetherWith
+                (slideOutHorizontally(motion.defaultSpatialSpec()) { -direction * it / 4 } + fadeOut(motion.fastEffectsSpec()))
+        },
+        label = "page",
+    ) { settingsOpen ->
+        if (settingsOpen) {
+            SettingsScreen(settingsVm, onBack = { showSettings = false })
+        } else {
+            ConversationScreen(vm, settings, onOpenSettings = { showSettings = true })
+        }
+    }
+}
+
+@Composable
+private fun ConversationScreen(vm: TranslateViewModel, settings: ServiceSettings?, onOpenSettings: () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
     val volume = vm.volume.collectAsStateWithLifecycle()
     val elapsed = vm.elapsedMs.collectAsStateWithLifecycle()
@@ -72,8 +114,6 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
     // Which language bar slot the picker dialog is open for.
     var picking by remember { mutableStateOf<Int?>(null) }
 
-    // Going to the background (or an incoming call) ends the recording without sending it.
-    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { vm.onAbort() }
     PhaseHaptics(state.phase)
 
     Surface(color = MaterialTheme.colorScheme.surface) {
@@ -85,13 +125,13 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
                 modifier = Modifier
                     .statusBarsPadding()
                     .padding(top = 12.dp),
-            )
-            Text(
-                stringResource(R.string.prototype_badge),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp),
-            )
+            ) {
+                SettingsButton(
+                    settings = settings,
+                    enabled = state.phase !in setOf(PttPhase.Recording, PttPhase.CancelArmed, PttPhase.Recognizing, PttPhase.Translating),
+                    onClick = onOpenSettings,
+                )
+            }
 
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 if (state.cards.isEmpty()) {
@@ -107,7 +147,8 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) vm.showHint(Hint.Copied)
                     },
                     onDelete = { vm.delete(it.id) },
-                    onRetry = { vm.onRetry() },
+                    onRetry = { vm.onRetry(it.id) },
+                    retryEnabled = state.phase !in setOf(PttPhase.Recording, PttPhase.CancelArmed, PttPhase.Recognizing, PttPhase.Translating),
                 )
             }
 
@@ -148,7 +189,8 @@ private fun CardList(
     cards: List<CardState>,
     onCopy: (CardState) -> Unit,
     onDelete: (CardState) -> Unit,
-    onRetry: () -> Unit,
+    onRetry: (CardState) -> Unit,
+    retryEnabled: Boolean,
 ) {
     val motion = MaterialTheme.motionScheme
     // Cards that already played their entrance; scrolling back must not replay it.
@@ -177,7 +219,8 @@ private fun CardList(
                 card = card,
                 onCopy = { onCopy(card) },
                 onDelete = { onDelete(card) },
-                onRetry = onRetry,
+                onRetry = { onRetry(card) },
+                retryEnabled = retryEnabled,
                 modifier = Modifier
                     .animateItem(
                         fadeInSpec = null,
@@ -204,9 +247,10 @@ private fun LanguageBar(
     onPick: (slot: Int) -> Unit,
     onSwap: () -> Unit,
     modifier: Modifier = Modifier,
+    trailing: @Composable () -> Unit = {},
 ) {
     Row(
-        modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LanguageButton(langs.first, onClick = { onPick(0) }, modifier = Modifier.weight(1f))
@@ -214,6 +258,36 @@ private fun LanguageBar(
             Icon(painterResource(R.drawable.ic_swap_horiz), stringResource(R.string.swap_languages))
         }
         LanguageButton(langs.second, onClick = { onPick(1) }, modifier = Modifier.weight(1f))
+        trailing()
+    }
+}
+
+/** Opens the service settings; a dot says they need attention (red) or that results are fake (demo). */
+@Composable
+private fun SettingsButton(settings: ServiceSettings?, enabled: Boolean, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val needsSetup = settings != null && !settings.isReady
+    val demo = settings != null && settings.isReady && settings.demoMode
+    val status = when {
+        needsSetup -> stringResource(R.string.settings_required)
+        demo -> stringResource(R.string.settings_demo)
+        else -> null
+    }
+    IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.semantics { if (status != null) stateDescription = status },
+    ) {
+        BadgedBox(
+            badge = {
+                when {
+                    needsSetup -> Badge()
+                    demo -> Badge(containerColor = colors.tertiary)
+                }
+            },
+        ) {
+            Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title))
+        }
     }
 }
 
@@ -224,6 +298,7 @@ private fun LanguageButton(lang: Lang, onClick: () -> Unit, modifier: Modifier =
         AnimatedContent(
             targetState = lang,
             transitionSpec = { riseAndFade(motion) },
+            contentAlignment = Alignment.Center,
             modifier = Modifier.weight(1f, fill = false),
             label = "lang",
         ) { l ->
@@ -283,6 +358,7 @@ private fun HintLine(phase: PttPhase, hint: Hint?, langs: LangPair, elapsedMs: (
         AnimatedContent(
             targetState = HintText(phrase, if (phrase == Phrase.TimeLeft) leftSec else 0, langs),
             transitionSpec = { riseAndFade(motion) },
+            contentAlignment = Alignment.Center,
             label = "hint",
         ) { t ->
             val colors = MaterialTheme.colorScheme

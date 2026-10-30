@@ -14,6 +14,7 @@
     <string name="pick_language">Choose a language</string>
     <string name="swap_languages">Swap languages</string>
     <string name="lang_in_other_slot">Swap</string>
+    <string name="lang_preferred">Preferred</string>
 
     <!-- Push-to-talk phrases, shown at the bottom in both conversation languages. -->
     <string name="ptt_hold_to_talk">Hold to talk</string>
@@ -37,4 +38,50 @@
     <string name="error_no_speech">Didn\'t catch that. Try again.</string>
     <string name="error_timeout">The service took too long to respond</string>
     <string name="prototype_badge">Prototype · fake results</string>
+
+    <!-- M2 service configuration -->
+    <string name="settings_title">Services</string>
+    <string name="settings_privacy">Live mode sends audio to the speech service while recording, and text to the translation service. Cancelling stops further audio; it cannot recall audio already sent. Keys are encrypted with Android Keystore. Audio and conversation cards are not saved to disk in M2.</string>
+    <string name="settings_demo">Demo mode</string>
+    <string name="settings_demo_hint">Use fake results without any network requests. Live mode never falls back to demo results.</string>
+    <string name="settings_asr">Speech recognition</string>
+    <string name="settings_asr_provider">DashScope · realtime streaming</string>
+    <string name="settings_ws_url">WebSocket URL (wss://)</string>
+    <string name="settings_asr_hint">Use a DashScope realtime recognition model, for example fun-asr-realtime. Authorize that realtime model on the key, not just file transcription. The endpoint region must match your key. Supported languages depend on the model.</string>
+    <string name="settings_translation">Translation</string>
+    <string name="settings_translation_provider">OpenAI-compatible API · streaming</string>
+    <string name="settings_base_url">Base URL (including /v1)</string>
+    <string name="settings_model">Model</string>
+    <string name="settings_key">API Key</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_saving">Saving…</string>
+    <string name="settings_invalid_asr_url">Enter a wss:// speech URL without credentials, query parameters or fragments.</string>
+    <string name="settings_invalid_translation_url">Enter an https:// translation Base URL without credentials, query parameters or fragments.</string>
+    <string name="settings_missing_model">Enter a model name.</string>
+    <string name="settings_missing_key">Live mode needs an API Key. Keys must not contain control characters.</string>
+    <string name="settings_storage_error">Settings or keys could not be read or saved. Check device storage and re-enter the keys if necessary.</string>
+    <string name="settings_required">Set up speech and translation services</string>
+    <string name="action_back">Back</string>
+    <string name="settings_mode_live">Live</string>
+    <string name="settings_live_hint">Your voice goes to the speech service while you hold the button, and the text to the translation service.</string>
+    <string name="settings_status_ready">Ready</string>
+    <string name="settings_status_ready_body">Speech: %1$s · Translation: %2$s</string>
+    <string name="settings_status_demo_body">Results are made up and nothing is sent over the network.</string>
+    <string name="settings_status_setup">Not set up yet</string>
+    <string name="settings_status_setup_body">Add an API Key for each service to start translating.</string>
+    <string name="settings_status_error">Settings unavailable</string>
+    <string name="settings_show_key">Show key</string>
+    <string name="settings_hide_key">Hide key</string>
+    <string name="settings_unsaved">Unsaved changes</string>
+    <string name="settings_revert">Undo</string>
+    <string name="settings_discard_title">Discard changes?</string>
+    <string name="settings_discard_body">The changes you made on this page will be lost.</string>
+    <string name="settings_discard">Discard</string>
+    <string name="settings_keep_editing">Keep editing</string>
+    <string name="error_configuration">Configure your speech and translation services first</string>
+    <string name="error_authentication">Authentication failed. Check the key, endpoint and region.</string>
+    <string name="error_permission">API Key access denied. Check the selected model, workspace and IP restrictions.</string>
+    <string name="error_rate_limit">Service limit reached. Try again later.</string>
+    <string name="error_network">Connection lost. Check your network.</string>
+    <string name="error_service">The service returned an invalid or incomplete response</string>
 </resources>

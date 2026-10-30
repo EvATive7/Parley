@@ -116,6 +116,7 @@ fun OnboardingScreen(onGranted: () -> Unit) {
                 MorphCanvas(morpher, color = { fill }, rotation = { spin.value }, modifier = Modifier.fillMaxSize())
                 AnimatedContent(
                     targetState = success,
+                    contentAlignment = Alignment.Center,
                     transitionSpec = {
                         (fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), 0.4f)) togetherWith
                             (fadeOut(motion.fastEffectsSpec()) + scaleOut(motion.fastSpatialSpec(), 0.4f))

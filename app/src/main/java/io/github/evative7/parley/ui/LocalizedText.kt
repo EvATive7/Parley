@@ -28,7 +28,11 @@ fun rememberLangResources(lang: Lang): Resources {
     }
 }
 
-/** The one text transition used on this screen: the old text rises and fades out as the new one rises in. */
+/**
+ * The one text transition used on this screen: the old text rises and fades out as the new one rises in.
+ * Use with `contentAlignment = Alignment.Center`; the default top-start anchor drifts sideways while
+ * the size animates, which turns the rise into a diagonal.
+ */
 fun <S> AnimatedContentTransitionScope<S>.riseAndFade(motion: MotionScheme): ContentTransform =
     (slideInVertically(motion.defaultEffectsSpec()) { it / 2 } + fadeIn(motion.defaultEffectsSpec())) togetherWith
         (slideOutVertically(motion.defaultEffectsSpec()) { -it / 2 } + fadeOut(motion.fastEffectsSpec())) using

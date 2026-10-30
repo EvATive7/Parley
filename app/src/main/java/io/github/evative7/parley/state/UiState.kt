@@ -42,11 +42,13 @@ data class CardState(
     val target: Lang? = null,
     val translation: String = "",
     val error: ErrorKind? = null,
+    /** Only finalized ASR text may be resent to the translator. */
+    val canRetry: Boolean = false,
 )
 
 enum class CardStage { Listening, Recognizing, Translating, Done, Error }
 
-enum class ErrorKind { Microphone, NoSpeech, Timeout, Unknown }
+enum class ErrorKind { Microphone, NoSpeech, Timeout, Configuration, Authentication, Permission, RateLimit, Network, Service, Unknown }
 
 /** Short transient message shown above the button. */
 enum class Hint { Copied }

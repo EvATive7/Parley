@@ -39,6 +39,7 @@ fun ResultCard(
     onDelete: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    retryEnabled: Boolean = true,
 ) {
     val motion = MaterialTheme.motionScheme
     Card(
@@ -98,8 +99,8 @@ fun ResultCard(
                         modifier = Modifier.weight(1f),
                     )
                     // Without recognized text there is nothing to resend.
-                    if (card.source.isNotBlank()) {
-                        TextButton(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
+                    if (card.canRetry) {
+                        TextButton(onClick = onRetry, enabled = retryEnabled) { Text(stringResource(R.string.action_retry)) }
                     }
                     DeleteButton(onDelete)
                 }
@@ -145,5 +146,11 @@ private fun ErrorKind?.message(): Int = when (this) {
     ErrorKind.Microphone -> R.string.error_mic
     ErrorKind.NoSpeech -> R.string.error_no_speech
     ErrorKind.Timeout -> R.string.error_timeout
+    ErrorKind.Configuration -> R.string.error_configuration
+    ErrorKind.Authentication -> R.string.error_authentication
+    ErrorKind.Permission -> R.string.error_permission
+    ErrorKind.RateLimit -> R.string.error_rate_limit
+    ErrorKind.Network -> R.string.error_network
+    ErrorKind.Service -> R.string.error_service
     ErrorKind.Unknown, null -> R.string.error_generic
 }
