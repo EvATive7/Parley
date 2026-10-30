@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Debug launcher icon: amber so it is distinguishable from the release build. -->
+    <color name="ic_launcher_background">#FFFFCC00</color>
+    <color name="ic_launcher_foreground">#FF3D2E00</color>
+</resources>

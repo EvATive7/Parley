@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Parley</string>
-
     <string name="onboarding_title">Parley needs your microphone</string>
     <string name="onboarding_body">Hold the button and speak. Your voice is sent to the speech service you choose, and only the text is kept on this device.</string>
     <string name="onboarding_grant">Grant microphone access</string>

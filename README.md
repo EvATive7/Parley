@@ -49,7 +49,18 @@ DashScope Key 必须开通 Fun-ASR 实时语音识别权限，并选择与 Key �
 - `app/build/outputs/apk/debug/app-debug.apk`
 - `app/build/outputs/apk/release/app-release.apk`
 
-**Release 当前仍使用开发用 debug 签名，不可作为正式发行签名。**
+Debug 包名为 `io.github.evative7.parley.debug`、应用名 `Parley Debug`（琥珀色图标），可与 release 同时安装。本地构建的版本号固定为 `0.1.0`；本地没有 `app/release.jks` 时 release 回退为 debug 签名。
+
+### 发版
+
+Git tag 是版本号的唯一来源。推送 annotated tag 即触发 `.github/workflows/release.yml`：
+
+```sh
+git tag -a v0.3.0 -m "Release v0.3.0"
+git push origin v0.3.0
+```
+
+CI 由 tag 得到 `versionName`，并按 `major*10000 + minor*100 + patch` 计算 `versionCode`，跑单测后用正式密钥签名并把 APK 上传到 GitHub Release。仓库需配置 secrets：`KEYSTORE_BASE64`（`release.jks` 的 base64）、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`。
 
 会话按钮提示有 15 种语言；其余界面目前为英文、简体中文、繁体中文，其他区域回退英文。`app/lint.xml` 将这项已知的缺译工作保留为 warning，而非隐藏报告。
 
