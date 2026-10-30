@@ -1,10 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
-    <string name="ptt_hold_to_talk">Gedrückt halten zum Sprechen</string>
-    <string name="ptt_release_to_send">Loslassen zum Senden · Nach oben zum Abbrechen</string>
+    <string name="onboarding_title">Parley benötigt Zugriff auf dein Mikrofon</string>
+    <string name="onboarding_body">Halte die Taste gedrückt und sprich. Deine Stimme wird an den ausgewählten Spracherkennungsdienst gesendet. Auf diesem Gerät wird nur der Text gespeichert.</string>
+    <string name="onboarding_grant">Mikrofonzugriff erlauben</string>
+    <string name="onboarding_open_settings">Systemeinstellungen öffnen</string>
+    <string name="onboarding_denied_hint">Der Mikrofonzugriff ist deaktiviert. Aktiviere ihn in den Systemeinstellungen und kehre dann zurück.</string>
+
+    <string name="pick_language">Sprache auswählen</string>
+    <string name="swap_languages">Sprachen tauschen</string>
+    <string name="lang_in_other_slot">Tauschen</string>
+    <string name="lang_preferred">Bevorzugt</string>
+
+    <string name="ptt_hold_to_talk">Zum Sprechen gedrückt halten</string>
+    <string name="ptt_release_to_send">Zum Senden loslassen · Zum Abbrechen nach oben wischen</string>
     <string name="ptt_time_left">Noch %1$d s</string>
-    <string name="ptt_release_to_cancel">Loslassen zum Abbrechen</string>
-    <string name="ptt_recognizing">Wird erkannt…</string>
+    <string name="ptt_release_to_cancel">Zum Abbrechen loslassen</string>
+    <string name="ptt_recognizing">Erkennung läuft…</string>
     <string name="ptt_copied">Kopiert</string>
+
+    <string name="action_copy">Kopieren</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_retry">Erneut versuchen</string>
+
+    <string name="ptt_description">Zum Sprechen gedrückt halten</string>
+    <string name="state_recording">Aufnahme läuft</string>
+    <string name="state_cancel_armed">Zum Abbrechen loslassen</string>
+    <string name="state_busy">Übersetzung läuft</string>
+
+    <string name="error_mic">Das Mikrofon konnte nicht geöffnet werden</string>
+    <string name="error_generic">Etwas ist schiefgelaufen</string>
+    <string name="error_no_speech">Nichts verstanden. Versuche es noch einmal.</string>
+    <string name="error_timeout">Der Dienst hat zu lange für die Antwort gebraucht</string>
+
+    <string name="settings_title">Dienste</string>
+    <string name="settings_privacy">Audio und Text werden nur an die von dir ausgewählten Dienste gesendet. Schlüssel werden auf diesem Gerät mit Android Keystore verschlüsselt.</string>
+    <string name="settings_asr">Spracherkennung</string>
+    <string name="settings_asr_service">Erkennungsdienst</string>
+    <string name="settings_provider_dashscope">DashScope</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_volcengine">Volcengine</string>
+    <string name="settings_asr_fun_stream">Fun-ASR-RealTime (Streaming-Eingabe)</string>
+    <string name="settings_asr_fun_stream_desc">Alibabas Echtzeit-Transkriptionsmodell mit hoher Qualität, schneller Erkennung und guter Genauigkeit, geeignet für allgemeine chinesische und englische Anwendungsfälle. Die Version mit Streaming-Eingabe bietet eine geringere Latenz und schnellere Erkennung.</string>
+    <string name="settings_asr_fun_non_stream">Fun-ASR-RealTime (Nicht-Streaming-Eingabe)</string>
+    <string name="settings_asr_fun_non_stream_desc">Alibabas Echtzeit-Transkriptionsmodell mit hoher Qualität, schneller Erkennung und guter Genauigkeit, geeignet für allgemeine chinesische und englische Anwendungsfälle. Die Version ohne Streaming-Eingabe bietet eine höhere Erkennungsgenauigkeit sowie eine vollständigere Semantik und Textstruktur.</string>
+    <string name="settings_asr_gpt_realtime">GPT Realtime Whisper</string>
+    <string name="settings_asr_gpt_realtime_desc">OpenAIs Echtzeit-Streaming-Transkriptionsmodell für Realtime-Sitzungen. Ideal für Untertitel mit geringer Latenz und Live-Diktate.</string>
+    <string name="settings_asr_gpt_4o">GPT-4o Transcribe (Nicht-Streaming-Eingabe)</string>
+    <string name="settings_asr_gpt_4o_desc">OpenAIs Transkriptionsmodell mit hoher Qualität und starker Erkennungsleistung, besonders geeignet für Englisch, internationale mehrsprachige Anwendungsfälle, Englisch mit Akzent und weitere Sprachen. Die Version ohne Streaming-Eingabe bietet eine höhere Erkennungsgenauigkeit sowie eine vollständigere Semantik und Textstruktur.</string>
+    <string name="settings_asr_gpt_4o_mini">GPT-4o Mini Transcribe (Nicht-Streaming-Eingabe)</string>
+    <string name="settings_asr_gpt_4o_mini_desc">OpenAIs leichtgewichtiges Transkriptionsmodell, das die Stärken von GPT-4o Transcribe übernimmt und gleichzeitig Kosten und Latenz reduziert. Es eignet sich für häufige, kontinuierliche Nutzung. Die Version ohne Streaming-Eingabe bietet eine höhere Erkennungsgenauigkeit sowie eine vollständigere Semantik und Textstruktur.</string>
+    <string name="settings_asr_doubao_stream">Doubao Seed ASR 2.0 (Streaming-Eingabe)</string>
+    <string name="settings_asr_doubao_stream_desc">ByteDances Doubao-Transkriptionsmodell mit höherer Genauigkeit in Fachgebieten, besserer Erkennung in komplexen Situationen, Kontextunterstützung und zusätzlichen Funktionen. Die Version mit Streaming-Eingabe bietet eine geringere Latenz und schnellere Erkennung, unterstützt jedoch nur Chinesisch und Englisch.</string>
+    <string name="settings_asr_doubao_non_stream">Doubao Seed ASR 2.0 (Nicht-Streaming-Eingabe)</string>
+    <string name="settings_asr_doubao_non_stream_desc">ByteDances Doubao-Transkriptionsmodell mit höherer Genauigkeit in Fachgebieten, besserer Erkennung in komplexen Situationen, Kontextunterstützung und zusätzlichen Funktionen. Die Version ohne Streaming-Eingabe bietet eine höhere Erkennungsgenauigkeit sowie eine vollständigere Semantik und Textstruktur.</string>
+    <string name="settings_asr_doubao_turbo">Doubao Seed ASR 2.0 (Nicht-Streaming-Eingabe, Turbo)</string>
+    <string name="settings_asr_doubao_turbo_desc">ByteDances Transkriptionsmodell, das die Stärken von Doubao Seed ASR 2.0 (Nicht-Streaming-Eingabe) übernimmt und gleichzeitig eine geringere Latenz und schnellere Transkription bietet. Die Version ohne Streaming-Eingabe bietet eine höhere Erkennungsgenauigkeit sowie eine vollständigere Semantik und Textstruktur.</string>
+    <string name="settings_dashscope_region">Region</string>
+    <string name="settings_region_beijing">Peking</string>
+    <string name="settings_region_singapore">Singapur</string>
+    <string name="settings_app_id">AppID</string>
+    <string name="settings_access_token">Zugriffstoken</string>
+    <string name="settings_dashscope_hint">Die Region muss mit der Region übereinstimmen, in der der API Key erstellt wurde.</string>
+    <string name="settings_volcengine_hint">Aktiviere die Ressource für den ausgewählten Dienst in der Volcengine-Konsole.</string>
+    <string name="settings_translation">Übersetzung</string>
+    <string name="settings_translation_provider">OpenAI-kompatible API</string>
+    <string name="settings_base_url">Basis-URL (einschließlich /v1)</string>
+    <string name="settings_model">Modell</string>
+    <string name="settings_key">API Key</string>
+    <string name="settings_save">Speichern</string>
+    <string name="settings_saving">Wird gespeichert…</string>
+    <string name="settings_invalid_translation_url">Gib eine https://-Basis-URL für die Übersetzung ohne Anmeldedaten, Abfrageparameter oder Fragmente ein.</string>
+    <string name="settings_missing_model">Gib einen Modellnamen ein.</string>
+    <string name="settings_missing_asr_key">Gib die für den ausgewählten Sprachdienst erforderlichen Anmeldedaten ohne Steuerzeichen ein.</string>
+    <string name="settings_missing_asr_app_id">Gib die Volcengine-AppID ohne Steuerzeichen ein.</string>
+    <string name="settings_missing_key">Gib einen API Key ohne Steuerzeichen ein.</string>
+    <string name="settings_storage_error">Einstellungen oder Schlüssel konnten nicht gelesen oder gespeichert werden. Prüfe den Gerätespeicher und gib die Schlüssel bei Bedarf erneut ein.</string>
+    <string name="settings_save_failed">Speichern fehlgeschlagen. Versuche es erneut.</string>
+    <string name="settings_required">Spracherkennungs- und Übersetzungsdienste einrichten</string>
+    <string name="action_back">Zurück</string>
+    <string name="settings_show_key">Schlüssel anzeigen</string>
+    <string name="settings_hide_key">Schlüssel ausblenden</string>
+    <string name="settings_unsaved">Nicht gespeicherte Änderungen</string>
+    <string name="settings_revert">Rückgängig</string>
+    <string name="settings_discard_title">Änderungen verwerfen?</string>
+    <string name="settings_discard_body">Die auf dieser Seite vorgenommenen Änderungen gehen verloren.</string>
+    <string name="settings_discard">Verwerfen</string>
+    <string name="settings_keep_editing">Weiter bearbeiten</string>
+    <string name="error_configuration">Richte zuerst die Spracherkennungs- und Übersetzungsdienste ein</string>
+    <string name="error_authentication">Authentifizierung fehlgeschlagen. Prüfe Schlüssel, Endpunkt und Region.</string>
+    <string name="error_permission">Zugriff für den API Key verweigert. Prüfe das ausgewählte Modell, den Arbeitsbereich und die IP-Beschränkungen.</string>
+    <string name="error_rate_limit">Das Dienstlimit wurde erreicht. Versuche es später erneut.</string>
+    <string name="error_network">Verbindung unterbrochen. Prüfe deine Netzwerkverbindung.</string>
+    <string name="error_service">Der Dienst hat eine ungültige oder unvollständige Antwort zurückgegeben</string>
 </resources>

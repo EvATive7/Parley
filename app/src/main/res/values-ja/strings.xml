@@ -1,10 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
+    <string name="onboarding_title">Parley がマイクへのアクセスを必要としています</string>
+    <string name="onboarding_body">ボタンを押したまま話してください。音声は選択した音声認識サービスに送信され、この端末にはテキストのみが保存されます。</string>
+    <string name="onboarding_grant">マイクへのアクセスを許可</string>
+    <string name="onboarding_open_settings">システム設定を開く</string>
+    <string name="onboarding_denied_hint">マイクへのアクセスが無効になっています。システム設定で有効にしてから戻ってください。</string>
+
+    <string name="pick_language">言語を選択</string>
+    <string name="swap_languages">言語を入れ替える</string>
+    <string name="lang_in_other_slot">入れ替える</string>
+    <string name="lang_preferred">優先</string>
+
     <string name="ptt_hold_to_talk">押したまま話す</string>
-    <string name="ptt_release_to_send">離して送信 · 上にスライドでキャンセル</string>
+    <string name="ptt_release_to_send">離して送信 · 上にスライドしてキャンセル</string>
     <string name="ptt_time_left">残り %1$d 秒</string>
     <string name="ptt_release_to_cancel">離してキャンセル</string>
     <string name="ptt_recognizing">認識中…</string>
     <string name="ptt_copied">コピーしました</string>
+
+    <string name="action_copy">コピー</string>
+    <string name="action_delete">削除</string>
+    <string name="action_retry">再試行</string>
+
+    <string name="ptt_description">押したまま話す</string>
+    <string name="state_recording">録音中</string>
+    <string name="state_cancel_armed">離してキャンセル</string>
+    <string name="state_busy">翻訳中</string>
+
+    <string name="error_mic">マイクを開けませんでした</string>
+    <string name="error_generic">問題が発生しました</string>
+    <string name="error_no_speech">聞き取れませんでした。もう一度お試しください。</string>
+    <string name="error_timeout">サービスからの応答に時間がかかりすぎています</string>
+
+    <string name="settings_title">サービス</string>
+    <string name="settings_privacy">音声とテキストは、選択したサービスにのみ送信されます。キーは Android Keystore を使用してこの端末上で暗号化されます。</string>
+    <string name="settings_asr">音声認識</string>
+    <string name="settings_asr_service">認識サービス</string>
+    <string name="settings_provider_dashscope">DashScope</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_volcengine">Volcengine</string>
+    <string name="settings_asr_fun_stream">Fun-ASR-RealTime（ストリーム入力）</string>
+    <string name="settings_asr_fun_stream_desc">Alibaba の高品質・高速・高精度なリアルタイム文字起こしモデルで、一般的な中国語と英語の利用に適しています。ストリーム入力版は遅延が少なく、より高速に認識できます。</string>
+    <string name="settings_asr_fun_non_stream">Fun-ASR-RealTime（非ストリーム入力）</string>
+    <string name="settings_asr_fun_non_stream_desc">Alibaba の高品質・高速・高精度なリアルタイム文字起こしモデルで、一般的な中国語と英語の利用に適しています。非ストリーム入力版は認識精度が高く、意味や文章構造がより完全な出力を提供します。</string>
+    <string name="settings_asr_gpt_realtime">GPT Realtime Whisper</string>
+    <string name="settings_asr_gpt_realtime_desc">Realtime セッション向けの OpenAI リアルタイム・ストリーミング文字起こしモデルです。低遅延の字幕やライブ音声入力に最適です。</string>
+    <string name="settings_asr_gpt_4o">GPT-4o Transcribe（非ストリーム入力）</string>
+    <string name="settings_asr_gpt_4o_desc">高品質で認識性能に優れた OpenAI の文字起こしモデルです。特に英語、多言語環境、アクセントのある英語、各国の言語に効果的です。非ストリーム入力版は認識精度が高く、意味や文章構造がより完全な出力を提供します。</string>
+    <string name="settings_asr_gpt_4o_mini">GPT-4o Mini Transcribe（非ストリーム入力）</string>
+    <string name="settings_asr_gpt_4o_mini_desc">GPT-4o Transcribe の長所を受け継ぎながら、低コスト・低遅延を実現した OpenAI の軽量文字起こしモデルで、頻繁かつ継続的な利用に適しています。非ストリーム入力版は認識精度が高く、意味や文章構造がより完全な出力を提供します。</string>
+    <string name="settings_asr_doubao_stream">Doubao Seed ASR 2.0（ストリーム入力）</string>
+    <string name="settings_asr_doubao_stream_desc">専門分野での精度が高く、複雑な状況での認識、コンテキスト対応、豊富な機能に優れた ByteDance の Doubao 文字起こしモデルです。ストリーム入力版は遅延が少なく高速ですが、中国語と英語のみをサポートします。</string>
+    <string name="settings_asr_doubao_non_stream">Doubao Seed ASR 2.0（非ストリーム入力）</string>
+    <string name="settings_asr_doubao_non_stream_desc">専門分野での精度が高く、複雑な状況での認識、コンテキスト対応、豊富な機能に優れた ByteDance の Doubao 文字起こしモデルです。非ストリーム入力版は認識精度が高く、意味や文章構造がより完全な出力を提供します。</string>
+    <string name="settings_asr_doubao_turbo">Doubao Seed ASR 2.0（非ストリーム入力・Turbo）</string>
+    <string name="settings_asr_doubao_turbo_desc">Doubao Seed ASR 2.0（非ストリーム入力）の長所を受け継ぎながら、遅延を抑えて文字起こしを高速化した ByteDance のモデルです。非ストリーム入力版は認識精度が高く、意味や文章構造がより完全な出力を提供します。</string>
+    <string name="settings_dashscope_region">リージョン</string>
+    <string name="settings_region_beijing">北京</string>
+    <string name="settings_region_singapore">シンガポール</string>
+    <string name="settings_app_id">AppID</string>
+    <string name="settings_access_token">アクセストークン</string>
+    <string name="settings_dashscope_hint">API Key を作成したリージョンと同じものを選択してください。</string>
+    <string name="settings_volcengine_hint">Volcengine コンソールで、選択したサービスのリソースを有効にしてください。</string>
+    <string name="settings_translation">翻訳</string>
+    <string name="settings_translation_provider">OpenAI 互換 API</string>
+    <string name="settings_base_url">ベース URL（/v1 を含む）</string>
+    <string name="settings_model">モデル</string>
+    <string name="settings_key">API Key</string>
+    <string name="settings_save">保存</string>
+    <string name="settings_saving">保存中…</string>
+    <string name="settings_invalid_translation_url">認証情報、クエリパラメータ、フラグメントを含まない https:// の翻訳ベース URL を入力してください。</string>
+    <string name="settings_missing_model">モデル名を入力してください。</string>
+    <string name="settings_missing_asr_key">選択した音声サービスに必要な認証情報を、制御文字を含めずに入力してください。</string>
+    <string name="settings_missing_asr_app_id">Volcengine の AppID を、制御文字を含めずに入力してください。</string>
+    <string name="settings_missing_key">API Key を、制御文字を含めずに入力してください。</string>
+    <string name="settings_storage_error">設定またはキーを読み込み、あるいは保存できませんでした。端末のストレージを確認し、必要に応じてキーを再入力してください。</string>
+    <string name="settings_save_failed">保存できませんでした。もう一度お試しください。</string>
+    <string name="settings_required">音声認識サービスと翻訳サービスを設定してください</string>
+    <string name="action_back">戻る</string>
+    <string name="settings_show_key">キーを表示</string>
+    <string name="settings_hide_key">キーを非表示</string>
+    <string name="settings_unsaved">未保存の変更</string>
+    <string name="settings_revert">元に戻す</string>
+    <string name="settings_discard_title">変更を破棄しますか？</string>
+    <string name="settings_discard_body">このページで行った変更は失われます。</string>
+    <string name="settings_discard">破棄</string>
+    <string name="settings_keep_editing">編集を続ける</string>
+    <string name="error_configuration">先に音声認識サービスと翻訳サービスを設定してください</string>
+    <string name="error_authentication">認証に失敗しました。キー、エンドポイント、リージョンを確認してください。</string>
+    <string name="error_permission">API Key のアクセスが拒否されました。選択したモデル、ワークスペース、IP 制限を確認してください。</string>
+    <string name="error_rate_limit">サービスの上限に達しました。しばらくしてからもう一度お試しください。</string>
+    <string name="error_network">接続が失われました。ネットワークを確認してください。</string>
+    <string name="error_service">サービスから無効または不完全な応答が返されました</string>
 </resources>

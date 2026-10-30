@@ -1,10 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
+    <string name="onboarding_title">Parley에서 마이크 권한이 필요합니다</string>
+    <string name="onboarding_body">버튼을 누른 채 말하세요. 음성은 선택한 음성 인식 서비스로 전송되며, 이 기기에는 텍스트만 저장됩니다.</string>
+    <string name="onboarding_grant">마이크 권한 허용</string>
+    <string name="onboarding_open_settings">시스템 설정 열기</string>
+    <string name="onboarding_denied_hint">마이크 권한이 꺼져 있습니다. 시스템 설정에서 권한을 켠 후 돌아오세요.</string>
+
+    <string name="pick_language">언어 선택</string>
+    <string name="swap_languages">언어 바꾸기</string>
+    <string name="lang_in_other_slot">바꾸기</string>
+    <string name="lang_preferred">선호 언어</string>
+
     <string name="ptt_hold_to_talk">길게 눌러 말하기</string>
     <string name="ptt_release_to_send">떼면 전송 · 위로 밀어 취소</string>
     <string name="ptt_time_left">%1$d초 남음</string>
     <string name="ptt_release_to_cancel">떼면 취소</string>
     <string name="ptt_recognizing">인식 중…</string>
     <string name="ptt_copied">복사됨</string>
+
+    <string name="action_copy">복사</string>
+    <string name="action_delete">삭제</string>
+    <string name="action_retry">다시 시도</string>
+
+    <string name="ptt_description">길게 눌러 말하기</string>
+    <string name="state_recording">녹음 중</string>
+    <string name="state_cancel_armed">떼면 취소</string>
+    <string name="state_busy">번역 중</string>
+
+    <string name="error_mic">마이크를 열 수 없습니다</string>
+    <string name="error_generic">문제가 발생했습니다</string>
+    <string name="error_no_speech">음성을 인식하지 못했습니다. 다시 시도하세요.</string>
+    <string name="error_timeout">서비스 응답 시간이 너무 오래 걸립니다</string>
+
+    <string name="settings_title">서비스</string>
+    <string name="settings_privacy">음성과 텍스트는 선택한 서비스로만 전송됩니다. 키는 Android Keystore를 사용해 이 기기에서 암호화됩니다.</string>
+    <string name="settings_asr">음성 인식</string>
+    <string name="settings_asr_service">인식 서비스</string>
+    <string name="settings_provider_dashscope">DashScope</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_volcengine">Volcengine</string>
+    <string name="settings_asr_fun_stream">Fun-ASR-RealTime(스트림 입력)</string>
+    <string name="settings_asr_fun_stream_desc">Alibaba의 고품질 실시간 전사 모델로, 인식 속도와 정확도가 높아 일반적인 중국어 및 영어 환경에 적합합니다. 스트림 입력 버전은 지연 시간이 짧고 인식 속도가 더 빠릅니다.</string>
+    <string name="settings_asr_fun_non_stream">Fun-ASR-RealTime(비스트림 입력)</string>
+    <string name="settings_asr_fun_non_stream_desc">Alibaba의 고품질 실시간 전사 모델로, 인식 속도와 정확도가 높아 일반적인 중국어 및 영어 환경에 적합합니다. 비스트림 입력 버전은 인식 정확도가 더 높고 의미와 텍스트 구조가 더 완전한 결과를 제공합니다.</string>
+    <string name="settings_asr_gpt_realtime">GPT Realtime Whisper</string>
+    <string name="settings_asr_gpt_realtime_desc">Realtime 세션을 위한 OpenAI의 실시간 스트리밍 전사 모델입니다. 지연 시간이 짧은 자막과 실시간 받아쓰기에 적합합니다.</string>
+    <string name="settings_asr_gpt_4o">GPT-4o Transcribe(비스트림 입력)</string>
+    <string name="settings_asr_gpt_4o_desc">품질과 인식 성능이 뛰어난 OpenAI의 전사 모델로, 특히 영어, 다국어 국제 환경, 억양이 있는 영어 및 여러 언어에 효과적입니다. 비스트림 입력 버전은 인식 정확도가 더 높고 의미와 텍스트 구조가 더 완전한 결과를 제공합니다.</string>
+    <string name="settings_asr_gpt_4o_mini">GPT-4o Mini Transcribe(비스트림 입력)</string>
+    <string name="settings_asr_gpt_4o_mini_desc">GPT-4o Transcribe의 장점을 유지하면서 비용과 지연 시간을 낮춘 OpenAI의 경량 전사 모델로, 자주 연속해서 사용하기에 적합합니다. 비스트림 입력 버전은 인식 정확도가 더 높고 의미와 텍스트 구조가 더 완전한 결과를 제공합니다.</string>
+    <string name="settings_asr_doubao_stream">Doubao Seed ASR 2.0(스트림 입력)</string>
+    <string name="settings_asr_doubao_stream_desc">전문 분야에서 정확도가 높고, 복잡한 환경의 인식과 컨텍스트를 지원하며 더 많은 기능을 제공하는 ByteDance의 Doubao 전사 모델입니다. 스트림 입력 버전은 지연 시간이 짧고 인식 속도가 더 빠르며 중국어와 영어만 지원합니다.</string>
+    <string name="settings_asr_doubao_non_stream">Doubao Seed ASR 2.0(비스트림 입력)</string>
+    <string name="settings_asr_doubao_non_stream_desc">전문 분야에서 정확도가 높고, 복잡한 환경의 인식과 컨텍스트를 지원하며 더 많은 기능을 제공하는 ByteDance의 Doubao 전사 모델입니다. 비스트림 입력 버전은 인식 정확도가 더 높고 의미와 텍스트 구조가 더 완전한 결과를 제공합니다.</string>
+    <string name="settings_asr_doubao_turbo">Doubao Seed ASR 2.0(비스트림 입력 Turbo)</string>
+    <string name="settings_asr_doubao_turbo_desc">Doubao Seed ASR 2.0(비스트림 입력)의 장점을 유지하면서 지연 시간을 낮추고 전사 속도를 높인 ByteDance의 모델입니다. 비스트림 입력 버전은 인식 정확도가 더 높고 의미와 텍스트 구조가 더 완전한 결과를 제공합니다.</string>
+    <string name="settings_dashscope_region">리전</string>
+    <string name="settings_region_beijing">베이징</string>
+    <string name="settings_region_singapore">싱가포르</string>
+    <string name="settings_app_id">AppID</string>
+    <string name="settings_access_token">액세스 토큰</string>
+    <string name="settings_dashscope_hint">API Key를 생성한 리전과 일치해야 합니다.</string>
+    <string name="settings_volcengine_hint">Volcengine 콘솔에서 선택한 서비스의 리소스를 활성화하세요.</string>
+    <string name="settings_translation">번역</string>
+    <string name="settings_translation_provider">OpenAI 호환 API</string>
+    <string name="settings_base_url">기본 URL(/v1 포함)</string>
+    <string name="settings_model">모델</string>
+    <string name="settings_key">API Key</string>
+    <string name="settings_save">저장</string>
+    <string name="settings_saving">저장 중…</string>
+    <string name="settings_invalid_translation_url">인증 정보, 쿼리 매개변수 또는 프래그먼트가 없는 https:// 번역 기본 URL을 입력하세요.</string>
+    <string name="settings_missing_model">모델 이름을 입력하세요.</string>
+    <string name="settings_missing_asr_key">선택한 음성 서비스에 필요한 인증 정보를 제어 문자 없이 입력하세요.</string>
+    <string name="settings_missing_asr_app_id">Volcengine AppID를 제어 문자 없이 입력하세요.</string>
+    <string name="settings_missing_key">API Key를 제어 문자 없이 입력하세요.</string>
+    <string name="settings_storage_error">설정 또는 키를 읽거나 저장할 수 없습니다. 기기 저장공간을 확인하고 필요한 경우 키를 다시 입력하세요.</string>
+    <string name="settings_save_failed">저장하지 못했습니다. 다시 시도하세요.</string>
+    <string name="settings_required">음성 인식 및 번역 서비스 설정</string>
+    <string name="action_back">뒤로</string>
+    <string name="settings_show_key">키 표시</string>
+    <string name="settings_hide_key">키 숨기기</string>
+    <string name="settings_unsaved">저장되지 않은 변경사항</string>
+    <string name="settings_revert">되돌리기</string>
+    <string name="settings_discard_title">변경사항을 취소할까요?</string>
+    <string name="settings_discard_body">이 페이지에서 변경한 내용이 사라집니다.</string>
+    <string name="settings_discard">취소</string>
+    <string name="settings_keep_editing">계속 편집</string>
+    <string name="error_configuration">먼저 음성 인식 및 번역 서비스를 설정하세요</string>
+    <string name="error_authentication">인증에 실패했습니다. 키, 엔드포인트 및 리전을 확인하세요.</string>
+    <string name="error_permission">API Key 접근이 거부되었습니다. 선택한 모델, 워크스페이스 및 IP 제한을 확인하세요.</string>
+    <string name="error_rate_limit">서비스 한도에 도달했습니다. 나중에 다시 시도하세요.</string>
+    <string name="error_network">연결이 끊어졌습니다. 네트워크를 확인하세요.</string>
+    <string name="error_service">서비스에서 유효하지 않거나 불완전한 응답을 반환했습니다</string>
 </resources>
