@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.evative7.parley.asr.AsrProvider
+import io.github.evative7.parley.asr.DashScopeConfig
 import io.github.evative7.parley.asr.DashScopeSession
 import io.github.evative7.parley.asr.WarmSocket
 import io.github.evative7.parley.data.KeyVault
@@ -69,7 +71,12 @@ class CloudPipelineTest {
         val settings = withTimeout(10_000) { repository.settings.filterNotNull().first() }
         val client = NetworkModule.client()
         val diedAt = AtomicLong(-1)
-        val socket = WarmSocket(client, settings) { _, age -> diedAt.set(age) }
+        check(settings.asrService.provider == AsrProvider.DashScope)
+        val config = DashScopeConfig(
+            "wss://${settings.dashScopeRegion.host}/api-ws/v1/inference",
+            settings.dashScopeKey,
+        )
+        val socket = WarmSocket(client, config) { _, age -> diedAt.set(age) }
         val deadline = SystemClock.elapsedRealtime() + 90_000
         while (diedAt.get() < 0 && SystemClock.elapsedRealtime() < deadline) delay(250)
         socket.close()
@@ -96,7 +103,13 @@ class CloudPipelineTest {
         ).use { android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
         val repository = SettingsRepository(instrumentation.targetContext, KeyVault())
         val settings = withTimeout(10_000) { repository.settings.filterNotNull().first() }
-        check(settings.isReady) { "Save service settings in Parley first" }
+        check(settings.isReady && settings.asrService.provider == AsrProvider.DashScope) {
+            "Select and configure a DashScope service in Parley first"
+        }
+        val asrConfig = DashScopeConfig(
+            "wss://${settings.dashScopeRegion.host}/api-ws/v1/inference",
+            settings.dashScopeKey,
+        )
         require(Regex("/data/local/tmp/parley-[A-Za-z0-9_.-]+\\.wav").matches(path))
         val bytes = instrumentation.uiAutomation.executeShellCommand("cat $path")
             .use { android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
@@ -105,10 +118,10 @@ class CloudPipelineTest {
         val translator = OpenAiCompatibleTranslator(client, repository)
         val detector = OfflineLanguageDetector()
         val diagnostics = ConcurrentLinkedQueue<String>()
-        val spare = if (warm) WarmSocket(client, settings).also { delay(3_000) } else null
+        val spare = if (warm) WarmSocket(client, asrConfig).also { delay(3_000) } else null
         val startedAt = SystemClock.elapsedRealtime()
         val firstPartialAt = AtomicLong(-1)
-        val session = DashScopeSession(client, settings, spare) { diagnostics.add(it) }
+        val session = DashScopeSession(client, asrConfig, spare) { diagnostics.add(it) }
         val partialJob = launch {
             session.partials.collect { text ->
                 if (text.isNotBlank()) firstPartialAt.compareAndSet(-1, SystemClock.elapsedRealtime())

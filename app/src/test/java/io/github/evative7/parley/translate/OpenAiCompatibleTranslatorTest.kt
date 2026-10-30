@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
 class OpenAiCompatibleTranslatorTest {
     private val server = MockWebServer()
     private val cancelled = CountDownLatch(1)
-    private val config = ServiceSettings(asrKey = "test-asr", translationKey = "test-llm")
+    private val config = ServiceSettings(dashScopeKey = "test-asr", translationKey = "test-llm")
     private var current: ServiceSettings? = config
     private lateinit var client: OkHttpClient
     private lateinit var translator: OpenAiCompatibleTranslator

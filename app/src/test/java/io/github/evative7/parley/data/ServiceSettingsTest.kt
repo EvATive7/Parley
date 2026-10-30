@@ -1,26 +1,48 @@
 package io.github.evative7.parley.data
 
-import org.junit.Assert.*
+import io.github.evative7.parley.asr.AsrService
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ServiceSettingsTest {
-    private val live = ServiceSettings(asrKey = "test-asr", translationKey = "test-llm")
+    private val live = ServiceSettings(dashScopeKey = "test-asr", translationKey = "test-llm")
 
-    @Test fun `services require both keys`() {
+    @Test fun `only the selected ASR provider credentials are required`() {
         assertFalse(ServiceSettings().isReady)
         assertTrue(live.isReady)
+        assertTrue(live.copy(
+            asrService = AsrService.Gpt4oTranscribeNonStream,
+            dashScopeKey = "",
+            openAiAsrKey = "openai-asr",
+        ).isReady)
+        assertTrue(live.copy(
+            asrService = AsrService.DoubaoSeedAsr20Stream,
+            dashScopeKey = "",
+            volcAppId = "app-id",
+            volcAccessToken = "access-token",
+        ).isReady)
         assertFalse(live.copy(storageError = true).isReady)
     }
 
-    @Test fun `rejects unsafe URLs and header control characters`() {
-        for (url in listOf("ws://example.com", "https://example.com", "wss://u:p@example.com", "wss://example.com?key=x", "wss://example.com#fragment")) {
-            assertEquals(url, SettingsError.AsrUrl, live.copy(asrUrl = url).validationError())
-        }
+    @Test fun `rejects unsafe translation URLs and credential control characters`() {
         for (url in listOf("http://example.com/v1", "https://user@example.com/v1", "https://example.com?key=x")) {
             assertEquals(url, SettingsError.TranslationUrl, live.copy(translationUrl = url).validationError())
         }
-        assertEquals(SettingsError.AsrKey, live.copy(asrKey = "secret\r\ninjected: header").validationError())
+        assertEquals(SettingsError.AsrKey, live.copy(dashScopeKey = "secret\r\ninjected: header").validationError())
         assertEquals(SettingsError.TranslationModel, live.copy(translationModel = " ").validationError())
+    }
+
+    @Test fun `volcengine requires AppID before access token`() {
+        val volc = live.copy(
+            asrService = AsrService.DoubaoSeedAsr20NonStream,
+            dashScopeKey = "",
+        )
+        assertEquals(
+            listOf(SettingsError.AsrAppId, SettingsError.AsrKey),
+            volc.validationErrors(),
+        )
     }
 
     @Test fun `reports every invalid field so each can be marked`() {
@@ -30,8 +52,14 @@ class ServiceSettingsTest {
         )
     }
 
-    @Test fun `settings toString does not expose keys`() {
-        assertFalse(live.toString().contains("test-asr"))
-        assertFalse(live.toString().contains("test-llm"))
+    @Test fun `settings toString does not expose credentials`() {
+        val settings = live.copy(
+            openAiAsrKey = "openai-secret",
+            volcAppId = "private-app-id",
+            volcAccessToken = "volc-secret",
+        )
+        for (secret in listOf("test-asr", "test-llm", "openai-secret", "private-app-id", "volc-secret")) {
+            assertFalse(settings.toString().contains(secret))
+        }
     }
 }

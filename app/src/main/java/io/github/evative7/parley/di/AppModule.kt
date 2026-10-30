@@ -6,7 +6,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.github.evative7.parley.asr.DashScopeRecognizer
+import io.github.evative7.parley.asr.RoutingRecognizer
 import io.github.evative7.parley.asr.SpeechRecognizer
 import io.github.evative7.parley.audio.AudioRecorder
 import io.github.evative7.parley.audio.AudioSource
@@ -24,7 +24,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class AppModule {
-    @Binds @Singleton abstract fun recognizer(impl: DashScopeRecognizer): SpeechRecognizer
+    @Binds @Singleton abstract fun recognizer(impl: RoutingRecognizer): SpeechRecognizer
     @Binds @Singleton abstract fun translator(impl: OpenAiCompatibleTranslator): Translator
     @Binds @Singleton abstract fun settings(impl: SettingsRepository): ServiceSettingsSource
     @Binds @Singleton abstract fun detector(impl: OfflineLanguageDetector): LanguageDetector

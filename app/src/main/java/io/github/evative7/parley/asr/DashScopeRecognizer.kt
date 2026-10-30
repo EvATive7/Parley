@@ -1,6 +1,5 @@
 package io.github.evative7.parley.asr
 
-import io.github.evative7.parley.data.ServiceSettings
 import io.github.evative7.parley.data.ServiceSettingsSource
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
@@ -32,7 +31,8 @@ class DashScopeRecognizer @Inject constructor(
     private val client: OkHttpClient,
     private val settings: ServiceSettingsSource,
 ) : SpeechRecognizer {
-    override val isStreaming = true
+    override val isStreaming: Boolean
+        get() = settings.current?.asrService == AsrService.FunAsrRealtimeStream
 
     // Guarded by `this`.
     private var spare: WarmSocket? = null
@@ -40,7 +40,10 @@ class DashScopeRecognizer @Inject constructor(
 
     override fun prepare(): Unit = synchronized(this) {
         foreground = true
-        val config = settings.current?.takeIf { it.isReady } ?: return
+        val saved = settings.current?.takeIf {
+            it.isReady && it.asrService == AsrService.FunAsrRealtimeStream
+        } ?: return
+        val config = dashScopeConfig(saved.dashScopeRegion.host, saved.dashScopeKey)
         if (spare?.isUsableFor(config) == true) return
         spare?.close()
         spare = WarmSocket(client, config, onDied = ::spareDied)
@@ -53,8 +56,12 @@ class DashScopeRecognizer @Inject constructor(
     }
 
     override fun open(lang: String?): RecognitionSession {
-        val config = settings.current?.takeIf { it.isReady }
+        val saved = settings.current?.takeIf { it.isReady && it.asrService.provider == AsrProvider.DashScope }
             ?: throw ServiceException(ServiceFailure.Configuration)
+        val config = dashScopeConfig(saved.dashScopeRegion.host, saved.dashScopeKey)
+        if (saved.asrService == AsrService.FunAsrRealtimeNonStream) {
+            return DashScopeBufferedSession(client, config)
+        }
         val warm = synchronized(this) { spare.also { spare = null } }
         if (warm != null && !warm.isUsableFor(config)) warm.close()
         return DashScopeSession(client, config, warm?.takeIf { it.isUsableFor(config) })
@@ -71,6 +78,48 @@ class DashScopeRecognizer @Inject constructor(
     private companion object { const val MIN_SPARE_LIFETIME_MS = 10_000L }
 }
 
+internal const val DASHSCOPE_MODEL = "fun-asr-realtime"
+
+internal data class DashScopeConfig(val url: String, val key: String)
+
+private fun dashScopeConfig(host: String, key: String) =
+    DashScopeConfig("wss://$host/api-ws/v1/inference", key)
+
+/** Buffers the press locally and only opens the provider connection after release. */
+internal class DashScopeBufferedSession(
+    private val client: OkHttpClient,
+    private val config: DashScopeConfig,
+) : RecognitionSession {
+    private val lock = Any()
+    private val frames = mutableListOf<ShortArray>()
+    private var delegate: DashScopeSession? = null
+    private var closed = false
+    override val partials = MutableStateFlow("")
+
+    override fun feed(pcm: ShortArray) = synchronized(lock) {
+        check(!closed) { "Session is no longer recording" }
+        frames += pcm.copyOf()
+    }
+
+    override suspend fun finish(): Transcript {
+        val (session, audio) = synchronized(lock) {
+            check(!closed)
+            closed = true
+            DashScopeSession(client, config).also { delegate = it } to frames.toList()
+        }
+        audio.forEach(session::feed)
+        return session.finish()
+    }
+
+    override fun cancel() {
+        synchronized(lock) {
+            closed = true
+            frames.clear()
+            delegate?.cancel()
+        }
+    }
+}
+
 /**
  * A socket opened before the press, so the TLS handshake is not between the finger and the
  * first recognized word: the provider recognizes in real time, so every second of audio queued
@@ -79,11 +128,11 @@ class DashScopeRecognizer @Inject constructor(
  */
 internal class WarmSocket(
     client: OkHttpClient,
-    config: ServiceSettings,
+    config: DashScopeConfig,
     private val onDied: (WarmSocket, ageMs: Long) -> Unit = { _, _ -> },
 ) : WebSocketListener() {
-    private val url = config.asrUrl
-    private val key = config.asrKey
+    private val url = config.url
+    private val key = config.key
     private val createdAt = System.nanoTime()
     // Guarded by `this`.
     private var owner: WebSocketListener? = null
@@ -91,8 +140,8 @@ internal class WarmSocket(
     private var dead = false
     val socket: WebSocket = client.newWebSocket(dashScopeRequest(config), this)
 
-    fun isUsableFor(config: ServiceSettings) = synchronized(this) {
-        !dead && owner == null && url == config.asrUrl && key == config.asrKey
+    fun isUsableFor(config: DashScopeConfig) = synchronized(this) {
+        !dead && owner == null && url == config.url && key == config.key
     }
 
     /** Hands every later callback to [listener]; false if the socket already died. */
@@ -144,8 +193,8 @@ internal class WarmSocket(
     }
 }
 
-private fun dashScopeRequest(config: ServiceSettings) = Request.Builder().url(config.asrUrl)
-    .header("Authorization", "Bearer " + config.asrKey).build()
+private fun dashScopeRequest(config: DashScopeConfig) = Request.Builder().url(config.url)
+    .header("Authorization", "Bearer " + config.key).build()
 
 /**
  * One recognition task per press, on [warm] if it is still open, otherwise on a new socket.
@@ -154,19 +203,19 @@ private fun dashScopeRequest(config: ServiceSettings) = Request.Builder().url(co
  */
 internal class DashScopeSession(
     private val client: OkHttpClient,
-    config: ServiceSettings,
+    config: DashScopeConfig,
     warm: WarmSocket? = null,
     // Opt-in device-test diagnostics only; the app never logs requests or provider bodies.
     private val diagnostics: ((String) -> Unit)? = null,
 ) : WebSocketListener(), RecognitionSession {
     private val openedAt = System.nanoTime()
-    private val diagnosticSecrets = if (diagnostics != null) {
-        listOf(config.asrKey, config.translationKey).filter { it.isNotEmpty() }
+    private val diagnosticSecrets = if (diagnostics != null && config.key.isNotEmpty()) {
+        listOf(config.key)
     } else emptyList()
     private val lock = Any()
     private var taskId = newTaskId()
     private val request = dashScopeRequest(config)
-    private val model = config.asrModel
+    private val model = DASHSCOPE_MODEL
     private val result = CompletableDeferred<Transcript>()
     private val sentences = TreeMap<Long, String>()
     private var draftSentence = ""

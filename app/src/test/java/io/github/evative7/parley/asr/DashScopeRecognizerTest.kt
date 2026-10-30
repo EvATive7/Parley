@@ -40,9 +40,9 @@ class DashScopeRecognizerTest {
         client.dispatcher.executorService.shutdown()
     }
 
-    private fun config() = ServiceSettings(
-        asrUrl = server.url("/api-ws/v1/inference").toString().replace("http://", "ws://"),
-        asrKey = "test-asr", translationKey = "test-llm",
+    private fun config() = DashScopeConfig(
+        url = server.url("/api-ws/v1/inference").toString().replace("http://", "ws://"),
+        key = "test-asr",
     )
     private fun packet(event: String, taskId: String, sentence: String? = null, error: String? = null) = buildJsonObject {
         put("header", buildJsonObject {
@@ -199,11 +199,11 @@ class DashScopeRecognizerTest {
             catch (e: ServiceException) { assertEquals(ServiceFailure.Permission, e.failure) }
         }
         assertPermission()
-        s.onFailure(peer.get(), java.io.IOException("Socket closed test-asr test-llm"), null)
+        s.onFailure(peer.get(), java.io.IOException("Socket closed test-asr"), null)
         assertPermission()
         try { s.finish(); fail("Expected permission failure") }
         catch (e: ServiceException) { assertEquals(ServiceFailure.Permission, e.failure) }
-        assertTrue(reports.none { it.contains("test-asr") || it.contains("test-llm") })
+        assertTrue(reports.none { it.contains("test-asr") })
     }
 
     @Test fun `batches 20 ms frames and flushes the exact tail before finish`() = runBlocking {
@@ -291,6 +291,15 @@ class DashScopeRecognizerTest {
         assertTrue(died.await(2, TimeUnit.SECONDS))
         assertFalse(warm.isUsableFor(config()))
         assertFalse(warm.adopt(object : WebSocketListener() {}))
+    }
+
+    @Test fun `non-stream mode opens the socket only after release`() = runBlocking {
+        server.enqueue(answering())
+        val buffered = DashScopeBufferedSession(client, config()).also { session = it }
+        buffered.feed(ShortArray(320))
+        assertEquals(0, server.requestCount)
+        assertEquals("ok", withTimeout(5000) { buffered.finish() }.text)
+        assertEquals(1, server.requestCount)
     }
 
     @Test fun `unconfigured recognizer does not contact the service`() {

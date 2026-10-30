@@ -2,6 +2,7 @@ package io.github.evative7.parley.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,16 +17,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,8 +38,12 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -58,6 +67,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.evative7.parley.R
+import io.github.evative7.parley.asr.AsrProvider
+import io.github.evative7.parley.asr.AsrService
+import io.github.evative7.parley.asr.DashScopeRegion
 import io.github.evative7.parley.data.ServiceSettings
 import io.github.evative7.parley.data.SettingsError
 import io.github.evative7.parley.state.SettingsViewModel
@@ -86,7 +98,7 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     var confirmDiscard by remember { mutableStateOf(false) }
     val dirty = draft != baseline
     val errors = draft.validationErrors()
-    val shown = if (attempted) errors else errors.filter { it == SettingsError.AsrUrl || it == SettingsError.TranslationUrl }
+    val shown = if (attempted) errors else errors.filter { it == SettingsError.TranslationUrl }
     val leave = { if (dirty) confirmDiscard = true else onBack() }
     BackHandler(enabled = !saving) { leave() }
 
@@ -128,17 +140,34 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
             ServiceCard(
                 icon = R.drawable.ic_mic,
                 title = stringResource(R.string.settings_asr),
-                provider = stringResource(R.string.settings_asr_provider),
-                hint = stringResource(R.string.settings_asr_hint),
+                provider = draft.asrService.provider.label(),
+                hint = stringResource(draft.asrService.provider.hintResource()),
             ) {
-                SettingField(stringResource(R.string.settings_ws_url), draft.asrUrl, !saving, SettingsError.AsrUrl.shownIn(shown)) {
-                    draft = draft.copy(asrUrl = it.trim())
-                }
-                SettingField(stringResource(R.string.settings_model), draft.asrModel, !saving, SettingsError.AsrModel.shownIn(shown)) {
-                    draft = draft.copy(asrModel = it.trim())
-                }
-                SecretField(stringResource(R.string.settings_key), draft.asrKey, !saving, SettingsError.AsrKey.shownIn(shown)) {
-                    draft = draft.copy(asrKey = it.trim())
+                AsrServiceField(draft.asrService, !saving) { draft = draft.copy(asrService = it) }
+                when (draft.asrService.provider) {
+                    AsrProvider.DashScope -> {
+                        DashScopeRegionField(draft.dashScopeRegion, !saving) {
+                            draft = draft.copy(dashScopeRegion = it)
+                        }
+                        SecretField(
+                            stringResource(R.string.settings_key), draft.dashScopeKey, !saving,
+                            SettingsError.AsrKey.shownIn(shown),
+                        ) { draft = draft.copy(dashScopeKey = it.trim()) }
+                    }
+                    AsrProvider.OpenAi -> SecretField(
+                        stringResource(R.string.settings_key), draft.openAiAsrKey, !saving,
+                        SettingsError.AsrKey.shownIn(shown),
+                    ) { draft = draft.copy(openAiAsrKey = it.trim()) }
+                    AsrProvider.Volcengine -> {
+                        SettingField(
+                            stringResource(R.string.settings_app_id), draft.volcAppId, !saving,
+                            SettingsError.AsrAppId.shownIn(shown), keyboardType = KeyboardType.Text,
+                        ) { draft = draft.copy(volcAppId = it.trim()) }
+                        SecretField(
+                            stringResource(R.string.settings_access_token), draft.volcAccessToken, !saving,
+                            SettingsError.AsrKey.shownIn(shown),
+                        ) { draft = draft.copy(volcAccessToken = it.trim()) }
+                    }
                 }
             }
 
@@ -197,7 +226,7 @@ private fun StatusCard(saved: ServiceSettings, saveFailed: Boolean) {
         saved.isReady -> Look(
             colors.primaryContainer, colors.onPrimaryContainer, colors.primary, colors.onPrimary, R.drawable.ic_check,
             stringResource(R.string.settings_status_ready),
-            stringResource(R.string.settings_status_ready_body, saved.asrModel, saved.translationModel),
+            stringResource(R.string.settings_status_ready_body, saved.asrService.label(), saved.translationModel),
         )
         else -> Look(
             colors.secondaryContainer, colors.onSecondaryContainer, colors.secondary, colors.onSecondary, R.drawable.ic_settings,
@@ -221,6 +250,129 @@ private fun StatusCard(saved: ServiceSettings, saveFailed: Boolean) {
         }
     }
 }
+
+@Composable
+private fun AsrServiceField(selected: AsrService, enabled: Boolean, onPick: (AsrService) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    OutlinedButton(onClick = { open = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+            Text(stringResource(R.string.settings_asr_service), style = MaterialTheme.typography.labelMedium)
+            Text(selected.label(), style = MaterialTheme.typography.bodyLarge)
+        }
+        Icon(painterResource(R.drawable.ic_arrow_drop_down), null)
+    }
+    Text(
+        selected.description(),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    if (open) {
+        BasicAlertDialog(onDismissRequest = { open = false }) {
+            Surface(
+                shape = MaterialTheme.shapes.extraLarge,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ) {
+                Column(Modifier.padding(vertical = 20.dp)) {
+                    Text(
+                        stringResource(R.string.settings_asr_service),
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                    )
+                    Spacer(Modifier.size(12.dp))
+                    LazyColumn(Modifier.heightIn(max = 520.dp)) {
+                        AsrProvider.entries.forEach { provider ->
+                            item(key = "provider-${provider.name}") {
+                                Text(
+                                    provider.label(),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 4.dp),
+                                )
+                            }
+                            items(AsrService.entries.filter { it.provider == provider }, key = { it.id }) { service ->
+                                TextButton(
+                                    onClick = { onPick(service); open = false },
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                                ) {
+                                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+                                        Text(service.label(), color = MaterialTheme.colorScheme.onSurface)
+                                        Text(
+                                            service.description(),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    if (service == selected) Icon(painterResource(R.drawable.ic_check), null)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DashScopeRegionField(selected: DashScopeRegion, enabled: Boolean, onPick: (DashScopeRegion) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            stringResource(R.string.settings_dashscope_region),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            DashScopeRegion.entries.forEachIndexed { index, region ->
+                SegmentedButton(
+                    selected = selected == region,
+                    onClick = { onPick(region) },
+                    enabled = enabled,
+                    shape = SegmentedButtonDefaults.itemShape(index, DashScopeRegion.entries.size),
+                ) {
+                    Text(stringResource(if (region == DashScopeRegion.Beijing) R.string.settings_region_beijing else R.string.settings_region_singapore))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AsrProvider.label(): String = stringResource(when (this) {
+    AsrProvider.DashScope -> R.string.settings_provider_dashscope
+    AsrProvider.OpenAi -> R.string.settings_provider_openai
+    AsrProvider.Volcengine -> R.string.settings_provider_volcengine
+})
+
+@StringRes
+private fun AsrProvider.hintResource(): Int = when (this) {
+    AsrProvider.DashScope -> R.string.settings_dashscope_hint
+    AsrProvider.OpenAi -> R.string.settings_openai_asr_hint
+    AsrProvider.Volcengine -> R.string.settings_volcengine_hint
+}
+
+@Composable
+private fun AsrService.label(): String = stringResource(when (this) {
+    AsrService.FunAsrRealtimeStream -> R.string.settings_asr_fun_stream
+    AsrService.FunAsrRealtimeNonStream -> R.string.settings_asr_fun_non_stream
+    AsrService.GptRealtimeWhisper -> R.string.settings_asr_gpt_realtime
+    AsrService.Gpt4oTranscribeNonStream -> R.string.settings_asr_gpt_4o
+    AsrService.Gpt4oMiniTranscribeNonStream -> R.string.settings_asr_gpt_4o_mini
+    AsrService.DoubaoSeedAsr20Stream -> R.string.settings_asr_doubao_stream
+    AsrService.DoubaoSeedAsr20NonStream -> R.string.settings_asr_doubao_non_stream
+    AsrService.DoubaoSeedAsr20NonStreamTurbo -> R.string.settings_asr_doubao_turbo
+})
+
+@Composable
+private fun AsrService.description(): String = stringResource(when (this) {
+    AsrService.FunAsrRealtimeStream -> R.string.settings_asr_fun_stream_desc
+    AsrService.FunAsrRealtimeNonStream -> R.string.settings_asr_fun_non_stream_desc
+    AsrService.GptRealtimeWhisper -> R.string.settings_asr_gpt_realtime_desc
+    AsrService.Gpt4oTranscribeNonStream -> R.string.settings_asr_gpt_4o_desc
+    AsrService.Gpt4oMiniTranscribeNonStream -> R.string.settings_asr_gpt_4o_mini_desc
+    AsrService.DoubaoSeedAsr20Stream -> R.string.settings_asr_doubao_stream_desc
+    AsrService.DoubaoSeedAsr20NonStream -> R.string.settings_asr_doubao_non_stream_desc
+    AsrService.DoubaoSeedAsr20NonStreamTurbo -> R.string.settings_asr_doubao_turbo_desc
+})
 
 @Composable
 private fun ServiceCard(
@@ -298,10 +450,11 @@ private fun SettingsError.shownIn(shown: List<SettingsError>) = takeIf { it in s
 
 @Composable
 private fun SettingsError.message(): String = stringResource(when (this) {
-    SettingsError.AsrUrl -> R.string.settings_invalid_asr_url
+    SettingsError.AsrKey -> R.string.settings_missing_asr_key
+    SettingsError.AsrAppId -> R.string.settings_missing_asr_app_id
     SettingsError.TranslationUrl -> R.string.settings_invalid_translation_url
-    SettingsError.AsrModel, SettingsError.TranslationModel -> R.string.settings_missing_model
-    SettingsError.AsrKey, SettingsError.TranslationKey -> R.string.settings_missing_key
+    SettingsError.TranslationModel -> R.string.settings_missing_model
+    SettingsError.TranslationKey -> R.string.settings_missing_key
 })
 
 @Composable
@@ -310,6 +463,7 @@ private fun SettingField(
     value: String,
     enabled: Boolean,
     error: SettingsError?,
+    keyboardType: KeyboardType = KeyboardType.Uri,
     onChange: (String) -> Unit,
 ) {
     OutlinedTextField(
@@ -320,7 +474,7 @@ private fun SettingField(
         enabled = enabled,
         isError = error != null,
         supportingText = error?.let { { Text(it.message()) } },
-        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Uri),
+        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = keyboardType),
         modifier = Modifier.fillMaxWidth(),
     )
 }
