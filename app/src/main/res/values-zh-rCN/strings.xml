@@ -85,7 +85,7 @@
 
     <!-- Debug mode -->
     <string name="settings_debug_mode">调试模式</string>
-    <string name="settings_debug_mode_body">悬浮显示应用每一步做了什么、花了多久。日志只保存在内存中，不记录密钥。</string>
+    <string name="settings_debug_mode_body">通过应用内悬浮窗显示应用关键日志</string>
     <string name="debug_log_title">日志</string>
     <string name="debug_log_empty">暂无日志</string>
     <string name="debug_log_copy">复制日志</string>

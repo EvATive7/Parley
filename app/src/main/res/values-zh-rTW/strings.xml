@@ -61,7 +61,7 @@
 
     <!-- Debug mode -->
     <string name="settings_debug_mode">偵錯模式</string>
-    <string name="settings_debug_mode_body">懸浮顯示應用程式每一步做了什麼、花了多久。日誌只保存在記憶體中，不記錄金鑰。</string>
+    <string name="settings_debug_mode_body">透過應用程式內懸浮視窗顯示應用程式關鍵日誌</string>
     <string name="debug_log_title">日誌</string>
     <string name="debug_log_empty">尚無日誌</string>
     <string name="debug_log_copy">複製日誌</string>

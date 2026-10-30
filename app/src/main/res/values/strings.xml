@@ -87,7 +87,7 @@
 
     <!-- Debug mode -->
     <string name="settings_debug_mode">Debug mode</string>
-    <string name="settings_debug_mode_body">Shows a floating log of each step and how long it takes. Kept in memory only; keys are never logged.</string>
+    <string name="settings_debug_mode_body">Shows key app logs in an in-app floating window.</string>
     <string name="debug_log_title">Log</string>
     <string name="debug_log_empty">No events yet</string>
     <string name="debug_log_copy">Copy log</string>
