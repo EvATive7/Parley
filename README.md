@@ -19,7 +19,7 @@
 
 ## 已有能力
 
-- M1 的 Material 3 Expressive 主题、形变按钮、波浪进度环、双语提示、权限引导与结果卡片动画
+- M1 的 Material 3 Expressive 主题、形变按钮（录音时随音量起伏）、双语提示、权限引导与结果卡片动画
 - 触碰录音、误触丢弃、上滑取消、60 秒限时、后台丢弃录音
 - DashScope WebSocket：16 kHz 单声道 PCM16LE、握手前有界缓冲、实时文本修订、松手后提交最终结果
 - OpenAI 兼容 Chat Completions + SSE：译文片段流式显示、取消时终止 HTTP 请求

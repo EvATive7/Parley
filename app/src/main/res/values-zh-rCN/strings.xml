@@ -6,8 +6,6 @@
     <string name="onboarding_open_settings">前往系统设置</string>
     <string name="onboarding_denied_hint">麦克风权限已被关闭，请在系统设置中开启后返回。</string>
 
-    <string name="empty_title">按住说话</string>
-    <string name="empty_body">松开翻译，上滑取消</string>
 
     <string name="pick_language">选择语言</string>
     <string name="swap_languages">互换语言</string>

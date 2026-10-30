@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalDensity
@@ -55,7 +55,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -134,9 +133,6 @@ private fun ConversationScreen(vm: TranslateViewModel, settings: ServiceSettings
             }
 
             Box(Modifier.weight(1f).fillMaxWidth()) {
-                if (state.cards.isEmpty()) {
-                    EmptyState(Modifier.align(Alignment.Center))
-                }
                 CardList(
                     cards = state.cards,
                     onCopy = { card ->
@@ -161,7 +157,6 @@ private fun ConversationScreen(vm: TranslateViewModel, settings: ServiceSettings
             PttButton(
                 phase = state.phase,
                 volume = { volume.value },
-                progress = { (elapsed.value.toFloat() / PttStateMachine.MAX_RECORD_MS).coerceIn(0f, 1f) },
                 onPress = vm::onPress,
                 onDrag = vm::onDrag,
                 onRelease = vm::onRelease,
@@ -169,7 +164,7 @@ private fun ConversationScreen(vm: TranslateViewModel, settings: ServiceSettings
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .navigationBarsPadding()
-                    .padding(bottom = 24.dp),
+                    .padding(bottom = 40.dp),
             )
         }
     }
@@ -308,24 +303,6 @@ private fun LanguageButton(lang: Lang, onClick: () -> Unit, modifier: Modifier =
     }
 }
 
-@Composable
-private fun EmptyState(modifier: Modifier = Modifier) {
-    Column(modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            stringResource(R.string.empty_title),
-            style = MaterialTheme.typography.headlineSmallEmphasized,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            stringResource(R.string.empty_body),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-    }
-}
-
 private enum class Phrase(@StringRes val res: Int) {
     HoldToTalk(R.string.ptt_hold_to_talk),
     ReleaseToSend(R.string.ptt_release_to_send),
@@ -352,7 +329,8 @@ private fun HintLine(phase: PttPhase, hint: Hint?, langs: LangPair, elapsedMs: (
     }
     val motion = MaterialTheme.motionScheme
     Box(
-        Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 24.dp),
+        // Above the button, whose voice pulse grows into this space.
+        Modifier.zIndex(1f).fillMaxWidth().height(40.dp).padding(horizontal = 24.dp),
         contentAlignment = Alignment.Center,
     ) {
         AnimatedContent(
@@ -362,14 +340,15 @@ private fun HintLine(phase: PttPhase, hint: Hint?, langs: LangPair, elapsedMs: (
             label = "hint",
         ) { t ->
             val colors = MaterialTheme.colorScheme
-            val armed = t.phrase == Phrase.ReleaseToCancel
+            // Both languages look the same: neither party is the main one.
+            val color = if (t.phrase == Phrase.ReleaseToCancel) colors.error else colors.onSurfaceVariant
             val first = rememberLangResources(t.langs.first).getString(t.phrase.res, t.seconds)
             val second = rememberLangResources(t.langs.second).getString(t.phrase.res, t.seconds)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     first,
                     style = MaterialTheme.typography.labelLarge,
-                    color = if (armed) colors.error else colors.onSurfaceVariant,
+                    color = color,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -377,8 +356,8 @@ private fun HintLine(phase: PttPhase, hint: Hint?, langs: LangPair, elapsedMs: (
                 if (second != first) {
                     Text(
                         second,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (armed) colors.error.copy(alpha = 0.72f) else colors.outline,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = color,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )

@@ -10,7 +10,7 @@ import kotlin.math.sqrt
 class VolumeMeter(
     private val floorDb: Float = -55f,
     private val attack: Float = 0.6f,
-    private val release: Float = 0.12f,
+    private val release: Float = 0.35f,
 ) {
     var level: Float = 0f
         private set

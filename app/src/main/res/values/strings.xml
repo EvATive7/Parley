@@ -8,8 +8,6 @@
     <string name="onboarding_open_settings">Open system settings</string>
     <string name="onboarding_denied_hint">Microphone access was turned off. Enable it in system settings, then come back.</string>
 
-    <string name="empty_title">Hold to talk</string>
-    <string name="empty_body">Release to translate. Slide up to cancel.</string>
 
     <string name="pick_language">Choose a language</string>
     <string name="swap_languages">Swap languages</string>
