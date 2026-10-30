@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
@@ -105,8 +106,7 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
                         // Android 13+ shows its own clipboard confirmation.
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) vm.showHint(Hint.Copied)
                     },
-                    onFavorite = { vm.toggleFavorite(it.id) },
-                    onRedo = { vm.redo(it.id) },
+                    onDelete = { vm.delete(it.id) },
                     onRetry = { vm.onRetry() },
                 )
             }
@@ -138,16 +138,22 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
 private fun CardList(
     cards: List<CardState>,
     onCopy: (CardState) -> Unit,
-    onFavorite: (CardState) -> Unit,
-    onRedo: (CardState) -> Unit,
+    onDelete: (CardState) -> Unit,
     onRetry: () -> Unit,
 ) {
     val motion = MaterialTheme.motionScheme
     // Cards that already played their entrance; scrolling back must not replay it.
     val entered = remember { mutableSetOf<Long>() }
     val rise = with(LocalDensity.current) { 48.dp.toPx() }
+    val listState = rememberLazyListState()
+    // A new recording adds its card at index 0; bring it into view even if the user had scrolled up.
+    val newest = cards.firstOrNull()?.id
+    LaunchedEffect(newest) {
+        if (newest != null) listState.animateScrollToItem(0)
+    }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        state = listState,
         reverseLayout = true, // newest sits right above the button it came out of
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom),
@@ -161,8 +167,7 @@ private fun CardList(
             ResultCard(
                 card = card,
                 onCopy = { onCopy(card) },
-                onFavorite = { onFavorite(card) },
-                onRedo = { onRedo(card) },
+                onDelete = { onDelete(card) },
                 onRetry = onRetry,
                 modifier = Modifier
                     .animateItem(
@@ -231,7 +236,6 @@ private fun HintLine(phase: PttPhase, hint: Hint?, elapsedMs: () -> Long, modifi
         phase == PttPhase.CancelArmed -> stringResource(R.string.hint_release_to_cancel)
         phase == PttPhase.Recording && leftSec <= 10 -> stringResource(R.string.hint_time_left, leftSec)
         hint == Hint.HoldToTalk -> stringResource(R.string.hint_hold_to_talk)
-        hint == Hint.Redo -> stringResource(R.string.hint_redo)
         hint == Hint.Copied -> stringResource(R.string.copied)
         else -> null
     }

@@ -55,11 +55,10 @@ class TranslateViewModel @Inject constructor(
 
     fun setTarget(lang: Lang) = _state.update { it.copy(target = lang) }
 
-    fun toggleFavorite(id: Long) = updateCard(id) { copy(favorite = !favorite) }
-
-    fun redo(id: Long) {
+    fun delete(id: Long) {
+        // A failed card is the retry target; once it is gone there is nothing left to retry.
+        if (id == activeId) activeId = -1
         _state.update { s -> s.copy(cards = s.cards.filterNot { it.id == id }) }
-        showHint(Hint.Redo)
     }
 
     fun showHint(hint: Hint) {

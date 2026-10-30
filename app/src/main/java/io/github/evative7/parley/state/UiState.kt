@@ -17,7 +17,6 @@ data class CardState(
     val source: String = "",
     val sourceLang: Lang? = null,
     val translation: String = "",
-    val favorite: Boolean = false,
     val error: ErrorKind? = null,
 )
 
@@ -26,4 +25,4 @@ enum class CardStage { Listening, Recognizing, Translating, Done, Error }
 enum class ErrorKind { Microphone, NoSpeech, Timeout, Unknown }
 
 /** Short transient message shown above the button. */
-enum class Hint { HoldToTalk, Redo, Copied }
+enum class Hint { HoldToTalk, Copied }

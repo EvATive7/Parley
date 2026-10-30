@@ -13,13 +13,10 @@
     <string name="hint_hold_to_talk">按住按钮说话</string>
     <string name="hint_release_to_cancel">松开取消</string>
     <string name="hint_time_left">还剩 %1$d 秒</string>
-    <string name="hint_redo">按住按钮重新说</string>
     <string name="copied">已复制</string>
 
     <string name="action_copy">复制</string>
-    <string name="action_favorite">收藏</string>
-    <string name="action_unfavorite">取消收藏</string>
-    <string name="action_redo">重说</string>
+    <string name="action_delete">删除</string>
     <string name="action_retry">重试</string>
 
     <string name="ptt_description">按住说话</string>

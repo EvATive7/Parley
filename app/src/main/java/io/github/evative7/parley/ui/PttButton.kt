@@ -48,7 +48,7 @@ private val CancelDistance = 80.dp
 
 /**
  * The single morphing control the whole app is built around:
- * cookie (idle) → soft burst (recording) → square (release to cancel) → loading indicator (busy).
+ * cookie (idle) → soft burst (recording) → red disc filling the ring (release to cancel) → loading indicator (busy).
  */
 @Composable
 fun PttButton(
@@ -73,7 +73,7 @@ fun PttButton(
     val busy = phase == PttPhase.Recognizing || phase == PttPhase.Translating
 
     val shape = when {
-        armed -> MaterialShapes.Square
+        armed -> MaterialShapes.Circle
         recording -> MaterialShapes.SoftBurst
         busy -> MaterialShapes.Circle
         else -> MaterialShapes.Cookie9Sided
@@ -87,7 +87,7 @@ fun PttButton(
 
     val container by animateColorAsState(
         when {
-            armed -> colors.errorContainer
+            armed -> colors.error
             recording -> colors.primary
             else -> idleContainer
         },
@@ -96,7 +96,7 @@ fun PttButton(
     )
     val content by animateColorAsState(
         when {
-            armed -> colors.onErrorContainer
+            armed -> colors.onError
             recording -> colors.onPrimary
             else -> idleContent
         },
@@ -104,10 +104,17 @@ fun PttButton(
         label = "content",
     )
     val scale by animateFloatAsState(
-        if (recording || armed) 1.15f else 1f, motion.defaultSpatialSpec(), label = "scale",
+        when {
+            // The red disc grows to cover the whole progress ring, so it reads as one big stop target.
+            armed -> RingSize / ButtonSize
+            recording -> 1.15f
+            else -> 1f
+        },
+        motion.defaultSpatialSpec(),
+        label = "scale",
     )
     val ringAlpha by animateFloatAsState(
-        if (recording || armed) 1f else 0f, motion.defaultEffectsSpec(), label = "ring",
+        if (recording) 1f else 0f, motion.defaultEffectsSpec(), label = "ring",
     )
 
     val press by rememberUpdatedState(onPress)
@@ -128,7 +135,7 @@ fun PttButton(
             CircularWavyProgressIndicator(
                 progress = progress,
                 modifier = Modifier.fillMaxSize().graphicsLayer { alpha = ringAlpha },
-                color = if (armed) colors.error else colors.primary,
+                color = colors.primary,
                 trackColor = colors.surfaceContainerHighest,
                 amplitude = { if (reduceMotion) 0f else volume().coerceIn(0f, 1f) },
             )

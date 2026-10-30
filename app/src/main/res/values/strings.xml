@@ -15,13 +15,10 @@
     <string name="hint_hold_to_talk">Hold the button to talk</string>
     <string name="hint_release_to_cancel">Release to cancel</string>
     <string name="hint_time_left">%1$d s left</string>
-    <string name="hint_redo">Hold the button to say it again</string>
     <string name="copied">Copied</string>
 
     <string name="action_copy">Copy</string>
-    <string name="action_favorite">Favorite</string>
-    <string name="action_unfavorite">Remove from favorites</string>
-    <string name="action_redo">Say again</string>
+    <string name="action_delete">Delete</string>
     <string name="action_retry">Retry</string>
 
     <string name="ptt_description">Hold to talk</string>

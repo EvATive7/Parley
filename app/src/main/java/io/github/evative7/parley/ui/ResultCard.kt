@@ -36,8 +36,7 @@ import io.github.evative7.parley.state.ErrorKind
 fun ResultCard(
     card: CardState,
     onCopy: () -> Unit,
-    onFavorite: () -> Unit,
-    onRedo: () -> Unit,
+    onDelete: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -95,12 +94,11 @@ fun ResultCard(
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.weight(1f),
                     )
-                    // Without recognized text there is nothing to resend; the user has to say it again.
+                    // Without recognized text there is nothing to resend.
                     if (card.source.isNotBlank()) {
                         TextButton(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
-                    } else {
-                        TextButton(onClick = onRedo) { Text(stringResource(R.string.action_redo)) }
                     }
+                    DeleteButton(onDelete)
                 }
             }
 
@@ -116,21 +114,18 @@ fun ResultCard(
                     IconButton(onClick = onCopy) {
                         Icon(painterResource(R.drawable.ic_copy), stringResource(R.string.action_copy))
                     }
-                    IconButton(onClick = onFavorite) {
-                        Icon(
-                            painterResource(if (card.favorite) R.drawable.ic_star else R.drawable.ic_star_border),
-                            stringResource(if (card.favorite) R.string.action_unfavorite else R.string.action_favorite),
-                            tint = if (card.favorite) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    IconButton(onClick = onRedo) {
-                        Icon(painterResource(R.drawable.ic_replay), stringResource(R.string.action_redo))
-                    }
+                    DeleteButton(onDelete)
                 }
             }
             if (card.stage != CardStage.Done) Spacer(Modifier.size(12.dp))
         }
+    }
+}
+
+@Composable
+private fun DeleteButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Icon(painterResource(R.drawable.ic_delete), stringResource(R.string.action_delete))
     }
 }
 
