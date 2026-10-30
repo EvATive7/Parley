@@ -5,8 +5,8 @@ import java.net.SocketTimeoutException
 
 enum class ServiceFailure { Configuration, Authentication, Permission, RateLimit, Timeout, Network, Response }
 
-/** Intentionally excludes provider bodies, URLs and raw exception messages. */
-class ServiceException(val failure: ServiceFailure) : IOException(failure.name)
+/** Intentionally excludes provider bodies, URLs and raw exception messages. [status] is the HTTP code, if any. */
+class ServiceException(val failure: ServiceFailure, val status: Int? = null) : IOException(failure.name)
 
 fun httpFailure(code: Int): ServiceException = ServiceException(when (code) {
     401 -> ServiceFailure.Authentication
@@ -14,7 +14,7 @@ fun httpFailure(code: Int): ServiceException = ServiceException(when (code) {
     429 -> ServiceFailure.RateLimit
     408, 504 -> ServiceFailure.Timeout
     else -> ServiceFailure.Response
-})
+}, status = code)
 
 fun networkFailure(error: Throwable) = ServiceException(
     if (error is SocketTimeoutException) ServiceFailure.Timeout else ServiceFailure.Network,

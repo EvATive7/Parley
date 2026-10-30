@@ -76,6 +76,43 @@ class OpenAiCompatibleTranslatorTest {
         assertEquals("你好", messages[1].jsonObject["content"]!!.jsonPrimitive.content)
     }
 
+    private fun requestJson() = Json.parseToJsonElement(server.takeRequest(2, TimeUnit.SECONDS)!!.body.readUtf8()).jsonObject
+
+    @Test fun `asks every provider not to think and only Aliyun for enable_thinking`() = runBlocking {
+        server.enqueue(response(delta("Hi") + "data: [DONE]\n\n"))
+        translate().toList()
+        val openAi = requestJson()
+        assertEquals("none", openAi["reasoning_effort"]!!.jsonPrimitive.content)
+        assertNull(openAi["enable_thinking"])
+
+        current = config.copy(translationUrl = "https://ws-x.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1")
+        server.enqueue(response(delta("Hi") + "data: [DONE]\n\n"))
+        translate().toList()
+        val aliyun = requestJson()
+        assertEquals("none", aliyun["reasoning_effort"]!!.jsonPrimitive.content)
+        assertEquals("false", aliyun["enable_thinking"]!!.jsonPrimitive.content)
+    }
+
+    @Test fun `a model that rejects reasoning_effort is retried and remembered without it`() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(400))
+        server.enqueue(response(delta("Hi") + "data: [DONE]\n\n"))
+        server.enqueue(response(delta("Again") + "data: [DONE]\n\n"))
+        assertEquals(listOf("Hi"), translate().toList())
+        assertEquals(listOf("Again"), translate().toList())
+        assertNotNull(requestJson()["reasoning_effort"])
+        assertNull(requestJson()["reasoning_effort"])
+        assertNull(requestJson()["reasoning_effort"])
+    }
+
+    @Test fun `a 400 without reasoning_effort is not retried`() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(400))
+        server.enqueue(MockResponse().setResponseCode(400))
+        try { translate().toList(); fail("Expected failure") } catch (e: ServiceException) {
+            assertEquals(ServiceFailure.Response, e.failure)
+        }
+        assertEquals(2, server.requestCount)
+    }
+
     @Test fun `maps HTTP auth and rate limiting without exposing response bodies`() = runBlocking {
         for ((code, failure) in listOf(401 to ServiceFailure.Authentication, 403 to ServiceFailure.Permission, 429 to ServiceFailure.RateLimit, 500 to ServiceFailure.Response)) {
             server.enqueue(MockResponse().setResponseCode(code).setBody("secret-body"))
