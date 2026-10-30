@@ -4,7 +4,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** Keys are plaintext only in memory; persistence is handled by KeyVault. */
 data class ServiceSettings(
-    val demoMode: Boolean = false,
     val asrUrl: String = "wss://dashscope.aliyuncs.com/api-ws/v1/inference",
     val asrModel: String = "fun-asr-realtime",
     val asrKey: String = "",
@@ -13,7 +12,7 @@ data class ServiceSettings(
     val translationKey: String = "",
     val storageError: Boolean = false,
 ) {
-    val isReady: Boolean get() = !storageError && (demoMode || validationError() == null)
+    val isReady: Boolean get() = !storageError && validationError() == null
 
     /** Every invalid field, in screen order. */
     fun validationErrors(): List<SettingsError> = buildList {
@@ -27,10 +26,10 @@ data class ServiceSettings(
 
     fun validationError(): SettingsError? = validationErrors().firstOrNull()
 
-    private fun validKey(key: String) = (demoMode || key.isNotBlank()) && key.none { it.isISOControl() }
+    private fun validKey(key: String) = key.isNotBlank() && key.none { it.isISOControl() }
 
     // Avoid leaking secrets if a settings object is accidentally logged.
-    override fun toString() = "ServiceSettings(demoMode=$demoMode, keys=<redacted>)"
+    override fun toString() = "ServiceSettings(keys=<redacted>)"
 
     companion object {
         private fun secureUrl(value: String, websocket: Boolean): Boolean {

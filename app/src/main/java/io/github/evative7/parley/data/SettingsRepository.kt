@@ -1,7 +1,6 @@
 package io.github.evative7.parley.data
 
 import android.content.Context
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -27,7 +26,6 @@ class SettingsRepository @Inject constructor(
 ) : ServiceSettingsSource {
     private val store = context.serviceDataStore
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val demo = booleanPreferencesKey("demo")
     private val asrUrl = stringPreferencesKey("asr_url")
     private val asrModel = stringPreferencesKey("asr_model")
     private val asrKey = stringPreferencesKey("asr_key_encrypted")
@@ -47,7 +45,6 @@ class SettingsRepository @Inject constructor(
         val speechKey = decrypt(p[asrKey].orEmpty(), asrKey.name)
         val translationKey = decrypt(p[llmKey].orEmpty(), llmKey.name)
         ServiceSettings(
-            demoMode = p[demo] ?: false,
             asrUrl = p[asrUrl] ?: defaults.asrUrl,
             asrModel = p[asrModel] ?: defaults.asrModel,
             asrKey = speechKey,
@@ -70,7 +67,6 @@ class SettingsRepository @Inject constructor(
         val encryptedAsr = vault.encrypt(value.asrKey, asrKey.name)
         val encryptedLlm = vault.encrypt(value.translationKey, llmKey.name)
         store.edit { p ->
-            p[demo] = value.demoMode
             p[asrUrl] = value.asrUrl
             p[asrModel] = value.asrModel
             p[asrKey] = encryptedAsr

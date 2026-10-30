@@ -2,7 +2,7 @@
 
 开源安卓语音翻译 App：按住说话，云端 ASR 实时转写，再由 LLM 翻译，译文流式显示。
 
-> **当前阶段：M2 真实服务接入（0.2.1）。** DashScope 实时识别与 OpenAI 兼容翻译已通过本地回归，以及 K90PM 上中英文固定音频的双向真实云端测试；麦克风实录、异常场景和 Release 真机验收仍待补。默认不使用假数据，也不内置 API Key。
+> **当前阶段：M2 真实服务接入（0.2.1）。** DashScope 实时识别与 OpenAI 兼容翻译已通过本地回归，以及 K90PM 上中英文固定音频的双向真实云端测试；麦克风实录、异常场景和 Release 真机验收仍待补。不内置 API Key。
 
 ## 使用
 
@@ -10,10 +10,9 @@
 2. 进入首页的「服务设置」：
    - **语音识别**：DashScope WebSocket 地址、模型、对应地域的 API Key。默认北京地址为 `wss://dashscope.aliyuncs.com/api-ws/v1/inference`，模型为 `fun-asr-realtime`。百炼 Key 的模型限制必须授权 **Fun-ASR 实时语音识别**（`fun-asr-realtime`），不是录音文件识别（`fun-asr`）。
    - **翻译**：OpenAI 兼容 Base URL（例如 `https://api.openai.com/v1`）、模型与 API Key。App 自动追加 `/chat/completions`。
-   - 如只需复查原型交互，可显式打开「演示模式」，保存后使用离线假结果。
 3. 选择双方语言，按住按钮说话，松开发送；上滑后松开取消。
 
-真实模式下，未配置会提示设置；网络或鉴权失败不会悄悄切换为假结果。只允许 `wss://` ASR 和 `https://` 翻译地址，不跟随重定向。
+未配置服务时会提示设置。所有识别与翻译请求都使用已配置的服务。只允许 `wss://` ASR 和 `https://` 翻译地址，不跟随重定向。
 
 **语言限制**：语言栏列出的是翻译目标语言，不代表当前 ASR 模型全部支持。默认 Fun-ASR 的语种范围见 [参考文档](docs/APIs/transcriber/aliyun_dashscope/docs/实时语音识别-Fun-ASR_Gummy_Paraformer.md)。ASR 未返回语言时使用本地 ML Kit 文字语言识别；短句、混合语言可能无法可靠判断，未知语言按语言 2 作为翻译目标。
 
@@ -56,8 +55,8 @@ app/src/main/java/io/github/evative7/parley/
 ├─ ui/        主界面、按住说话按钮、卡片、权限引导、服务设置
 ├─ state/     TranslateViewModel、SettingsViewModel、PTT 状态机
 ├─ audio/     AudioSource、AudioRecorder、VolumeMeter
-├─ asr/       SpeechRecognizer、DashScopeRecognizer、FakeRecognizer
-├─ translate/ Translator、OpenAiCompatibleTranslator、FakeTranslator
+├─ asr/       SpeechRecognizer、DashScopeRecognizer
+├─ translate/ Translator、OpenAiCompatibleTranslator
 ├─ network/   SSE 分帧、脱敏服务错误
 ├─ model/     语言、离线文字语言识别
 ├─ data/      SettingsRepository、ServiceSettings、KeyVault

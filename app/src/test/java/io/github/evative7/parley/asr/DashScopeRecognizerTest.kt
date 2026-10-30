@@ -293,10 +293,10 @@ class DashScopeRecognizerTest {
         assertFalse(warm.adopt(object : WebSocketListener() {}))
     }
 
-    @Test fun `configured recognizer does not silently use fake results`() {
+    @Test fun `unconfigured recognizer does not contact the service`() {
         val recognizer = DashScopeRecognizer(client, object : ServiceSettingsSource {
             override val current = ServiceSettings()
-        }, FakeRecognizer())
+        })
         try { recognizer.open(null); fail("Expected configuration failure") } catch (e: ServiceException) {
             assertEquals(ServiceFailure.Configuration, e.failure)
         }

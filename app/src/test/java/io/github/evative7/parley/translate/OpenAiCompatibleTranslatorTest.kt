@@ -48,7 +48,7 @@ class OpenAiCompatibleTranslatorTest {
             .build()
         translator = OpenAiCompatibleTranslator(client, object : ServiceSettingsSource {
             override val current get() = this@OpenAiCompatibleTranslatorTest.current
-        }, FakeTranslator())
+        })
     }
 
     @After fun teardown() {
@@ -125,13 +125,11 @@ class OpenAiCompatibleTranslatorTest {
         } catch (e: ServiceException) { assertEquals(ServiceFailure.Timeout, e.failure) }
     }
 
-    @Test fun `unconfigured and demo modes never contact the server`() = runBlocking {
+    @Test fun `unconfigured translator never contacts the server`() = runBlocking {
         current = null
         try { translate().toList(); fail("Expected configuration failure") } catch (e: ServiceException) {
             assertEquals(ServiceFailure.Configuration, e.failure)
         }
-        current = ServiceSettings(demoMode = true)
-        assertTrue(translate().toList().isNotEmpty())
         assertEquals(0, server.requestCount)
     }
 }

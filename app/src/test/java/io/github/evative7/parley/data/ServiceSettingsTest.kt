@@ -6,10 +6,9 @@ import org.junit.Test
 class ServiceSettingsTest {
     private val live = ServiceSettings(asrKey = "test-asr", translationKey = "test-llm")
 
-    @Test fun `live requires both keys and demo is explicit`() {
+    @Test fun `services require both keys`() {
         assertFalse(ServiceSettings().isReady)
         assertTrue(live.isReady)
-        assertTrue(ServiceSettings(demoMode = true).isReady)
         assertFalse(live.copy(storageError = true).isReady)
     }
 
@@ -29,7 +28,6 @@ class ServiceSettingsTest {
             listOf(SettingsError.AsrKey, SettingsError.TranslationModel, SettingsError.TranslationKey),
             ServiceSettings(translationModel = "").validationErrors(),
         )
-        assertEquals(listOf(SettingsError.TranslationModel), ServiceSettings(demoMode = true, translationModel = "").validationErrors())
     }
 
     @Test fun `settings toString does not expose keys`() {

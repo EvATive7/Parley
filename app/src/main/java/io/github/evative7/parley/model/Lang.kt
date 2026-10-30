@@ -13,8 +13,18 @@ value class Lang(val tag: String) {
 
     /** Name of the language written in [display]'s language, capitalized. */
     fun displayName(display: Locale = Locale.getDefault()): String =
-        locale.getDisplayName(display)
+        localizedName(display)
             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(display) else it.toString() }
+
+    private fun localizedName(display: Locale): String = when {
+        tag.equals("zh-CN", ignoreCase = true) && display.language == "zh" ->
+            if (display.usesTraditionalChinese()) "簡體中文" else "简体中文"
+        tag.equals("zh-TW", ignoreCase = true) && display.language == "zh" ->
+            if (display.usesTraditionalChinese()) "繁體中文" else "繁体中文"
+        tag.equals("zh-CN", ignoreCase = true) -> Locale.forLanguageTag("zh-Hans").getDisplayName(display)
+        tag.equals("zh-TW", ignoreCase = true) -> Locale.forLanguageTag("zh-Hant").getDisplayName(display)
+        else -> locale.getDisplayName(display)
+    }
 
     /** Name of the language written in itself, e.g. `日本語`. */
     fun nativeName(): String = displayName(locale)
@@ -42,3 +52,6 @@ value class Lang(val tag: String) {
         fun defaultSecond(first: Lang): Lang = if (first.base == "zh") Lang("en") else Lang("zh-CN")
     }
 }
+
+private fun Locale.usesTraditionalChinese(): Boolean =
+    script == "Hant" || country in setOf("TW", "HK", "MO")

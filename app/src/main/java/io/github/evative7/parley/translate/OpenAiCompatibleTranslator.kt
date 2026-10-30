@@ -30,7 +30,6 @@ import javax.inject.Inject
 class OpenAiCompatibleTranslator @Inject constructor(
     private val client: OkHttpClient,
     private val settings: ServiceSettingsSource,
-    private val fake: FakeTranslator,
 ) : Translator {
     private var warmedUrl: String? = null
     private var warmedAt = 0L
@@ -41,7 +40,7 @@ class OpenAiCompatibleTranslator @Inject constructor(
      */
     @Synchronized
     override fun prepare() {
-        val config = settings.current?.takeIf { it.isReady && !it.demoMode } ?: return
+        val config = settings.current?.takeIf { it.isReady } ?: return
         val now = System.nanoTime()
         if (warmedUrl == config.translationUrl && now - warmedAt < WARM_INTERVAL_NS) return
         warmedUrl = config.translationUrl
@@ -56,10 +55,6 @@ class OpenAiCompatibleTranslator @Inject constructor(
     override fun translate(text: String, from: Lang?, to: Lang): Flow<String> = flow {
         val config = settings.current?.takeIf { it.isReady }
             ?: throw ServiceException(ServiceFailure.Configuration)
-        if (config.demoMode) {
-            fake.translate(text, from, to).collect { emit(it) }
-            return@flow
-        }
         val source = from?.locale?.getDisplayName(Locale.ENGLISH) ?: "the detected source language"
         val target = to.locale.getDisplayName(Locale.ENGLISH)
         val prompt = """

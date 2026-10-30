@@ -32,12 +32,9 @@
     <string name="error_generic">出错了</string>
     <string name="error_no_speech">没听清，再试一次</string>
     <string name="error_timeout">服务响应超时</string>
-    <string name="prototype_badge">原型 · 结果为假数据</string>
 
     <string name="settings_title">服务设置</string>
-    <string name="settings_privacy">真实模式会在录音时将语音发送给识别服务，再将文字发送给翻译服务。取消只会停止后续发送，无法撤回已发送的语音。Key 通过 Android Keystore 加密保存。M2 不将录音或对话卡片保存到磁盘。</string>
-    <string name="settings_demo">演示模式</string>
-    <string name="settings_demo_hint">使用假结果，不发起网络请求。真实模式出错时不会自动退回演示模式。</string>
+    <string name="settings_privacy">录音时语音会发送给识别服务，识别出的文字会发送给翻译服务。取消只会停止后续发送，无法撤回已发送的语音。Key 通过 Android Keystore 加密保存。M2 不将录音或对话卡片保存到磁盘。</string>
     <string name="settings_asr">语音识别</string>
     <string name="settings_asr_provider">DashScope · 实时流式</string>
     <string name="settings_ws_url">WebSocket 地址（wss://）</string>
@@ -52,15 +49,12 @@
     <string name="settings_invalid_asr_url">请输入 wss:// 识别地址，不含用户名、密码、查询参数或片段。</string>
     <string name="settings_invalid_translation_url">请输入 https:// 翻译 Base URL，不含用户名、密码、查询参数或片段。</string>
     <string name="settings_missing_model">请填写模型名称。</string>
-    <string name="settings_missing_key">真实模式需要 API Key，且不可包含控制字符。</string>
+    <string name="settings_missing_key">请输入 API Key，且不可包含控制字符。</string>
     <string name="settings_storage_error">无法读取或保存设置和密钥，请检查设备存储，必要时重新填写 Key。</string>
     <string name="settings_required">请先配置语音与翻译服务</string>
     <string name="action_back">返回</string>
-    <string name="settings_mode_live">真实服务</string>
-    <string name="settings_live_hint">按住按钮时语音发送给识别服务，识别出的文字再发送给翻译服务。</string>
     <string name="settings_status_ready">已就绪</string>
     <string name="settings_status_ready_body">识别：%1$s · 翻译：%2$s</string>
-    <string name="settings_status_demo_body">结果为假数据，不发起任何网络请求。</string>
     <string name="settings_status_setup">尚未完成配置</string>
     <string name="settings_status_setup_body">为两项服务填写 API Key 后即可开始翻译。</string>
     <string name="settings_status_error">无法读取设置</string>

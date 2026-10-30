@@ -12,7 +12,6 @@ import io.github.evative7.parley.di.NetworkModule
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.model.OfflineLanguageDetector
 import io.github.evative7.parley.state.LangPair
-import io.github.evative7.parley.translate.FakeTranslator
 import io.github.evative7.parley.translate.OpenAiCompatibleTranslator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
@@ -97,13 +96,13 @@ class CloudPipelineTest {
         ).use { android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
         val repository = SettingsRepository(instrumentation.targetContext, KeyVault())
         val settings = withTimeout(10_000) { repository.settings.filterNotNull().first() }
-        check(settings.isReady && !settings.demoMode) { "Save live service settings in Parley first" }
+        check(settings.isReady) { "Save service settings in Parley first" }
         require(Regex("/data/local/tmp/parley-[A-Za-z0-9_.-]+\\.wav").matches(path))
         val bytes = instrumentation.uiAutomation.executeShellCommand("cat $path")
             .use { android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
         val pcm = readMono16kWav(bytes)
         val client = NetworkModule.client()
-        val translator = OpenAiCompatibleTranslator(client, repository, FakeTranslator())
+        val translator = OpenAiCompatibleTranslator(client, repository)
         val detector = OfflineLanguageDetector()
         val diagnostics = ConcurrentLinkedQueue<String>()
         val spare = if (warm) WarmSocket(client, settings).also { delay(3_000) } else null

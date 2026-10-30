@@ -31,7 +31,6 @@ import javax.inject.Inject
 class DashScopeRecognizer @Inject constructor(
     private val client: OkHttpClient,
     private val settings: ServiceSettingsSource,
-    private val fake: FakeRecognizer,
 ) : SpeechRecognizer {
     override val isStreaming = true
 
@@ -41,7 +40,7 @@ class DashScopeRecognizer @Inject constructor(
 
     override fun prepare(): Unit = synchronized(this) {
         foreground = true
-        val config = settings.current?.takeIf { it.isReady && !it.demoMode } ?: return
+        val config = settings.current?.takeIf { it.isReady } ?: return
         if (spare?.isUsableFor(config) == true) return
         spare?.close()
         spare = WarmSocket(client, config, onDied = ::spareDied)
@@ -56,7 +55,6 @@ class DashScopeRecognizer @Inject constructor(
     override fun open(lang: String?): RecognitionSession {
         val config = settings.current?.takeIf { it.isReady }
             ?: throw ServiceException(ServiceFailure.Configuration)
-        if (config.demoMode) return fake.open(lang)
         val warm = synchronized(this) { spare.also { spare = null } }
         if (warm != null && !warm.isUsableFor(config)) warm.close()
         return DashScopeSession(client, config, warm?.takeIf { it.isUsableFor(config) })

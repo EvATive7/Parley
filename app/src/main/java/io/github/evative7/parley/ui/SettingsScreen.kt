@@ -35,9 +35,6 @@ import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -65,7 +62,7 @@ import io.github.evative7.parley.data.ServiceSettings
 import io.github.evative7.parley.data.SettingsError
 import io.github.evative7.parley.state.SettingsViewModel
 
-/** Service settings: what is in effect at the top, then the mode, then one card per service. */
+/** Service settings: what is in effect at the top, then one card per service. */
 @Composable
 fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     val config by vm.settings.collectAsStateWithLifecycle()
@@ -127,8 +124,6 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             StatusCard(saved, saveFailed)
-
-            ModeSelector(demo = draft.demoMode, enabled = !saving) { draft = draft.copy(demoMode = it) }
 
             ServiceCard(
                 icon = R.drawable.ic_mic,
@@ -199,10 +194,6 @@ private fun StatusCard(saved: ServiceSettings, saveFailed: Boolean) {
             colors.errorContainer, colors.onErrorContainer, colors.error, colors.onError, R.drawable.ic_error,
             stringResource(R.string.settings_status_error), stringResource(R.string.settings_storage_error),
         )
-        saved.isReady && saved.demoMode -> Look(
-            colors.tertiaryContainer, colors.onTertiaryContainer, colors.tertiary, colors.onTertiary, R.drawable.ic_science,
-            stringResource(R.string.settings_demo), stringResource(R.string.settings_status_demo_body),
-        )
         saved.isReady -> Look(
             colors.primaryContainer, colors.onPrimaryContainer, colors.primary, colors.onPrimary, R.drawable.ic_check,
             stringResource(R.string.settings_status_ready),
@@ -228,28 +219,6 @@ private fun StatusCard(saved: ServiceSettings, saveFailed: Boolean) {
                 Text(look.body, style = MaterialTheme.typography.bodyMedium)
             }
         }
-    }
-}
-
-@Composable
-private fun ModeSelector(demo: Boolean, enabled: Boolean, onChange: (Boolean) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            listOf(false to R.string.settings_mode_live, true to R.string.settings_demo).forEachIndexed { i, (value, label) ->
-                SegmentedButton(
-                    selected = demo == value,
-                    onClick = { onChange(value) },
-                    enabled = enabled,
-                    shape = SegmentedButtonDefaults.itemShape(i, 2),
-                ) { Text(stringResource(label)) }
-            }
-        }
-        Text(
-            stringResource(if (demo) R.string.settings_demo_hint else R.string.settings_live_hint),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 4.dp),
-        )
     }
 }
 

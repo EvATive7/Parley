@@ -10,9 +10,7 @@
 
     <string name="lang_preferred">首選</string>
     <string name="settings_title">服務設定</string>
-    <string name="settings_privacy">真實模式會在錄音時將語音傳送給辨識服務，再將文字傳送給翻譯服務。取消只會停止後續傳送，無法撤回已傳送的語音。Key 透過 Android Keystore 加密儲存。M2 不將錄音或對話卡片儲存到磁碟。</string>
-    <string name="settings_demo">示範模式</string>
-    <string name="settings_demo_hint">使用模擬結果，不發起網路請求。真實模式出錯時不會自動退回示範模式。</string>
+    <string name="settings_privacy">錄音時語音會傳送給辨識服務，辨識出的文字會傳送給翻譯服務。取消只會停止後續傳送，無法撤回已傳送的語音。Key 透過 Android Keystore 加密儲存。M2 不將錄音或對話卡片儲存到磁碟。</string>
     <string name="settings_asr">語音辨識</string>
     <string name="settings_asr_provider">DashScope · 即時串流</string>
     <string name="settings_ws_url">WebSocket 位址（wss://）</string>
@@ -27,15 +25,12 @@
     <string name="settings_invalid_asr_url">請輸入 wss:// 辨識位址，不含使用者名稱、密碼、查詢參數或片段。</string>
     <string name="settings_invalid_translation_url">請輸入 https:// 翻譯 Base URL，不含使用者名稱、密碼、查詢參數或片段。</string>
     <string name="settings_missing_model">請填寫模型名稱。</string>
-    <string name="settings_missing_key">真實模式需要 API Key，且不可包含控制字元。</string>
+    <string name="settings_missing_key">請輸入 API Key，且不可包含控制字元。</string>
     <string name="settings_storage_error">無法讀取或儲存設定與金鑰，請檢查裝置儲存空間，必要時重新填寫 Key。</string>
     <string name="settings_required">請先設定語音與翻譯服務</string>
     <string name="action_back">返回</string>
-    <string name="settings_mode_live">真實服務</string>
-    <string name="settings_live_hint">按住按鈕時語音傳送給辨識服務，辨識出的文字再傳送給翻譯服務。</string>
     <string name="settings_status_ready">已就緒</string>
     <string name="settings_status_ready_body">辨識：%1$s · 翻譯：%2$s</string>
-    <string name="settings_status_demo_body">結果為模擬資料，不發起任何網路請求。</string>
     <string name="settings_status_setup">尚未完成設定</string>
     <string name="settings_status_setup_body">為兩項服務填寫 API Key 後即可開始翻譯。</string>
     <string name="settings_status_error">無法讀取設定</string>

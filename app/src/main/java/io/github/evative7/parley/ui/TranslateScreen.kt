@@ -257,29 +257,18 @@ private fun LanguageBar(
     }
 }
 
-/** Opens the service settings; a dot says they need attention (red) or that results are fake (demo). */
+/** Opens the service settings; a dot says they need attention. */
 @Composable
 private fun SettingsButton(settings: ServiceSettings?, enabled: Boolean, onClick: () -> Unit) {
-    val colors = MaterialTheme.colorScheme
     val needsSetup = settings != null && !settings.isReady
-    val demo = settings != null && settings.isReady && settings.demoMode
-    val status = when {
-        needsSetup -> stringResource(R.string.settings_required)
-        demo -> stringResource(R.string.settings_demo)
-        else -> null
-    }
+    val status = if (needsSetup) stringResource(R.string.settings_required) else null
     IconButton(
         onClick = onClick,
         enabled = enabled,
         modifier = Modifier.semantics { if (status != null) stateDescription = status },
     ) {
         BadgedBox(
-            badge = {
-                when {
-                    needsSetup -> Badge()
-                    demo -> Badge(containerColor = colors.tertiary)
-                }
-            },
+            badge = { if (needsSetup) Badge() },
         ) {
             Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title))
         }

@@ -35,13 +35,10 @@
     <string name="error_generic">Something went wrong</string>
     <string name="error_no_speech">Didn\'t catch that. Try again.</string>
     <string name="error_timeout">The service took too long to respond</string>
-    <string name="prototype_badge">Prototype · fake results</string>
 
     <!-- M2 service configuration -->
     <string name="settings_title">Services</string>
-    <string name="settings_privacy">Live mode sends audio to the speech service while recording, and text to the translation service. Cancelling stops further audio; it cannot recall audio already sent. Keys are encrypted with Android Keystore. Audio and conversation cards are not saved to disk in M2.</string>
-    <string name="settings_demo">Demo mode</string>
-    <string name="settings_demo_hint">Use fake results without any network requests. Live mode never falls back to demo results.</string>
+    <string name="settings_privacy">Audio is sent to the speech service while recording, and text is sent to the translation service. Cancelling stops further audio; it cannot recall audio already sent. Keys are encrypted with Android Keystore. Audio and conversation cards are not saved to disk in M2.</string>
     <string name="settings_asr">Speech recognition</string>
     <string name="settings_asr_provider">DashScope · realtime streaming</string>
     <string name="settings_ws_url">WebSocket URL (wss://)</string>
@@ -56,15 +53,12 @@
     <string name="settings_invalid_asr_url">Enter a wss:// speech URL without credentials, query parameters or fragments.</string>
     <string name="settings_invalid_translation_url">Enter an https:// translation Base URL without credentials, query parameters or fragments.</string>
     <string name="settings_missing_model">Enter a model name.</string>
-    <string name="settings_missing_key">Live mode needs an API Key. Keys must not contain control characters.</string>
+    <string name="settings_missing_key">Enter an API Key without control characters.</string>
     <string name="settings_storage_error">Settings or keys could not be read or saved. Check device storage and re-enter the keys if necessary.</string>
     <string name="settings_required">Set up speech and translation services</string>
     <string name="action_back">Back</string>
-    <string name="settings_mode_live">Live</string>
-    <string name="settings_live_hint">Your voice goes to the speech service while you hold the button, and the text to the translation service.</string>
     <string name="settings_status_ready">Ready</string>
     <string name="settings_status_ready_body">Speech: %1$s · Translation: %2$s</string>
-    <string name="settings_status_demo_body">Results are made up and nothing is sent over the network.</string>
     <string name="settings_status_setup">Not set up yet</string>
     <string name="settings_status_setup_body">Add an API Key for each service to start translating.</string>
     <string name="settings_status_error">Settings unavailable</string>

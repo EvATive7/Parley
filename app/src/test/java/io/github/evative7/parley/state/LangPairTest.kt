@@ -32,4 +32,11 @@ class LangPairTest {
         assertEquals(Lang("en"), Lang.defaultSecond(Lang("zh-TW")))
         assertEquals(Lang("zh-CN"), Lang.defaultSecond(Lang("ja")))
     }
+
+    @Test fun `Chinese variants are named by script rather than region`() {
+        assertEquals("简体中文", Lang("zh-CN").displayName(Locale.SIMPLIFIED_CHINESE))
+        assertEquals("繁体中文", Lang("zh-TW").displayName(Locale.SIMPLIFIED_CHINESE))
+        assertEquals("簡體中文", Lang("zh-CN").displayName(Locale.TRADITIONAL_CHINESE))
+        assertEquals("繁體中文", Lang("zh-TW").displayName(Locale.TRADITIONAL_CHINESE))
+    }
 }
