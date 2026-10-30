@@ -4,6 +4,7 @@ import io.github.evative7.parley.audio.flattenSamples
 import io.github.evative7.parley.audio.pcm16Wav
 import io.github.evative7.parley.data.ServiceSettingsSource
 import io.github.evative7.parley.model.Lang
+import io.github.evative7.parley.network.ConnectionWarmer
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
 import io.github.evative7.parley.network.httpFailure
@@ -31,6 +32,12 @@ class OpenAiTranscriptionRecognizer @Inject constructor(
     private val settings: ServiceSettingsSource,
 ) : SpeechRecognizer {
     override val isStreaming = false
+    private val warmer = ConnectionWarmer(client, "OpenAI ASR")
+
+    /** The audio is uploaded after release; have the TLS connection ready by then. */
+    override fun prepare() {
+        if (settings.current?.takeIf { it.isReady }?.asrService in SUPPORTED_SERVICES) warmer.warm(TRANSCRIPTIONS_URL)
+    }
 
     override fun open(lang: String?): RecognitionSession {
         val config = settings.current?.takeIf {

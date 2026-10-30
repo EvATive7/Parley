@@ -302,6 +302,18 @@ class DashScopeRecognizerTest {
         assertEquals(1, server.requestCount)
     }
 
+    @Test fun `non-stream mode takes the spare socket on release, not on press`() = runBlocking {
+        server.enqueue(answering())
+        val warm = WarmSocket(client, config())
+        var taken = 0
+        val buffered = DashScopeBufferedSession(client, config()) { taken++; warm }.also { session = it }
+        buffered.feed(ShortArray(320))
+        assertEquals(0, taken)
+        assertEquals("ok", withTimeout(5000) { buffered.finish() }.text)
+        assertEquals(1, taken)
+        assertEquals("the spare's handshake is the only one", 1, server.requestCount)
+    }
+
     @Test fun `unconfigured recognizer does not contact the service`() {
         val recognizer = DashScopeRecognizer(client, object : ServiceSettingsSource {
             override val current = ServiceSettings()

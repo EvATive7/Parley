@@ -4,6 +4,7 @@ import io.github.evative7.parley.data.ServiceSettings
 import io.github.evative7.parley.data.ServiceSettingsSource
 import io.github.evative7.parley.debug.DebugLog
 import io.github.evative7.parley.model.Lang
+import io.github.evative7.parley.network.ConnectionWarmer
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
 import io.github.evative7.parley.network.sseEvents
@@ -21,15 +22,11 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import okhttp3.Call
-import okhttp3.Callback
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
-import java.io.IOException
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -38,34 +35,14 @@ class OpenAiCompatibleTranslator @Inject constructor(
     private val client: OkHttpClient,
     private val settings: ServiceSettingsSource,
 ) : Translator {
-    private var warmedUrl: String? = null
-    private var warmedAt = 0L
+    private val warmer = ConnectionWarmer(client, TAG)
     // URL + model pairs that answered 400 to reasoning_effort; they are sent requests without it.
     private val effortRejected = ConcurrentHashMap.newKeySet<String>()
 
-    /**
-     * An unauthenticated HEAD that only opens a pooled TLS connection, so the first translation
-     * skips the handshake. Carries no key and no text; whatever status comes back is ignored.
-     */
-    @Synchronized
+    /** Opens the TLS connection ahead of the first translation. */
     override fun prepare() {
         val config = settings.current?.takeIf { it.isReady } ?: return
-        val now = System.nanoTime()
-        if (warmedUrl == config.translationUrl && now - warmedAt < WARM_INTERVAL_NS) return
-        warmedUrl = config.translationUrl
-        warmedAt = now
-        val request = Request.Builder().url(config.translationUrl).head().build()
-        DebugLog.log(TAG) { "warming connection to ${request.url.host}" }
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                DebugLog.log(TAG) { "warm-up failed after ${(System.nanoTime() - now) / 1_000_000} ms: ${e.javaClass.simpleName}" }
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                DebugLog.log(TAG) { "connection warm in ${(System.nanoTime() - now) / 1_000_000} ms" }
-                response.close()
-            }
-        })
+        warmer.warm(config.translationUrl)
     }
 
     override fun translate(text: String, from: Lang?, to: Lang): Flow<String> = flow {
@@ -181,7 +158,5 @@ class OpenAiCompatibleTranslator @Inject constructor(
 
     private companion object {
         const val TAG = "Translate"
-        // OkHttp keeps an idle connection for five minutes; the provider may close it sooner.
-        const val WARM_INTERVAL_NS = 60_000_000_000L
     }
 }

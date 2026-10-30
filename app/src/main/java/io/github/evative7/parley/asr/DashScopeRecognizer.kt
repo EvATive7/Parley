@@ -41,8 +41,9 @@ class DashScopeRecognizer @Inject constructor(
 
     override fun prepare(): Unit = synchronized(this) {
         foreground = true
+        // Both modes use the same socket: streaming adopts it on press, buffered on release.
         val saved = settings.current?.takeIf {
-            it.isReady && it.asrService == AsrService.FunAsrRealtimeStream
+            it.isReady && it.asrService.provider == AsrProvider.DashScope
         } ?: return
         val config = dashScopeConfig(saved.dashScopeRegion.host, saved.dashScopeKey)
         if (spare?.isUsableFor(config) == true) return
@@ -62,13 +63,17 @@ class DashScopeRecognizer @Inject constructor(
             ?: throw ServiceException(ServiceFailure.Configuration)
         val config = dashScopeConfig(saved.dashScopeRegion.host, saved.dashScopeKey)
         if (saved.asrService == AsrService.FunAsrRealtimeNonStream) {
-            return DashScopeBufferedSession(client, config)
+            return DashScopeBufferedSession(client, config) { takeSpare(config) }
         }
+        return DashScopeSession(client, config, takeSpare(config), DebugLog.sink(TAG))
+    }
+
+    private fun takeSpare(config: DashScopeConfig): WarmSocket? {
         val warm = synchronized(this) { spare.also { spare = null } }
         if (warm != null && !warm.isUsableFor(config)) warm.close()
         val adopted = warm?.takeIf { it.isUsableFor(config) }
         DebugLog.log(TAG) { if (adopted != null) "session on spare socket" else "session on new socket (no usable spare)" }
-        return DashScopeSession(client, config, adopted, DebugLog.sink(TAG))
+        return adopted
     }
 
     /** The provider drops idle sockets; keep one ready while the screen is visible. */
@@ -93,10 +98,14 @@ internal data class DashScopeConfig(val url: String, val key: String)
 private fun dashScopeConfig(host: String, key: String) =
     DashScopeConfig("wss://$host/api-ws/v1/inference", key)
 
-/** Buffers the press locally and only opens the provider connection after release. */
+/**
+ * Buffers the press locally and only starts the provider task after release, on the recognizer's
+ * spare socket if one is open by then ([takeSpare]), otherwise on a new one.
+ */
 internal class DashScopeBufferedSession(
     private val client: OkHttpClient,
     private val config: DashScopeConfig,
+    private val takeSpare: () -> WarmSocket? = { null },
 ) : RecognitionSession {
     private val lock = Any()
     private val frames = mutableListOf<ShortArray>()
@@ -113,7 +122,7 @@ internal class DashScopeBufferedSession(
         val (session, audio) = synchronized(lock) {
             check(!closed)
             closed = true
-            DashScopeSession(client, config, diagnostics = DebugLog.sink("DashScope")).also { delegate = it } to frames.toList()
+            DashScopeSession(client, config, takeSpare(), DebugLog.sink("DashScope")).also { delegate = it } to frames.toList()
         }
         audio.forEach(session::feed)
         return session.finish()
