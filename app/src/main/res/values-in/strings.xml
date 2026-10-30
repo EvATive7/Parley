@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
+<resources>
+    <string name="ptt_hold_to_talk">Tahan untuk bicara</string>
+    <string name="ptt_release_to_send">Lepas untuk kirim · Geser ke atas untuk batal</string>
+    <string name="ptt_time_left">Sisa %1$d dtk</string>
+    <string name="ptt_release_to_cancel">Lepas untuk batal</string>
+    <string name="ptt_recognizing">Mengenali…</string>
+    <string name="ptt_copied">Disalin</string>
+</resources>

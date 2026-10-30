@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
+<resources>
+    <string name="ptt_hold_to_talk">Nhấn giữ để nói</string>
+    <string name="ptt_release_to_send">Thả để gửi · Vuốt lên để hủy</string>
+    <string name="ptt_time_left">Còn %1$d giây</string>
+    <string name="ptt_release_to_cancel">Thả để hủy</string>
+    <string name="ptt_recognizing">Đang nhận dạng…</string>
+    <string name="ptt_copied">Đã sao chép</string>
+</resources>

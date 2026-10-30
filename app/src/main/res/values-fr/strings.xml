@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
+<resources>
+    <string name="ptt_hold_to_talk">Maintenez pour parler</string>
+    <string name="ptt_release_to_send">Relâchez pour envoyer · Glissez ↑ pour annuler</string>
+    <string name="ptt_time_left">Encore %1$d s</string>
+    <string name="ptt_release_to_cancel">Relâchez pour annuler</string>
+    <string name="ptt_recognizing">Reconnaissance…</string>
+    <string name="ptt_copied">Copié</string>
+</resources>

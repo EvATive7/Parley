@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
+<resources>
+    <string name="ptt_hold_to_talk">按住說話</string>
+    <string name="ptt_release_to_send">放開傳送 · 上滑取消</string>
+    <string name="ptt_time_left">還剩 %1$d 秒</string>
+    <string name="ptt_release_to_cancel">放開取消</string>
+    <string name="ptt_recognizing">辨識中…</string>
+    <string name="ptt_copied">已複製</string>
+</resources>

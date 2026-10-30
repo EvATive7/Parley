@@ -52,8 +52,11 @@ fun ResultCard(
                 .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 8.dp),
         ) {
             Text(
-                text = card.sourceLang?.displayName()?.let { "$it → ${card.target.displayName()}" }
-                    ?: "→ ${card.target.displayName()}",
+                text = card.target?.let { to ->
+                    card.sourceLang?.displayName()?.let { "$it → ${to.displayName()}" } ?: "→ ${to.displayName()}"
+                }
+                    // Until the speaker's language is known, either direction is possible.
+                    ?: "${card.langs.first.displayName()} ⇄ ${card.langs.second.displayName()}",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -112,7 +115,10 @@ fun ResultCard(
                     horizontalArrangement = Arrangement.End,
                 ) {
                     IconButton(onClick = onCopy) {
-                        Icon(painterResource(R.drawable.ic_copy), stringResource(R.string.action_copy))
+                        Icon(
+                            painterResource(R.drawable.ic_copy), stringResource(R.string.action_copy),
+                            Modifier.size(ActionIconSize),
+                        )
                     }
                     DeleteButton(onDelete)
                 }
@@ -125,9 +131,15 @@ fun ResultCard(
 @Composable
 private fun DeleteButton(onClick: () -> Unit) {
     IconButton(onClick = onClick) {
-        Icon(painterResource(R.drawable.ic_delete), stringResource(R.string.action_delete))
+        Icon(
+            painterResource(R.drawable.ic_delete), stringResource(R.string.action_delete),
+            Modifier.size(ActionIconSize),
+        )
     }
 }
+
+/** Smaller than the default 24 dp so the actions don't compete with the translation. */
+private val ActionIconSize = 20.dp
 
 private fun ErrorKind?.message(): Int = when (this) {
     ErrorKind.Microphone -> R.string.error_mic

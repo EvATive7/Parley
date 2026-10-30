@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
+<resources>
+    <string name="ptt_hold_to_talk">اضغط مطولاً للتحدث</string>
+    <string name="ptt_release_to_send">أفلت للإرسال · اسحب لأعلى للإلغاء</string>
+    <string name="ptt_time_left">متبقٍ %1$d ث</string>
+    <string name="ptt_release_to_cancel">أفلت للإلغاء</string>
+    <string name="ptt_recognizing">جارٍ التعرّف…</string>
+    <string name="ptt_copied">تم النسخ</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
+<resources>
+    <string name="ptt_hold_to_talk">กดค้างเพื่อพูด</string>
+    <string name="ptt_release_to_send">ปล่อยเพื่อส่ง · เลื่อนขึ้นเพื่อยกเลิก</string>
+    <string name="ptt_time_left">เหลือ %1$d วินาที</string>
+    <string name="ptt_release_to_cancel">ปล่อยเพื่อยกเลิก</string>
+    <string name="ptt_recognizing">กำลังจดจำเสียง…</string>
+    <string name="ptt_copied">คัดลอกแล้ว</string>
+</resources>

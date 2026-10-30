@@ -8,14 +8,20 @@
     <string name="onboarding_open_settings">Open system settings</string>
     <string name="onboarding_denied_hint">Microphone access was turned off. Enable it in system settings, then come back.</string>
 
-    <string name="target_language">Translate to %1$s</string>
     <string name="empty_title">Hold to talk</string>
     <string name="empty_body">Release to translate. Slide up to cancel.</string>
 
-    <string name="hint_hold_to_talk">Hold the button to talk</string>
-    <string name="hint_release_to_cancel">Release to cancel</string>
-    <string name="hint_time_left">%1$d s left</string>
-    <string name="copied">Copied</string>
+    <string name="pick_language">Choose a language</string>
+    <string name="swap_languages">Swap languages</string>
+    <string name="lang_in_other_slot">Swap</string>
+
+    <!-- Push-to-talk phrases, shown at the bottom in both conversation languages. -->
+    <string name="ptt_hold_to_talk">Hold to talk</string>
+    <string name="ptt_release_to_send">Release to send · Slide up to cancel</string>
+    <string name="ptt_time_left">%1$d s left</string>
+    <string name="ptt_release_to_cancel">Release to cancel</string>
+    <string name="ptt_recognizing">Recognizing…</string>
+    <string name="ptt_copied">Copied</string>
 
     <string name="action_copy">Copy</string>
     <string name="action_delete">Delete</string>

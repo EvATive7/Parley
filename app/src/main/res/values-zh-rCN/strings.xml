@@ -6,14 +6,19 @@
     <string name="onboarding_open_settings">前往系统设置</string>
     <string name="onboarding_denied_hint">麦克风权限已被关闭，请在系统设置中开启后返回。</string>
 
-    <string name="target_language">译成%1$s</string>
     <string name="empty_title">按住说话</string>
     <string name="empty_body">松开翻译，上滑取消</string>
 
-    <string name="hint_hold_to_talk">按住按钮说话</string>
-    <string name="hint_release_to_cancel">松开取消</string>
-    <string name="hint_time_left">还剩 %1$d 秒</string>
-    <string name="copied">已复制</string>
+    <string name="pick_language">选择语言</string>
+    <string name="swap_languages">互换语言</string>
+    <string name="lang_in_other_slot">互换</string>
+
+    <string name="ptt_hold_to_talk">按住说话</string>
+    <string name="ptt_release_to_send">松开发送 · 上滑取消</string>
+    <string name="ptt_time_left">还剩 %1$d 秒</string>
+    <string name="ptt_release_to_cancel">松开取消</string>
+    <string name="ptt_recognizing">识别中…</string>
+    <string name="ptt_copied">已复制</string>
 
     <string name="action_copy">复制</string>
     <string name="action_delete">删除</string>

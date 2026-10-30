@@ -53,7 +53,8 @@ class TranslateViewModel @Inject constructor(
     fun onAbort() = dispatch(PttEvent.Abort)
     fun onRetry() = dispatch(PttEvent.Retry)
 
-    fun setTarget(lang: Lang) = _state.update { it.copy(target = lang) }
+    fun setLang(slot: Int, lang: Lang) = _state.update { it.copy(langs = it.langs.with(slot, lang)) }
+    fun swapLangs() = _state.update { it.copy(langs = it.langs.swapped()) }
 
     fun delete(id: Long) {
         // A failed card is the retry target; once it is gone there is nothing left to retry.
@@ -86,7 +87,7 @@ class TranslateViewModel @Inject constructor(
                     updateCard(card.id) { copy(stage = CardStage.Translating, translation = "", error = null) }
                     pipelineJob = viewModelScope.launch { translate(card.id, card.source, card.sourceLang) }
                 }
-            is PttEffect.Discard -> discard(effect.reason)
+            is PttEffect.Discard -> discard()
             PttEffect.InterruptTranslation -> {
                 pipelineJob?.cancel()
                 updateCard(activeId) { copy(stage = CardStage.Done) }
@@ -101,7 +102,7 @@ class TranslateViewModel @Inject constructor(
         val id = nextId++
         activeId = id
         _state.update { s ->
-            s.copy(hint = null, cards = listOf(CardState(id, s.target, CardStage.Listening)) + s.cards)
+            s.copy(hint = null, cards = listOf(CardState(id, s.langs, CardStage.Listening)) + s.cards)
         }
         val s = recognizer.open(lang = null)
         session = s
@@ -156,7 +157,12 @@ class TranslateViewModel @Inject constructor(
                 fail(id, ErrorKind.NoSpeech); return@launch
             }
             updateCard(id) {
-                copy(source = transcript.text, sourceLang = transcript.lang, stage = CardStage.Translating)
+                copy(
+                    source = transcript.text,
+                    sourceLang = transcript.lang,
+                    target = langs.targetFor(transcript.lang),
+                    stage = CardStage.Translating,
+                )
             }
             dispatch(PttEvent.Recognized)
             translate(id, transcript.text, transcript.lang)
@@ -164,7 +170,8 @@ class TranslateViewModel @Inject constructor(
     }
 
     private suspend fun translate(id: Long, text: String, from: Lang?) {
-        val to = _state.value.cards.first { it.id == id }.target
+        val card = _state.value.cards.first { it.id == id }
+        val to = card.target ?: card.langs.targetFor(from)
         try {
             withTimeout(TIMEOUT_MS) {
                 translator.translate(text, from, to).collect { fragment ->
@@ -182,12 +189,12 @@ class TranslateViewModel @Inject constructor(
         dispatch(PttEvent.Translated)
     }
 
-    private fun discard(reason: PttEffect.Discard.Reason) {
+    // Whatever the reason, the hint line goes back to "hold to talk", which is feedback enough.
+    private fun discard() {
         stopRecording()
         session?.cancel()
         session = null
         _state.update { s -> s.copy(cards = s.cards.filterNot { it.id == activeId }) }
-        if (reason == PttEffect.Discard.Reason.TooShort) showHint(Hint.HoldToTalk)
     }
 
     private fun fail(id: Long, kind: ErrorKind) {

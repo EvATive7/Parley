@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
+<resources>
+    <string name="ptt_hold_to_talk">押したまま話す</string>
+    <string name="ptt_release_to_send">離して送信 · 上にスライドでキャンセル</string>
+    <string name="ptt_time_left">残り %1$d 秒</string>
+    <string name="ptt_release_to_cancel">離してキャンセル</string>
+    <string name="ptt_recognizing">認識中…</string>
+    <string name="ptt_copied">コピーしました</string>
+</resources>

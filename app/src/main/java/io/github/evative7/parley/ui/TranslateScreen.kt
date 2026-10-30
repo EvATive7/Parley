@@ -4,31 +4,27 @@ import android.content.ClipData
 import android.os.Build
 import android.view.HapticFeedbackConstants
 import android.view.View
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -50,6 +46,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -59,6 +56,7 @@ import io.github.evative7.parley.R
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.state.CardState
 import io.github.evative7.parley.state.Hint
+import io.github.evative7.parley.state.LangPair
 import io.github.evative7.parley.state.PttPhase
 import io.github.evative7.parley.state.PttStateMachine
 import io.github.evative7.parley.state.TranslateViewModel
@@ -71,6 +69,8 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
     val elapsed = vm.elapsedMs.collectAsStateWithLifecycle()
     val clipboard = LocalClipboard.current
     val scope = rememberCoroutineScope()
+    // Which language bar slot the picker dialog is open for.
+    var picking by remember { mutableStateOf<Int?>(null) }
 
     // Going to the background (or an incoming call) ends the recording without sending it.
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { vm.onAbort() }
@@ -79,12 +79,12 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
     Surface(color = MaterialTheme.colorScheme.surface) {
         Column(Modifier.fillMaxSize()) {
             LanguageBar(
-                target = state.target,
-                onSelect = vm::setTarget,
+                langs = state.langs,
+                onPick = { picking = it },
+                onSwap = vm::swapLangs,
                 modifier = Modifier
                     .statusBarsPadding()
-                    .padding(top = 12.dp)
-                    .align(Alignment.CenterHorizontally),
+                    .padding(top = 12.dp),
             )
             Text(
                 stringResource(R.string.prototype_badge),
@@ -114,8 +114,8 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
             HintLine(
                 phase = state.phase,
                 hint = state.hint,
+                langs = state.langs,
                 elapsedMs = { elapsed.value },
-                modifier = Modifier.align(Alignment.CenterHorizontally),
             )
             PttButton(
                 phase = state.phase,
@@ -131,6 +131,15 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel()) {
                     .padding(bottom = 24.dp),
             )
         }
+    }
+
+    picking?.let { slot ->
+        LanguagePickerDialog(
+            selected = state.langs[slot],
+            other = state.langs[1 - slot],
+            onPick = { vm.setLang(slot, it); picking = null },
+            onDismiss = { picking = null },
+        )
     }
 }
 
@@ -188,26 +197,39 @@ private fun CardList(
     }
 }
 
+/** The two sides of the conversation. ASR tells which one is speaking; the other one is the target. */
 @Composable
-private fun LanguageBar(target: Lang, onSelect: (Lang) -> Unit, modifier: Modifier = Modifier) {
-    var expanded by remember { mutableStateOf(false) }
-    Box(modifier) {
-        // The source language is detected by ASR; only the target is chosen here.
-        FilledTonalButton(onClick = { expanded = true }) {
-            Text(stringResource(R.string.target_language, target.displayName()))
-            Icon(painterResource(R.drawable.ic_arrow_drop_down), null)
+private fun LanguageBar(
+    langs: LangPair,
+    onPick: (slot: Int) -> Unit,
+    onSwap: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LanguageButton(langs.first, onClick = { onPick(0) }, modifier = Modifier.weight(1f))
+        IconButton(onClick = onSwap) {
+            Icon(painterResource(R.drawable.ic_swap_horiz), stringResource(R.string.swap_languages))
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            for (lang in Lang.targets) {
-                DropdownMenuItem(
-                    text = { Text(lang.displayName()) },
-                    onClick = { onSelect(lang); expanded = false },
-                    trailingIcon = if (lang == target) {
-                        { Icon(painterResource(R.drawable.ic_check), null) }
-                    } else null,
-                )
-            }
+        LanguageButton(langs.second, onClick = { onPick(1) }, modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun LanguageButton(lang: Lang, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val motion = MaterialTheme.motionScheme
+    FilledTonalButton(onClick = onClick, modifier = modifier) {
+        AnimatedContent(
+            targetState = lang,
+            transitionSpec = { riseAndFade(motion) },
+            modifier = Modifier.weight(1f, fill = false),
+            label = "lang",
+        ) { l ->
+            Text(l.displayName(), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
+        Icon(painterResource(R.drawable.ic_arrow_drop_down), null)
     }
 }
 
@@ -229,32 +251,62 @@ private fun EmptyState(modifier: Modifier = Modifier) {
     }
 }
 
+private enum class Phrase(@StringRes val res: Int) {
+    HoldToTalk(R.string.ptt_hold_to_talk),
+    ReleaseToSend(R.string.ptt_release_to_send),
+    TimeLeft(R.string.ptt_time_left),
+    ReleaseToCancel(R.string.ptt_release_to_cancel),
+    Recognizing(R.string.ptt_recognizing),
+    Copied(R.string.ptt_copied),
+}
+
+private data class HintText(val phrase: Phrase, val seconds: Int, val langs: LangPair)
+
+/** What the button does right now, in both languages, so whoever holds the phone can read it. */
 @Composable
-private fun HintLine(phase: PttPhase, hint: Hint?, elapsedMs: () -> Long, modifier: Modifier = Modifier) {
+private fun HintLine(phase: PttPhase, hint: Hint?, langs: LangPair, elapsedMs: () -> Long) {
     val leftSec = ((PttStateMachine.MAX_RECORD_MS - elapsedMs()) / 1000 + 1).toInt()
-    val text = when {
-        phase == PttPhase.CancelArmed -> stringResource(R.string.hint_release_to_cancel)
-        phase == PttPhase.Recording && leftSec <= 10 -> stringResource(R.string.hint_time_left, leftSec)
-        hint == Hint.HoldToTalk -> stringResource(R.string.hint_hold_to_talk)
-        hint == Hint.Copied -> stringResource(R.string.copied)
-        else -> null
+    val phrase = when {
+        phase == PttPhase.CancelArmed -> Phrase.ReleaseToCancel
+        phase == PttPhase.Recording && leftSec <= 10 -> Phrase.TimeLeft
+        phase == PttPhase.Recording -> Phrase.ReleaseToSend
+        phase == PttPhase.Recognizing -> Phrase.Recognizing
+        hint == Hint.Copied -> Phrase.Copied
+        // A press while translating starts the next sentence, so it reads the same as idle.
+        else -> Phrase.HoldToTalk
     }
     val motion = MaterialTheme.motionScheme
-    Box(modifier.height(28.dp), contentAlignment = Alignment.Center) {
+    Box(
+        Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
         AnimatedContent(
-            targetState = text,
-            transitionSpec = { fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
+            targetState = HintText(phrase, if (phrase == Phrase.TimeLeft) leftSec else 0, langs),
+            transitionSpec = { riseAndFade(motion) },
             label = "hint",
         ) { t ->
-            if (t != null) {
+            val colors = MaterialTheme.colorScheme
+            val armed = t.phrase == Phrase.ReleaseToCancel
+            val first = rememberLangResources(t.langs.first).getString(t.phrase.res, t.seconds)
+            val second = rememberLangResources(t.langs.second).getString(t.phrase.res, t.seconds)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    t,
+                    first,
                     style = MaterialTheme.typography.labelLarge,
-                    color = if (phase == PttPhase.CancelArmed) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (armed) colors.error else colors.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-            } else {
-                Spacer(Modifier.size(1.dp))
+                // Languages without their own phrases fall back to English; don't print it twice.
+                if (second != first) {
+                    Text(
+                        second,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (armed) colors.error.copy(alpha = 0.72f) else colors.outline,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }
