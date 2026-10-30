@@ -105,4 +105,17 @@
     <string name="error_rate_limit">Service limit reached. Try again later.</string>
     <string name="error_network">Connection lost. Check your network.</string>
     <string name="error_service">The service returned an invalid or incomplete response</string>
+
+    <!-- Translation services -->
+    <string name="settings_translation_add">Add service</string>
+    <string name="settings_translation_empty">No translation service yet.</string>
+    <string name="settings_translation_new">New translation service</string>
+    <string name="settings_translation_edit">Edit translation service</string>
+    <string name="settings_translation_name">Name</string>
+    <string name="settings_translation_missing_name">Enter a name.</string>
+    <string name="settings_translation_choose">Choose a translation service.</string>
+    <string name="settings_translation_add_first">Add a translation service.</string>
+    <string name="settings_translation_incomplete">This service is incomplete. Edit it to fix.</string>
+    <string name="action_done">Done</string>
+    <string name="action_cancel">Cancel</string>
 </resources>

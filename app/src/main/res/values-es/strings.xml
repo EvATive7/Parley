@@ -92,4 +92,17 @@
     <string name="error_rate_limit">Se ha alcanzado el límite del servicio. Inténtalo de nuevo más tarde.</string>
     <string name="error_network">Se ha perdido la conexión. Comprueba la red.</string>
     <string name="error_service">El servicio ha devuelto una respuesta no válida o incompleta</string>
+
+    <!-- Translation services -->
+    <string name="settings_translation_add">Añadir servicio</string>
+    <string name="settings_translation_empty">Aún no hay servicios de traducción.</string>
+    <string name="settings_translation_new">Nuevo servicio de traducción</string>
+    <string name="settings_translation_edit">Editar servicio de traducción</string>
+    <string name="settings_translation_name">Nombre</string>
+    <string name="settings_translation_missing_name">Introduce un nombre.</string>
+    <string name="settings_translation_choose">Elige un servicio de traducción.</string>
+    <string name="settings_translation_add_first">Añade un servicio de traducción.</string>
+    <string name="settings_translation_incomplete">Este servicio está incompleto. Edítalo para corregirlo.</string>
+    <string name="action_done">Listo</string>
+    <string name="action_cancel">Cancelar</string>
 </resources>

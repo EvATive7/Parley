@@ -92,4 +92,17 @@
     <string name="error_rate_limit">サービスの上限に達しました。しばらくしてからもう一度お試しください。</string>
     <string name="error_network">接続が失われました。ネットワークを確認してください。</string>
     <string name="error_service">サービスから無効または不完全な応答が返されました</string>
+
+    <!-- Translation services -->
+    <string name="settings_translation_add">サービスを追加</string>
+    <string name="settings_translation_empty">翻訳サービスがまだありません。</string>
+    <string name="settings_translation_new">新しい翻訳サービス</string>
+    <string name="settings_translation_edit">翻訳サービスを編集</string>
+    <string name="settings_translation_name">名前</string>
+    <string name="settings_translation_missing_name">名前を入力してください。</string>
+    <string name="settings_translation_choose">翻訳サービスを選択してください。</string>
+    <string name="settings_translation_add_first">翻訳サービスを追加してください。</string>
+    <string name="settings_translation_incomplete">このサービスの設定が不完全です。編集してください。</string>
+    <string name="action_done">完了</string>
+    <string name="action_cancel">キャンセル</string>
 </resources>

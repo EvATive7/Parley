@@ -79,4 +79,17 @@
     <string name="error_rate_limit">服務限流或額度不足，請稍後重試</string>
     <string name="error_network">連線中斷，請檢查網路</string>
     <string name="error_service">服務傳回了無效或不完整的結果</string>
+
+    <!-- Translation services -->
+    <string name="settings_translation_add">新增服務</string>
+    <string name="settings_translation_empty">尚無翻譯服務。</string>
+    <string name="settings_translation_new">新增翻譯服務</string>
+    <string name="settings_translation_edit">編輯翻譯服務</string>
+    <string name="settings_translation_name">名稱</string>
+    <string name="settings_translation_missing_name">請輸入名稱。</string>
+    <string name="settings_translation_choose">請選擇一個翻譯服務。</string>
+    <string name="settings_translation_add_first">請新增一個翻譯服務。</string>
+    <string name="settings_translation_incomplete">所選服務的設定不完整，請編輯。</string>
+    <string name="action_done">完成</string>
+    <string name="action_cancel">取消</string>
 </resources>

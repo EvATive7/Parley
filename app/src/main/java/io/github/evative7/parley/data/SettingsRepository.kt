@@ -33,6 +33,8 @@ private object SettingsKeys {
     val llmUrl = stringPreferencesKey("llm_url")
     val llmModel = stringPreferencesKey("llm_model")
     val llmKey = stringPreferencesKey("llm_key_encrypted")
+    val translationPresets = stringPreferencesKey("translation_presets")
+    val translationPresetId = stringPreferencesKey("translation_preset_id")
 
     // M2 keys, removed after migration.
     val legacyAsrUrl = stringPreferencesKey("asr_url")
@@ -69,6 +71,23 @@ class SettingsRepository @Inject constructor(
             unreadable = true
             ""
         }
+        val translationUrl = p[SettingsKeys.llmUrl] ?: defaults.translationUrl
+        val translationModel = p[SettingsKeys.llmModel] ?: defaults.translationModel
+        val translationKey = decrypt(p[SettingsKeys.llmKey].orEmpty(), SettingsKeys.llmKey.name)
+        val storedPresets = p[SettingsKeys.translationPresets]
+        val (presets, presetId) = when {
+            storedPresets != null -> try {
+                decodePresets(storedPresets, ::decrypt) to p[SettingsKeys.translationPresetId]
+            } catch (_: Exception) {
+                unreadable = true
+                emptyList<TranslationPreset>() to null
+            }
+            // Saved before presets existed: the one configured service becomes the first preset.
+            p[SettingsKeys.llmUrl] != null -> listOf(
+                TranslationPreset(MIGRATED_PRESET_ID, translationModel, translationUrl, translationModel, translationKey),
+            ) to MIGRATED_PRESET_ID
+            else -> emptyList<TranslationPreset>() to null
+        }
         return ServiceSettings(
             asrService = AsrService.fromId(p[SettingsKeys.asrService]),
             dashScopeRegion = DashScopeRegion.fromName(p[SettingsKeys.dashScopeRegion]),
@@ -76,9 +95,11 @@ class SettingsRepository @Inject constructor(
             openAiAsrKey = decrypt(p[SettingsKeys.openAiAsrKey].orEmpty(), SettingsKeys.openAiAsrKey.name),
             volcAppId = p[SettingsKeys.volcAppId].orEmpty(),
             volcAccessToken = decrypt(p[SettingsKeys.volcAccessToken].orEmpty(), SettingsKeys.volcAccessToken.name),
-            translationUrl = p[SettingsKeys.llmUrl] ?: defaults.translationUrl,
-            translationModel = p[SettingsKeys.llmModel] ?: defaults.translationModel,
-            translationKey = decrypt(p[SettingsKeys.llmKey].orEmpty(), SettingsKeys.llmKey.name),
+            translationUrl = translationUrl,
+            translationModel = translationModel,
+            translationKey = translationKey,
+            translationPresets = presets,
+            translationPresetId = presetId?.takeIf { id -> presets.any { it.id == id } },
             storageError = unreadable,
         )
     }
@@ -105,6 +126,7 @@ class SettingsRepository @Inject constructor(
         val encryptedOpenAi = vault.encrypt(value.openAiAsrKey, SettingsKeys.openAiAsrKey.name)
         val encryptedVolc = vault.encrypt(value.volcAccessToken, SettingsKeys.volcAccessToken.name)
         val encryptedLlm = vault.encrypt(value.translationKey, SettingsKeys.llmKey.name)
+        val encodedPresets = encodePresets(value.translationPresets, vault::encrypt)
         store.edit { p ->
             p[SettingsKeys.asrService] = value.asrService.id
             p[SettingsKeys.dashScopeRegion] = value.dashScopeRegion.name
@@ -115,9 +137,14 @@ class SettingsRepository @Inject constructor(
             p[SettingsKeys.llmUrl] = value.translationUrl.trimEnd('/')
             p[SettingsKeys.llmModel] = value.translationModel
             p[SettingsKeys.llmKey] = encryptedLlm
+            p[SettingsKeys.translationPresets] = encodedPresets
+            val presetId = value.translationPresetId
+            if (presetId != null) p[SettingsKeys.translationPresetId] = presetId else p.remove(SettingsKeys.translationPresetId)
         }
     }
 }
+
+private const val MIGRATED_PRESET_ID = "migrated"
 
 internal data class LegacyAsrMigration(val region: DashScopeRegion, val key: String)
 

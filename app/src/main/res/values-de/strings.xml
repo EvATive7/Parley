@@ -92,4 +92,17 @@
     <string name="error_rate_limit">Das Dienstlimit wurde erreicht. Versuche es später erneut.</string>
     <string name="error_network">Verbindung unterbrochen. Prüfe deine Netzwerkverbindung.</string>
     <string name="error_service">Der Dienst hat eine ungültige oder unvollständige Antwort zurückgegeben</string>
+
+    <!-- Translation services -->
+    <string name="settings_translation_add">Dienst hinzufügen</string>
+    <string name="settings_translation_empty">Noch kein Übersetzungsdienst.</string>
+    <string name="settings_translation_new">Neuer Übersetzungsdienst</string>
+    <string name="settings_translation_edit">Übersetzungsdienst bearbeiten</string>
+    <string name="settings_translation_name">Name</string>
+    <string name="settings_translation_missing_name">Gib einen Namen ein.</string>
+    <string name="settings_translation_choose">Wähle einen Übersetzungsdienst.</string>
+    <string name="settings_translation_add_first">Füge einen Übersetzungsdienst hinzu.</string>
+    <string name="settings_translation_incomplete">Dieser Dienst ist unvollständig. Bearbeite ihn, um das zu beheben.</string>
+    <string name="action_done">Fertig</string>
+    <string name="action_cancel">Abbrechen</string>
 </resources>

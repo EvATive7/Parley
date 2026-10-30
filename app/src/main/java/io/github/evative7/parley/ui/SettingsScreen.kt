@@ -37,12 +37,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecureTextField
 import androidx.compose.material3.SnackbarDuration
@@ -79,6 +82,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.evative7.parley.R
@@ -87,6 +91,7 @@ import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.asr.DashScopeRegion
 import io.github.evative7.parley.data.ServiceSettings
 import io.github.evative7.parley.data.SettingsError
+import io.github.evative7.parley.data.TranslationPreset
 import io.github.evative7.parley.state.SettingsViewModel
 
 /** Service settings: one card per service; storage trouble surfaces as a snackbar. */
@@ -116,7 +121,7 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     var revision by remember(saved) { mutableIntStateOf(0) }
     val dirty = draft != baseline
     val errors = draft.validationErrors()
-    val shown = if (attempted) errors else errors.filter { it == SettingsError.TranslationUrl }
+    val shown = if (attempted) errors else emptyList()
     val leave = { if (dirty) confirmDiscard = true else onBack() }
     BackHandler(enabled = !saving) { leave() }
 
@@ -204,16 +209,14 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                     title = stringResource(R.string.settings_translation),
                     provider = stringResource(R.string.settings_translation_provider),
                 ) {
-                    SettingField(
-                        stringResource(R.string.settings_base_url), draft.translationUrl, !saving,
-                        SettingsError.TranslationUrl.shownIn(shown), placeholder = ServiceSettings().translationUrl,
-                    ) { draft = draft.copy(translationUrl = it) }
-                    SettingField(stringResource(R.string.settings_model), draft.translationModel, !saving, SettingsError.TranslationModel.shownIn(shown)) {
-                        draft = draft.copy(translationModel = it)
-                    }
-                    SecretField(stringResource(R.string.settings_key), draft.translationKey, !saving, SettingsError.TranslationKey.shownIn(shown)) {
-                        draft = draft.copy(translationKey = it)
-                    }
+                    TranslationServiceList(
+                        draft = draft,
+                        enabled = !saving,
+                        showError = shown.any { it in TranslationErrors },
+                        onSelect = { draft = draft.selectTranslation(it) },
+                        onSave = { draft = draft.putTranslationPreset(it) },
+                        onDelete = { draft = draft.removeTranslationPreset(it.id) },
+                    )
                 }
             }
 
@@ -434,6 +437,155 @@ private fun ServiceCard(
     }
 }
 
+private val TranslationErrors = setOf(SettingsError.TranslationUrl, SettingsError.TranslationModel, SettingsError.TranslationKey)
+
+/**
+ * The saved translation services; the selected one is used. Selecting, adding, editing and
+ * deleting all change the draft, so they are applied (or undone) with the rest of the page.
+ */
+@Composable
+private fun TranslationServiceList(
+    draft: ServiceSettings,
+    enabled: Boolean,
+    showError: Boolean,
+    onSelect: (TranslationPreset) -> Unit,
+    onSave: (TranslationPreset) -> Unit,
+    onDelete: (TranslationPreset) -> Unit,
+) {
+    var editing by remember { mutableStateOf<TranslationPreset?>(null) }
+    val colors = MaterialTheme.colorScheme
+    val presets = draft.translationPresets
+
+    if (presets.isEmpty()) {
+        Text(
+            stringResource(R.string.settings_translation_empty),
+            style = MaterialTheme.typography.bodyMedium,
+            color = colors.onSurfaceVariant,
+        )
+    }
+    presets.forEach { preset ->
+        val selected = preset.id == draft.translationPresetId
+        Surface(
+            selected = selected,
+            onClick = { onSelect(preset) },
+            enabled = enabled,
+            shape = MaterialTheme.shapes.large,
+            color = if (selected) colors.secondaryContainer else colors.surfaceContainerHighest,
+            modifier = Modifier.fillMaxWidth().semantics { role = Role.RadioButton },
+        ) {
+            Row(Modifier.heightIn(min = FieldHeight), verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(selected = selected, onClick = null, enabled = enabled, modifier = Modifier.padding(horizontal = 14.dp))
+                Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
+                    Text(
+                        preset.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = colors.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        "${preset.model} · ${preset.host}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                IconButton(onClick = { editing = preset }, enabled = enabled, modifier = Modifier.padding(end = 4.dp)) {
+                    Icon(painterResource(R.drawable.ic_edit), stringResource(R.string.settings_translation_edit))
+                }
+            }
+        }
+    }
+    if (showError) {
+        Text(
+            stringResource(when {
+                presets.isEmpty() -> R.string.settings_translation_add_first
+                draft.selectedTranslation == null -> R.string.settings_translation_choose
+                else -> R.string.settings_translation_incomplete
+            }),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.error,
+        )
+    }
+    FilledTonalButton(
+        onClick = { editing = TranslationPreset(name = "", url = "", model = "", key = "") },
+        enabled = enabled,
+    ) {
+        Icon(painterResource(R.drawable.ic_add), null, Modifier.size(ButtonDefaults.IconSize))
+        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+        Text(stringResource(R.string.settings_translation_add))
+    }
+
+    editing?.let { preset ->
+        val isNew = presets.none { it.id == preset.id }
+        TranslationServiceDialog(
+            initial = preset,
+            isNew = isNew,
+            onDismiss = { editing = null },
+            onSave = { onSave(it); editing = null },
+            onDelete = if (isNew) null else ({ onDelete(preset); editing = null }),
+        )
+    }
+}
+
+@Composable
+private fun TranslationServiceDialog(
+    initial: TranslationPreset,
+    isNew: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (TranslationPreset) -> Unit,
+    onDelete: (() -> Unit)?,
+) {
+    var preset by remember(initial) { mutableStateOf(initial) }
+    var attempted by remember(initial) { mutableStateOf(false) }
+    val errors = preset.validationErrors()
+    // Missing fields wait for Done; a malformed URL is pointed out as soon as one is typed.
+    val shown = if (attempted) errors else errors.filter { it == SettingsError.TranslationUrl && preset.url.isNotEmpty() }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(if (isNew) R.string.settings_translation_new else R.string.settings_translation_edit)) },
+        text = {
+            Column(
+                Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                SettingField(
+                    stringResource(R.string.settings_translation_name), preset.name, true,
+                    SettingsError.PresetName.shownIn(shown), keyboardType = KeyboardType.Text,
+                ) { preset = preset.copy(name = it) }
+                SettingField(
+                    stringResource(R.string.settings_base_url), preset.url, true,
+                    SettingsError.TranslationUrl.shownIn(shown), placeholder = ServiceSettings().translationUrl,
+                ) { preset = preset.copy(url = it.trimEnd('/')) }
+                SettingField(
+                    stringResource(R.string.settings_model), preset.model, true,
+                    SettingsError.TranslationModel.shownIn(shown), placeholder = ServiceSettings().translationModel,
+                ) { preset = preset.copy(model = it) }
+                SecretField(stringResource(R.string.settings_key), preset.key, true, SettingsError.TranslationKey.shownIn(shown)) {
+                    preset = preset.copy(key = it)
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { if (errors.isEmpty()) onSave(preset) else attempted = true }) {
+                Text(stringResource(R.string.action_done))
+            }
+        },
+        dismissButton = {
+            Row {
+                if (onDelete != null) {
+                    TextButton(
+                        onClick = onDelete,
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    ) { Text(stringResource(R.string.action_delete)) }
+                }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+            }
+        },
+    )
+}
+
 /** Takes effect at once, outside the service form's save/undo. */
 @Composable
 private fun DebugModeCard(enabled: Boolean, onChange: (Boolean) -> Unit) {
@@ -512,6 +664,7 @@ private fun SettingsError.message(): String = stringResource(when (this) {
     SettingsError.TranslationUrl -> R.string.settings_invalid_translation_url
     SettingsError.TranslationModel -> R.string.settings_missing_model
     SettingsError.TranslationKey -> R.string.settings_missing_key
+    SettingsError.PresetName -> R.string.settings_translation_missing_name
 })
 
 /** Taller than the 56dp default, which looks cramped on the roomy cards. */
