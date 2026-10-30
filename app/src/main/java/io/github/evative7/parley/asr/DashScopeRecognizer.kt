@@ -1,6 +1,7 @@
 package io.github.evative7.parley.asr
 
 import io.github.evative7.parley.data.ServiceSettingsSource
+import io.github.evative7.parley.debug.DebugLog
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
 import io.github.evative7.parley.network.httpFailure
@@ -46,6 +47,7 @@ class DashScopeRecognizer @Inject constructor(
         val config = dashScopeConfig(saved.dashScopeRegion.host, saved.dashScopeKey)
         if (spare?.isUsableFor(config) == true) return
         spare?.close()
+        DebugLog.log(TAG) { "opening spare socket" }
         spare = WarmSocket(client, config, onDied = ::spareDied)
     }
 
@@ -64,18 +66,24 @@ class DashScopeRecognizer @Inject constructor(
         }
         val warm = synchronized(this) { spare.also { spare = null } }
         if (warm != null && !warm.isUsableFor(config)) warm.close()
-        return DashScopeSession(client, config, warm?.takeIf { it.isUsableFor(config) })
+        val adopted = warm?.takeIf { it.isUsableFor(config) }
+        DebugLog.log(TAG) { if (adopted != null) "session on spare socket" else "session on new socket (no usable spare)" }
+        return DashScopeSession(client, config, adopted, DebugLog.sink(TAG))
     }
 
     /** The provider drops idle sockets; keep one ready while the screen is visible. */
     private fun spareDied(socket: WarmSocket, ageMs: Long): Unit = synchronized(this) {
         if (spare !== socket) return
         spare = null
+        DebugLog.log(TAG) { "spare socket died after $ageMs ms" }
         // A socket rejected at once (bad key, no network) is not retried until the next press.
         if (foreground && ageMs >= MIN_SPARE_LIFETIME_MS) prepare()
     }
 
-    private companion object { const val MIN_SPARE_LIFETIME_MS = 10_000L }
+    private companion object {
+        const val MIN_SPARE_LIFETIME_MS = 10_000L
+        const val TAG = "DashScope"
+    }
 }
 
 internal const val DASHSCOPE_MODEL = "fun-asr-realtime"
@@ -105,7 +113,7 @@ internal class DashScopeBufferedSession(
         val (session, audio) = synchronized(lock) {
             check(!closed)
             closed = true
-            DashScopeSession(client, config).also { delegate = it } to frames.toList()
+            DashScopeSession(client, config, diagnostics = DebugLog.sink("DashScope")).also { delegate = it } to frames.toList()
         }
         audio.forEach(session::feed)
         return session.finish()

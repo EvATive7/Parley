@@ -58,6 +58,16 @@
     <string name="settings_show_key">顯示 Key</string>
     <string name="settings_hide_key">隱藏 Key</string>
     <string name="settings_unsaved">有未儲存的變更</string>
+
+    <!-- Debug mode -->
+    <string name="settings_debug_mode">偵錯模式</string>
+    <string name="settings_debug_mode_body">懸浮顯示應用程式每一步做了什麼、花了多久。日誌只保存在記憶體中，不記錄金鑰。</string>
+    <string name="debug_log_title">日誌</string>
+    <string name="debug_log_empty">尚無日誌</string>
+    <string name="debug_log_copy">複製日誌</string>
+    <string name="debug_log_clear">清除日誌</string>
+    <string name="debug_log_collapse">收合日誌</string>
+    <string name="debug_log_expand">展開日誌</string>
     <string name="settings_revert">復原</string>
     <string name="settings_discard_title">捨棄變更？</string>
     <string name="settings_discard_body">本頁所做的修改將不會儲存。</string>

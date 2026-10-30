@@ -1,6 +1,7 @@
 package io.github.evative7.parley.asr
 
 import io.github.evative7.parley.data.ServiceSettingsSource
+import io.github.evative7.parley.debug.DebugLog
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
 import javax.inject.Inject
@@ -41,6 +42,7 @@ class RoutingRecognizer internal constructor(
         synchronized(this) {
             val service = settings.current?.takeIf { it.isReady }?.asrService
             if (service == null) {
+                DebugLog.log(TAG) { "prepare skipped: settings not ready" }
                 preparedRecognizer?.release()
                 preparedRecognizer = null
                 preparedService = null
@@ -52,6 +54,7 @@ class RoutingRecognizer internal constructor(
                 preparedService = service
                 preparedRecognizer = recognizer
             }
+            DebugLog.log(TAG) { "prepare ${service.id}" }
             recognizer.prepare()
         }
     }
@@ -71,6 +74,9 @@ class RoutingRecognizer internal constructor(
             preparedService = service
             preparedRecognizer = recognizer
         }
+        DebugLog.log(TAG) { "open ${service.id}" }
         return recognizer.open(lang)
     }
+
+    private companion object { const val TAG = "ASR" }
 }

@@ -84,6 +84,16 @@
     <string name="settings_show_key">Show key</string>
     <string name="settings_hide_key">Hide key</string>
     <string name="settings_unsaved">Unsaved changes</string>
+
+    <!-- Debug mode -->
+    <string name="settings_debug_mode">Debug mode</string>
+    <string name="settings_debug_mode_body">Shows a floating log of each step and how long it takes. Kept in memory only; keys are never logged.</string>
+    <string name="debug_log_title">Log</string>
+    <string name="debug_log_empty">No events yet</string>
+    <string name="debug_log_copy">Copy log</string>
+    <string name="debug_log_clear">Clear log</string>
+    <string name="debug_log_collapse">Minimize log</string>
+    <string name="debug_log_expand">Show log</string>
     <string name="settings_revert">Undo</string>
     <string name="settings_discard_title">Discard changes?</string>
     <string name="settings_discard_body">The changes you made on this page will be lost.</string>

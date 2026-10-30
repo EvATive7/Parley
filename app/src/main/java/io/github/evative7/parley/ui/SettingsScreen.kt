@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
@@ -47,6 +48,7 @@ import androidx.compose.material3.SecureTextField
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -93,6 +95,7 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     val config by vm.settings.collectAsStateWithLifecycle()
     val saving by vm.saving.collectAsStateWithLifecycle()
     val saveFailed by vm.saveFailed.collectAsStateWithLifecycle()
+    val debugMode by vm.debugMode.collectAsStateWithLifecycle()
 
     val saved = config
     if (saved == null) {
@@ -213,6 +216,8 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                     }
                 }
             }
+
+            DebugModeCard(debugMode, onChange = vm::setDebugMode)
 
             PrivacyNote()
         }
@@ -425,6 +430,35 @@ private fun ServiceCard(
             if (hint != null) {
                 Text(hint, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
+        }
+    }
+}
+
+/** Takes effect at once, outside the service form's save/undo. */
+@Composable
+private fun DebugModeCard(enabled: Boolean, onChange: (Boolean) -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Surface(shape = MaterialTheme.shapes.extraLarge, color = colors.surfaceContainerLow) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .toggleable(value = enabled, role = Role.Switch, onValueChange = onChange)
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                Modifier.size(40.dp).clip(CircleShape).background(colors.secondaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(R.drawable.ic_bug), null, Modifier.size(22.dp), tint = colors.onSecondaryContainer)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.settings_debug_mode), style = MaterialTheme.typography.titleMedium, color = colors.onSurface)
+                Text(stringResource(R.string.settings_debug_mode_body), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            }
+            Spacer(Modifier.width(12.dp))
+            Switch(checked = enabled, onCheckedChange = null)
         }
     }
 }

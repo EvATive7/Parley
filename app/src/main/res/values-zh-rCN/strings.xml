@@ -82,6 +82,16 @@
     <string name="settings_show_key">显示 Key</string>
     <string name="settings_hide_key">隐藏 Key</string>
     <string name="settings_unsaved">有未保存的更改</string>
+
+    <!-- Debug mode -->
+    <string name="settings_debug_mode">调试模式</string>
+    <string name="settings_debug_mode_body">悬浮显示应用每一步做了什么、花了多久。日志只保存在内存中，不记录密钥。</string>
+    <string name="debug_log_title">日志</string>
+    <string name="debug_log_empty">暂无日志</string>
+    <string name="debug_log_copy">复制日志</string>
+    <string name="debug_log_clear">清空日志</string>
+    <string name="debug_log_collapse">收起日志</string>
+    <string name="debug_log_expand">展开日志</string>
     <string name="settings_revert">撤销</string>
     <string name="settings_discard_title">放弃更改？</string>
     <string name="settings_discard_body">本页所做的修改将不会保存。</string>

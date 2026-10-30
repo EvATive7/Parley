@@ -1,6 +1,7 @@
 package io.github.evative7.parley.translate
 
 import io.github.evative7.parley.data.ServiceSettingsSource
+import io.github.evative7.parley.debug.DebugLog
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
@@ -46,9 +47,16 @@ class OpenAiCompatibleTranslator @Inject constructor(
         warmedUrl = config.translationUrl
         warmedAt = now
         val request = Request.Builder().url(config.translationUrl).head().build()
+        DebugLog.log(TAG) { "warming connection to ${request.url.host}" }
         client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) = Unit
-            override fun onResponse(call: Call, response: Response) = response.close()
+            override fun onFailure(call: Call, e: IOException) {
+                DebugLog.log(TAG) { "warm-up failed after ${(System.nanoTime() - now) / 1_000_000} ms: ${e.javaClass.simpleName}" }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                DebugLog.log(TAG) { "connection warm in ${(System.nanoTime() - now) / 1_000_000} ms" }
+                response.close()
+            }
         })
     }
 
@@ -82,7 +90,7 @@ class OpenAiCompatibleTranslator @Inject constructor(
             .build()
         var completed = false
         var hasText = false
-        client.newCall(request).sseEvents().transformWhile { event ->
+        client.newCall(request).sseEvents(TAG).transformWhile { event ->
             val chunk = parseChunk(event)
             if (chunk.text.isNotEmpty()) emit(chunk.text)
             completed = chunk.done
@@ -117,6 +125,7 @@ class OpenAiCompatibleTranslator @Inject constructor(
     }
 
     private companion object {
+        const val TAG = "Translate"
         // OkHttp keeps an idle connection for five minutes; the provider may close it sooner.
         const val WARM_INTERVAL_NS = 60_000_000_000L
     }

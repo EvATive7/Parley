@@ -1,5 +1,6 @@
 package io.github.evative7.parley.network
 
+import io.github.evative7.parley.debug.DebugLog
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
@@ -27,23 +28,32 @@ internal fun readSse(source: BufferedSource, emit: (String) -> Boolean) {
     // An incomplete event at EOF is not dispatched.
 }
 
-internal fun Call.sseEvents() = callbackFlow {
+/** [tag] labels debug-mode timings; nothing from the request or response body is logged. */
+internal fun Call.sseEvents(tag: String = "SSE") = callbackFlow {
     val call = this@sseEvents
+    val sentAt = System.nanoTime()
+    fun elapsed() = (System.nanoTime() - sentAt) / 1_000_000
+    DebugLog.log(tag) { "request sent to ${call.request().url.host}" }
     call.enqueue(object : Callback {
         override fun onFailure(call: Call, e: IOException) {
+            DebugLog.log(tag) { "request failed after ${elapsed()} ms: ${e.javaClass.simpleName}" }
             close(networkFailure(e))
         }
 
         override fun onResponse(call: Call, response: Response) {
+            DebugLog.log(tag) { "HTTP ${response.code} headers after ${elapsed()} ms (${response.protocol})" }
             try {
                 response.use {
                     if (!it.isSuccessful) throw httpFailure(it.code)
                     if (it.body?.contentType()?.subtype != "event-stream") {
                         throw ServiceException(ServiceFailure.Response)
                     }
+                    var events = 0
                     readSse(it.body!!.source()) { event ->
+                        if (events++ == 0) DebugLog.log(tag) { "first SSE event after ${elapsed()} ms" }
                         trySendBlocking(event).isSuccess && event != "[DONE]"
                     }
+                    DebugLog.log(tag) { "stream closed after ${elapsed()} ms, $events events" }
                 }
                 close()
             } catch (e: Exception) {

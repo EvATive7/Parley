@@ -10,12 +10,16 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.evative7.parley.ui.DebugOverlay
 import io.github.evative7.parley.ui.OnboardingScreen
 import io.github.evative7.parley.ui.TranslateScreen
 import io.github.evative7.parley.ui.theme.ParleyTheme
@@ -30,12 +34,15 @@ class MainActivity : ComponentActivity() {
                 // Checked silently on start; no dialog unless the user asks for one on the onboarding page.
                 // Revoking the permission in system settings kills the process, so this re-runs then.
                 var granted by remember { mutableStateOf(hasMicPermission()) }
-                AnimatedContent(
-                    targetState = granted,
-                    transitionSpec = { fadeIn() togetherWith fadeOut() },
-                    label = "root",
-                ) { ok ->
-                    if (ok) TranslateScreen() else OnboardingScreen(onGranted = { granted = true })
+                Box(Modifier.fillMaxSize()) {
+                    AnimatedContent(
+                        targetState = granted,
+                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        label = "root",
+                    ) { ok ->
+                        if (ok) TranslateScreen() else OnboardingScreen(onGranted = { granted = true })
+                    }
+                    DebugOverlay()
                 }
             }
         }

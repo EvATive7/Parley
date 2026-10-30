@@ -7,6 +7,7 @@ import io.github.evative7.parley.asr.RecognitionSession
 import io.github.evative7.parley.asr.SpeechRecognizer
 import io.github.evative7.parley.audio.AudioSource
 import io.github.evative7.parley.audio.VolumeMeter
+import io.github.evative7.parley.debug.DebugLog
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.model.LanguageDetector
 import io.github.evative7.parley.network.ServiceException
@@ -56,6 +57,9 @@ class TranslateViewModel @Inject constructor(
     private var activeId = -1L
     private var nextId = 0L
     private var pressedAt = 0L
+    // Debug-mode timings for the current press.
+    private var releasedAt = 0L
+    private var frameCount = 0
 
     fun onPress() = dispatch(PttEvent.Press)
     fun onDrag(armed: Boolean) = dispatch(PttEvent.Drag(armed))
@@ -64,12 +68,14 @@ class TranslateViewModel @Inject constructor(
 
     /** The screen is visible: connect ahead of the next press so the handshake is not after it. */
     fun onForeground() {
+        DebugLog.log(TAG) { "foreground: prepare ASR and translation connections" }
         recognizer.prepare()
         translator.prepare()
     }
 
     /** Going to the background (or an incoming call) ends the recording without sending it. */
     fun onBackground() {
+        DebugLog.log(TAG) { "background: abort and release ASR" }
         onAbort()
         recognizer.release()
     }
@@ -80,6 +86,7 @@ class TranslateViewModel @Inject constructor(
             it.id == id && it.stage == CardStage.Error && it.canRetry
         } ?: return
         activeId = card.id
+        DebugLog.log(TAG) { "#${card.id} retry translation" }
         dispatch(PttEvent.Retry)
     }
 
@@ -102,8 +109,12 @@ class TranslateViewModel @Inject constructor(
     }
 
     private fun dispatch(event: PttEvent) {
-        val transition = PttStateMachine.reduce(_state.value.phase, event)
+        val from = _state.value.phase
+        val transition = PttStateMachine.reduce(from, event)
         _state.update { it.copy(phase = transition.phase) }
+        if (transition.phase != from || transition.effects.isNotEmpty()) {
+            DebugLog.log("State") { "$from → ${transition.phase} on $event" }
+        }
         transition.effects.forEach(::perform)
     }
 
@@ -114,11 +125,13 @@ class TranslateViewModel @Inject constructor(
             PttEffect.Resubmit -> _state.value.cards.firstOrNull { it.id == activeId }
                 ?.takeIf { it.canRetry }
                 ?.let { card ->
+                    releasedAt = clock.nowMs()
                     updateCard(card.id) { copy(stage = CardStage.Translating, translation = "", error = null) }
                     pipelineJob = viewModelScope.launch { translate(card.id, card.source, card.sourceLang) }
                 }
             is PttEffect.Discard -> discard()
             PttEffect.InterruptTranslation -> {
+                DebugLog.log(TAG) { "#$activeId translation interrupted by a new press" }
                 pipelineJob?.cancel()
                 updateCard(activeId) { copy(stage = CardStage.Done, canRetry = false) }
             }
@@ -127,6 +140,7 @@ class TranslateViewModel @Inject constructor(
 
     private fun startRecording() {
         pressedAt = clock.nowMs()
+        frameCount = 0
         meter.reset()
         _elapsedMs.value = 0
         val id = nextId++
@@ -134,22 +148,32 @@ class TranslateViewModel @Inject constructor(
         _state.update { s ->
             s.copy(hint = null, cards = listOf(CardState(id, s.langs, CardStage.Listening)) + s.cards)
         }
+        DebugLog.log(TAG) { "#$id press: open ASR session (streaming=${recognizer.isStreaming})" }
         val currentSession = try {
             recognizer.open(lang = null)
         } catch (e: Exception) {
-            fail(id, e.errorKind())
+            fail(id, e.errorKind(), e)
             return
         }
+        DebugLog.log(TAG) { "#$id ASR session opened +${sincePress()} ms" }
         session = currentSession
         recordJob = viewModelScope.launch {
             launch {
-                currentSession.partials.collect { text -> updateCard(id) { copy(source = text) } }
+                var first = true
+                currentSession.partials.collect { text ->
+                    if (first && text.isNotEmpty()) {
+                        first = false
+                        DebugLog.log(TAG) { "#$id first partial +${sincePress()} ms (${text.length} chars)" }
+                    }
+                    updateCard(id) { copy(source = text) }
+                }
             }
             launch {
                 while (true) {
                     val elapsed = clock.nowMs() - pressedAt
                     _elapsedMs.value = elapsed
                     if (elapsed >= PttStateMachine.MAX_RECORD_MS) {
+                        DebugLog.log(TAG) { "#$id recording time limit reached" }
                         dispatch(PttEvent.TimeLimit)
                         return@launch
                     }
@@ -157,16 +181,17 @@ class TranslateViewModel @Inject constructor(
                 }
             }
             try {
-                recorder.frames().catch { throw MicrophoneFailure() }.collect { pcm ->
+                recorder.frames().catch { throw MicrophoneFailure(it) }.collect { pcm ->
+                    if (frameCount++ == 0) DebugLog.log(TAG) { "#$id first mic frame +${sincePress()} ms" }
                     _volume.value = meter.process(pcm)
                     currentSession.feed(pcm)
                 }
                 // A microphone stream ending before release is also a recording failure.
-                fail(id, ErrorKind.Microphone)
+                fail(id, ErrorKind.Microphone, IllegalStateException("microphone stream ended"))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                fail(id, e.errorKind())
+                fail(id, e.errorKind(), e)
             }
         }
     }
@@ -183,6 +208,10 @@ class TranslateViewModel @Inject constructor(
         val currentSession = session ?: return
         val id = activeId
         val stopped = stopRecording()
+        releasedAt = clock.nowMs()
+        DebugLog.log(TAG) {
+            "#$id release: recorded ${releasedAt - pressedAt} ms, $frameCount frames; waiting for final transcript"
+        }
         updateCard(id) { copy(stage = CardStage.Recognizing) }
         pipelineJob = viewModelScope.launch {
             val transcript = try {
@@ -192,20 +221,24 @@ class TranslateViewModel @Inject constructor(
                     currentSession.finish()
                 }
             } catch (e: CancellationException) {
-                if (e is TimeoutCancellationException) { fail(id, ErrorKind.Timeout); return@launch }
+                if (e is TimeoutCancellationException) { fail(id, ErrorKind.Timeout, e); return@launch }
                 throw e
             } catch (e: Exception) {
-                fail(id, e.errorKind())
+                fail(id, e.errorKind(), e)
                 return@launch
             } finally {
                 currentSession.cancel()
                 if (session === currentSession) session = null
                 recognizer.prepare()
             }
+            DebugLog.log(TAG) {
+                "#$id final transcript +${sinceRelease()} ms after release (${transcript.text.length} chars)"
+            }
             if (transcript.text.isBlank()) {
                 fail(id, ErrorKind.NoSpeech)
                 return@launch
             }
+            val detectStart = clock.nowMs()
             val sourceLang = transcript.lang ?: withTimeoutOrNull(1_500) {
                 try {
                     detector.detect(transcript.text)
@@ -214,6 +247,10 @@ class TranslateViewModel @Inject constructor(
                 } catch (_: Exception) {
                     null // Short or ambiguous text may not have a reliable language ID.
                 }
+            }
+            DebugLog.log(TAG) {
+                if (transcript.lang != null) "#$id language ${transcript.lang.tag} from ASR"
+                else "#$id language detected: ${sourceLang?.tag ?: "unknown"} in ${clock.nowMs() - detectStart} ms"
             }
             updateCard(id) {
                 copy(
@@ -232,24 +269,35 @@ class TranslateViewModel @Inject constructor(
     private suspend fun translate(id: Long, text: String, from: Lang?) {
         val card = _state.value.cards.firstOrNull { it.id == id } ?: return
         val to = card.target ?: card.langs.targetFor(from)
+        val start = clock.nowMs()
+        var chunks = 0
+        var chars = 0
+        DebugLog.log(TAG) { "#$id translate ${from?.tag ?: "auto"} → ${to.tag} (${text.length} chars)" }
         try {
             withTimeout(TIMEOUT_MS) {
                 translator.translate(text, from, to).collect { fragment ->
+                    if (chunks++ == 0) DebugLog.log(TAG) { "#$id first translated text +${clock.nowMs() - start} ms" }
+                    chars += fragment.length
                     updateCard(id) { copy(translation = translation + fragment) }
                 }
             }
         } catch (e: CancellationException) {
-            if (e is TimeoutCancellationException) { fail(id, ErrorKind.Timeout); return }
+            if (e is TimeoutCancellationException) { fail(id, ErrorKind.Timeout, e); return }
             throw e
         } catch (e: Exception) {
-            fail(id, e.errorKind())
+            fail(id, e.errorKind(), e)
             return
+        }
+        DebugLog.log(TAG) {
+            "#$id translation done in ${clock.nowMs() - start} ms ($chars chars, $chunks chunks); " +
+                "release → done ${sinceRelease()} ms"
         }
         updateCard(id) { copy(stage = CardStage.Done, canRetry = false) }
         if (id == activeId) dispatch(PttEvent.Translated)
     }
 
     private fun discard() {
+        DebugLog.log(TAG) { "#$activeId discarded after ${sincePress()} ms" }
         stopRecording()
         session?.cancel()
         session = null
@@ -257,8 +305,11 @@ class TranslateViewModel @Inject constructor(
         _state.update { s -> s.copy(cards = s.cards.filterNot { it.id == activeId }) }
     }
 
-    private fun fail(id: Long, kind: ErrorKind) {
+    private fun fail(id: Long, kind: ErrorKind, cause: Throwable? = null) {
         if (id != activeId) return
+        DebugLog.log(TAG) {
+            "#$id failed: $kind" + (cause?.let { " (${it.javaClass.simpleName}: ${it.message})" } ?: "")
+        }
         stopRecording()
         session?.cancel()
         session = null
@@ -290,9 +341,13 @@ class TranslateViewModel @Inject constructor(
         else -> ErrorKind.Unknown
     }
 
-    private class MicrophoneFailure : Exception()
+    private class MicrophoneFailure(cause: Throwable) : Exception(cause.message, cause)
+
+    private fun sincePress() = clock.nowMs() - pressedAt
+    private fun sinceRelease() = clock.nowMs() - releasedAt
 
     private companion object {
+        const val TAG = "Flow"
         const val TIMEOUT_MS = 10_000L
         val BUSY_PHASES = setOf(PttPhase.Recording, PttPhase.CancelArmed, PttPhase.Recognizing, PttPhase.Translating)
     }
