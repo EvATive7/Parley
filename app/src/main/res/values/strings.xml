@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Parley</string>
+
+    <string name="onboarding_title">Parley needs your microphone</string>
+    <string name="onboarding_body">Hold the button and speak. Your voice is sent to the speech service you choose, and only the text is kept on this device.</string>
+    <string name="onboarding_grant">Grant microphone access</string>
+    <string name="onboarding_open_settings">Open system settings</string>
+    <string name="onboarding_denied_hint">Microphone access was turned off. Enable it in system settings, then come back.</string>
+
+    <string name="target_language">Translate to %1$s</string>
+    <string name="empty_title">Hold to talk</string>
+    <string name="empty_body">Release to translate. Slide up to cancel.</string>
+
+    <string name="hint_hold_to_talk">Hold the button to talk</string>
+    <string name="hint_release_to_cancel">Release to cancel</string>
+    <string name="hint_time_left">%1$d s left</string>
+    <string name="hint_redo">Hold the button to say it again</string>
+    <string name="copied">Copied</string>
+
+    <string name="action_copy">Copy</string>
+    <string name="action_favorite">Favorite</string>
+    <string name="action_unfavorite">Remove from favorites</string>
+    <string name="action_redo">Say again</string>
+    <string name="action_retry">Retry</string>
+
+    <string name="ptt_description">Hold to talk</string>
+    <string name="state_recording">Recording</string>
+    <string name="state_cancel_armed">Release to cancel</string>
+    <string name="state_busy">Translating</string>
+
+    <string name="error_mic">Could not open the microphone</string>
+    <string name="error_generic">Something went wrong</string>
+    <string name="error_no_speech">Didn\'t catch that. Try again.</string>
+    <string name="error_timeout">The service took too long to respond</string>
+    <string name="prototype_badge">Prototype · fake results</string>
+</resources>
