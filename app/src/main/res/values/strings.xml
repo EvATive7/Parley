@@ -38,7 +38,7 @@
 
     <!-- M2 service configuration -->
     <string name="settings_title">Services</string>
-    <string name="settings_privacy">Depending on the selected service, audio is sent while recording or after release; recognized text is then sent to the translation service. Cancelling cannot recall audio already sent. Credentials are encrypted with Android Keystore. Audio and conversation cards are not saved to disk.</string>
+    <string name="settings_privacy">Audio and text are sent only to the services you choose. Keys are encrypted on this device with Android Keystore.</string>
     <string name="settings_asr">Speech recognition</string>
     <string name="settings_asr_service">Recognition service</string>
     <string name="settings_provider_dashscope">DashScope</string>
@@ -65,11 +65,10 @@
     <string name="settings_region_singapore">Singapore</string>
     <string name="settings_app_id">AppID</string>
     <string name="settings_access_token">Access Token</string>
-    <string name="settings_dashscope_hint">The selected region must match the DashScope API Key. Enable Fun-ASR Realtime access for the key.</string>
-    <string name="settings_openai_asr_hint">The OpenAI API Key must have access to the selected transcription model.</string>
-    <string name="settings_volcengine_hint">Enter the AppID and Access Token from Volcengine Speech Recognition. Enable the resource required by the selected service.</string>
+    <string name="settings_dashscope_hint">The region must match where the API Key was created.</string>
+    <string name="settings_volcengine_hint">Enable the resource for the selected service in the Volcengine console.</string>
     <string name="settings_translation">Translation</string>
-    <string name="settings_translation_provider">OpenAI-compatible API · streaming</string>
+    <string name="settings_translation_provider">OpenAI-compatible API</string>
     <string name="settings_base_url">Base URL (including /v1)</string>
     <string name="settings_model">Model</string>
     <string name="settings_key">API Key</string>
@@ -81,13 +80,9 @@
     <string name="settings_missing_asr_app_id">Enter the Volcengine AppID without control characters.</string>
     <string name="settings_missing_key">Enter an API Key without control characters.</string>
     <string name="settings_storage_error">Settings or keys could not be read or saved. Check device storage and re-enter the keys if necessary.</string>
+    <string name="settings_save_failed">Couldn\'t save. Try again.</string>
     <string name="settings_required">Set up speech and translation services</string>
     <string name="action_back">Back</string>
-    <string name="settings_status_ready">Ready</string>
-    <string name="settings_status_ready_body">Speech: %1$s · Translation: %2$s</string>
-    <string name="settings_status_setup">Not set up yet</string>
-    <string name="settings_status_setup_body">Add an API Key for each service to start translating.</string>
-    <string name="settings_status_error">Settings unavailable</string>
     <string name="settings_show_key">Show key</string>
     <string name="settings_hide_key">Hide key</string>
     <string name="settings_unsaved">Unsaved changes</string>

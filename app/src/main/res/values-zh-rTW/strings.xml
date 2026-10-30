@@ -10,7 +10,7 @@
 
     <string name="lang_preferred">首選</string>
     <string name="settings_title">服務設定</string>
-    <string name="settings_privacy">依所選服務，語音會在錄音時或放開後傳送給辨識服務，辨識出的文字再傳送給翻譯服務。取消無法撤回已傳送的語音。憑據透過 Android Keystore 加密儲存，錄音和對話卡片不寫入磁碟。</string>
+    <string name="settings_privacy">語音和文字僅傳送給所選服務，金鑰在本機透過 Android Keystore 加密儲存。</string>
     <string name="settings_asr">語音辨識</string>
     <string name="settings_asr_service">辨識服務</string>
     <string name="settings_provider_dashscope">阿里雲百煉 DashScope</string>
@@ -37,11 +37,10 @@
     <string name="settings_region_singapore">新加坡</string>
     <string name="settings_app_id">AppID</string>
     <string name="settings_access_token">Access Token</string>
-    <string name="settings_dashscope_hint">地域須與 DashScope API Key 一致，並為 Key 開通 Fun-ASR 即時語音辨識權限。</string>
-    <string name="settings_openai_asr_hint">OpenAI API Key 須有權呼叫所選的語音轉寫模型。</string>
-    <string name="settings_volcengine_hint">填寫火山引擎語音辨識的 AppID 和 Access Token，並開通所選服務對應的資源。</string>
+    <string name="settings_dashscope_hint">地域須與 API Key 所屬地域一致。</string>
+    <string name="settings_volcengine_hint">須在火山引擎主控台為所選服務開通資源。</string>
     <string name="settings_translation">翻譯</string>
-    <string name="settings_translation_provider">OpenAI 相容介面 · 串流</string>
+    <string name="settings_translation_provider">OpenAI 相容介面</string>
     <string name="settings_base_url">Base URL（包含 /v1）</string>
     <string name="settings_model">模型名稱</string>
     <string name="settings_key">API Key</string>
@@ -53,13 +52,9 @@
     <string name="settings_missing_asr_app_id">請填寫火山引擎 AppID，且不可包含控制字元。</string>
     <string name="settings_missing_key">請輸入 API Key，且不可包含控制字元。</string>
     <string name="settings_storage_error">無法讀取或儲存設定與金鑰，請檢查裝置儲存空間，必要時重新填寫 Key。</string>
+    <string name="settings_save_failed">儲存失敗，請重試</string>
     <string name="settings_required">請先設定語音與翻譯服務</string>
     <string name="action_back">返回</string>
-    <string name="settings_status_ready">已就緒</string>
-    <string name="settings_status_ready_body">辨識：%1$s · 翻譯：%2$s</string>
-    <string name="settings_status_setup">尚未完成設定</string>
-    <string name="settings_status_setup_body">為兩項服務填寫 API Key 後即可開始翻譯。</string>
-    <string name="settings_status_error">無法讀取設定</string>
     <string name="settings_show_key">顯示 Key</string>
     <string name="settings_hide_key">隱藏 Key</string>
     <string name="settings_unsaved">有未儲存的變更</string>

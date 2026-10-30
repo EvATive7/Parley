@@ -28,32 +28,44 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SecureTextField
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,9 +73,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.evative7.parley.R
@@ -74,7 +87,7 @@ import io.github.evative7.parley.data.ServiceSettings
 import io.github.evative7.parley.data.SettingsError
 import io.github.evative7.parley.state.SettingsViewModel
 
-/** Service settings: what is in effect at the top, then one card per service. */
+/** Service settings: one card per service; storage trouble surfaces as a snackbar. */
 @Composable
 fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     val config by vm.settings.collectAsStateWithLifecycle()
@@ -96,15 +109,28 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     // Missing fields are only pointed out once the user tries to save; malformed URLs right away.
     var attempted by remember(saved) { mutableStateOf(false) }
     var confirmDiscard by remember { mutableStateOf(false) }
+    // Text fields only report edits outward; bumping this rebuilds them from the draft after Undo.
+    var revision by remember(saved) { mutableIntStateOf(0) }
     val dirty = draft != baseline
     val errors = draft.validationErrors()
     val shown = if (attempted) errors else errors.filter { it == SettingsError.TranslationUrl }
     val leave = { if (dirty) confirmDiscard = true else onBack() }
     BackHandler(enabled = !saving) { leave() }
 
+    val snackbar = remember { SnackbarHostState() }
+    val storageError = stringResource(R.string.settings_storage_error)
+    val saveError = stringResource(R.string.settings_save_failed)
+    LaunchedEffect(saved.storageError) {
+        if (saved.storageError) snackbar.showSnackbar(storageError, duration = SnackbarDuration.Long)
+    }
+    LaunchedEffect(saveFailed) {
+        if (saveFailed) snackbar.showSnackbar(saveError)
+    }
+
     val scroll = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scroll.nestedScrollConnection).imePadding(),
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
@@ -120,7 +146,7 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
             SaveBar(
                 visible = dirty,
                 saving = saving,
-                onRevert = { draft = baseline; attempted = false },
+                onRevert = { draft = baseline; attempted = false; revision++ },
                 onSave = {
                     if (errors.isEmpty()) vm.save(draft, onBack) else attempted = true
                 },
@@ -135,55 +161,56 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                 .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            StatusCard(saved, saveFailed)
-
-            ServiceCard(
-                icon = R.drawable.ic_mic,
-                title = stringResource(R.string.settings_asr),
-                provider = draft.asrService.provider.label(),
-                hint = stringResource(draft.asrService.provider.hintResource()),
-            ) {
-                AsrServiceField(draft.asrService, !saving) { draft = draft.copy(asrService = it) }
-                when (draft.asrService.provider) {
-                    AsrProvider.DashScope -> {
-                        DashScopeRegionField(draft.dashScopeRegion, !saving) {
-                            draft = draft.copy(dashScopeRegion = it)
+            key(saved, revision) {
+                ServiceCard(
+                    icon = R.drawable.ic_mic,
+                    title = stringResource(R.string.settings_asr),
+                    provider = draft.asrService.provider.label(),
+                    hint = draft.asrService.provider.hintResource()?.let { stringResource(it) },
+                ) {
+                    AsrServiceField(draft.asrService, !saving) { draft = draft.copy(asrService = it) }
+                    when (draft.asrService.provider) {
+                        AsrProvider.DashScope -> {
+                            DashScopeRegionField(draft.dashScopeRegion, !saving) {
+                                draft = draft.copy(dashScopeRegion = it)
+                            }
+                            SecretField(
+                                stringResource(R.string.settings_key), draft.dashScopeKey, !saving,
+                                SettingsError.AsrKey.shownIn(shown),
+                            ) { draft = draft.copy(dashScopeKey = it) }
                         }
-                        SecretField(
-                            stringResource(R.string.settings_key), draft.dashScopeKey, !saving,
+                        AsrProvider.OpenAi -> SecretField(
+                            stringResource(R.string.settings_key), draft.openAiAsrKey, !saving,
                             SettingsError.AsrKey.shownIn(shown),
-                        ) { draft = draft.copy(dashScopeKey = it.trim()) }
-                    }
-                    AsrProvider.OpenAi -> SecretField(
-                        stringResource(R.string.settings_key), draft.openAiAsrKey, !saving,
-                        SettingsError.AsrKey.shownIn(shown),
-                    ) { draft = draft.copy(openAiAsrKey = it.trim()) }
-                    AsrProvider.Volcengine -> {
-                        SettingField(
-                            stringResource(R.string.settings_app_id), draft.volcAppId, !saving,
-                            SettingsError.AsrAppId.shownIn(shown), keyboardType = KeyboardType.Text,
-                        ) { draft = draft.copy(volcAppId = it.trim()) }
-                        SecretField(
-                            stringResource(R.string.settings_access_token), draft.volcAccessToken, !saving,
-                            SettingsError.AsrKey.shownIn(shown),
-                        ) { draft = draft.copy(volcAccessToken = it.trim()) }
+                        ) { draft = draft.copy(openAiAsrKey = it) }
+                        AsrProvider.Volcengine -> {
+                            SettingField(
+                                stringResource(R.string.settings_app_id), draft.volcAppId, !saving,
+                                SettingsError.AsrAppId.shownIn(shown), keyboardType = KeyboardType.Text,
+                            ) { draft = draft.copy(volcAppId = it) }
+                            SecretField(
+                                stringResource(R.string.settings_access_token), draft.volcAccessToken, !saving,
+                                SettingsError.AsrKey.shownIn(shown),
+                            ) { draft = draft.copy(volcAccessToken = it) }
+                        }
                     }
                 }
-            }
 
-            ServiceCard(
-                icon = R.drawable.ic_translate,
-                title = stringResource(R.string.settings_translation),
-                provider = stringResource(R.string.settings_translation_provider),
-            ) {
-                SettingField(stringResource(R.string.settings_base_url), draft.translationUrl, !saving, SettingsError.TranslationUrl.shownIn(shown)) {
-                    draft = draft.copy(translationUrl = it.trim())
-                }
-                SettingField(stringResource(R.string.settings_model), draft.translationModel, !saving, SettingsError.TranslationModel.shownIn(shown)) {
-                    draft = draft.copy(translationModel = it.trim())
-                }
-                SecretField(stringResource(R.string.settings_key), draft.translationKey, !saving, SettingsError.TranslationKey.shownIn(shown)) {
-                    draft = draft.copy(translationKey = it.trim())
+                ServiceCard(
+                    icon = R.drawable.ic_translate,
+                    title = stringResource(R.string.settings_translation),
+                    provider = stringResource(R.string.settings_translation_provider),
+                ) {
+                    SettingField(
+                        stringResource(R.string.settings_base_url), draft.translationUrl, !saving,
+                        SettingsError.TranslationUrl.shownIn(shown), placeholder = ServiceSettings().translationUrl,
+                    ) { draft = draft.copy(translationUrl = it) }
+                    SettingField(stringResource(R.string.settings_model), draft.translationModel, !saving, SettingsError.TranslationModel.shownIn(shown)) {
+                        draft = draft.copy(translationModel = it)
+                    }
+                    SecretField(stringResource(R.string.settings_key), draft.translationKey, !saving, SettingsError.TranslationKey.shownIn(shown)) {
+                        draft = draft.copy(translationKey = it)
+                    }
                 }
             }
 
@@ -210,62 +237,33 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     }
 }
 
-/** What is saved and in effect right now, not the draft being edited. */
-@Composable
-private fun StatusCard(saved: ServiceSettings, saveFailed: Boolean) {
-    val colors = MaterialTheme.colorScheme
-    data class Look(
-        val container: Color, val content: Color, val badge: Color, val onBadge: Color,
-        @DrawableRes val icon: Int, val title: String, val body: String,
-    )
-    val look = when {
-        saved.storageError || saveFailed -> Look(
-            colors.errorContainer, colors.onErrorContainer, colors.error, colors.onError, R.drawable.ic_error,
-            stringResource(R.string.settings_status_error), stringResource(R.string.settings_storage_error),
-        )
-        saved.isReady -> Look(
-            colors.primaryContainer, colors.onPrimaryContainer, colors.primary, colors.onPrimary, R.drawable.ic_check,
-            stringResource(R.string.settings_status_ready),
-            stringResource(R.string.settings_status_ready_body, saved.asrService.label(), saved.translationModel),
-        )
-        else -> Look(
-            colors.secondaryContainer, colors.onSecondaryContainer, colors.secondary, colors.onSecondary, R.drawable.ic_settings,
-            stringResource(R.string.settings_status_setup), stringResource(R.string.settings_status_setup_body),
-        )
-    }
-    Surface(shape = MaterialTheme.shapes.extraLarge, color = look.container, contentColor = look.content) {
-        Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            // The same cookie the talk button rests in.
-            Box(
-                Modifier.size(56.dp).clip(MaterialShapes.Cookie9Sided.toShape()).background(look.badge),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(look.icon), null, Modifier.size(28.dp), tint = look.onBadge)
-            }
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
-                Text(look.title, style = MaterialTheme.typography.titleLarge)
-                Text(look.body, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-    }
-}
-
+/** Looks like the text fields around it; picking happens in a dialog. */
 @Composable
 private fun AsrServiceField(selected: AsrService, enabled: Boolean, onPick: (AsrService) -> Unit) {
     var open by remember { mutableStateOf(false) }
-    OutlinedButton(onClick = { open = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-            Text(stringResource(R.string.settings_asr_service), style = MaterialTheme.typography.labelMedium)
-            Text(selected.label(), style = MaterialTheme.typography.bodyLarge)
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        onClick = { open = true },
+        enabled = enabled,
+        shape = MaterialTheme.shapes.large,
+        color = colors.surfaceContainerHighest,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            Modifier.heightIn(min = FieldHeight).padding(start = 16.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.settings_asr_service),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                )
+                Text(selected.label(), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+            }
+            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = colors.onSurfaceVariant)
         }
-        Icon(painterResource(R.drawable.ic_arrow_drop_down), null)
     }
-    Text(
-        selected.description(),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
     if (open) {
         BasicAlertDialog(onDismissRequest = { open = false }) {
             Surface(
@@ -290,19 +288,31 @@ private fun AsrServiceField(selected: AsrService, enabled: Boolean, onPick: (Asr
                                 )
                             }
                             items(AsrService.entries.filter { it.provider == provider }, key = { it.id }) { service ->
-                                TextButton(
+                                // A pill clips the corners of multi-line descriptions; a rounded rect does not.
+                                val isSelected = service == selected
+                                Surface(
                                     onClick = { onPick(service); open = false },
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                                    shape = MaterialTheme.shapes.large,
+                                    color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp),
                                 ) {
-                                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-                                        Text(service.label(), color = MaterialTheme.colorScheme.onSurface)
-                                        Text(
-                                            service.description(),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
+                                    Row(
+                                        Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Column(Modifier.weight(1f)) {
+                                            Text(service.label(), style = MaterialTheme.typography.bodyLarge)
+                                            Text(
+                                                service.description(),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
+                                        if (isSelected) {
+                                            Spacer(Modifier.width(12.dp))
+                                            Icon(painterResource(R.drawable.ic_check), null)
+                                        }
                                     }
-                                    if (service == selected) Icon(painterResource(R.drawable.ic_check), null)
                                 }
                             }
                         }
@@ -321,13 +331,26 @@ private fun DashScopeRegionField(selected: DashScopeRegion, enabled: Boolean, on
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            DashScopeRegion.entries.forEachIndexed { index, region ->
-                SegmentedButton(
-                    selected = selected == region,
-                    onClick = { onPick(region) },
+        // Filled connected buttons, so they sit with the filled fields instead of drawing outlines.
+        val regions = DashScopeRegion.entries
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+        ) {
+            regions.forEachIndexed { index, region ->
+                ToggleButton(
+                    checked = selected == region,
+                    onCheckedChange = { onPick(region) },
                     enabled = enabled,
-                    shape = SegmentedButtonDefaults.itemShape(index, DashScopeRegion.entries.size),
+                    shapes = when (index) {
+                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                        regions.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                    },
+                    colors = ToggleButtonDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    ),
+                    modifier = Modifier.weight(1f).heightIn(min = 48.dp).semantics { role = Role.RadioButton },
                 ) {
                     Text(stringResource(if (region == DashScopeRegion.Beijing) R.string.settings_region_beijing else R.string.settings_region_singapore))
                 }
@@ -344,9 +367,9 @@ private fun AsrProvider.label(): String = stringResource(when (this) {
 })
 
 @StringRes
-private fun AsrProvider.hintResource(): Int = when (this) {
+private fun AsrProvider.hintResource(): Int? = when (this) {
     AsrProvider.DashScope -> R.string.settings_dashscope_hint
-    AsrProvider.OpenAi -> R.string.settings_openai_asr_hint
+    AsrProvider.OpenAi -> null
     AsrProvider.Volcengine -> R.string.settings_volcengine_hint
 }
 
@@ -457,6 +480,48 @@ private fun SettingsError.message(): String = stringResource(when (this) {
     SettingsError.TranslationKey -> R.string.settings_missing_key
 })
 
+/** Taller than the 56dp default, which looks cramped on the roomy cards. */
+private val FieldHeight = 64.dp
+// 12dp above and below instead of 8dp, so the extra height is split evenly around label and text.
+private val FieldPadding = TextFieldDefaults.contentPaddingWithLabel(top = 12.dp, bottom = 12.dp)
+
+/** Pasted keys often drag a newline or tab along; such characters are never valid in any field. */
+private val NoControlChars = InputTransformation {
+    val text = asCharSequence()
+    if (text.any { it.isISOControl() }) replace(0, length, text.filterNot { it.isISOControl() })
+}
+
+/** Filled and rounded like the service picker; the container, not an underline, carries the state. */
+@Composable
+private fun fieldColors(): TextFieldColors {
+    val colors = MaterialTheme.colorScheme
+    return TextFieldDefaults.colors(
+        focusedContainerColor = colors.surfaceContainerHighest,
+        unfocusedContainerColor = colors.surfaceContainerHighest,
+        disabledContainerColor = colors.surfaceContainerHighest.copy(alpha = 0.6f),
+        errorContainerColor = colors.errorContainer,
+        focusedIndicatorColor = Color.Transparent,
+        unfocusedIndicatorColor = Color.Transparent,
+        disabledIndicatorColor = Color.Transparent,
+        errorIndicatorColor = Color.Transparent,
+    )
+}
+
+/**
+ * A [TextFieldState] (whose text fields accept a content padding) seeded from the draft. Edits only
+ * flow out, trimmed; writing the draft back in would race fast typing. Undo rebuilds the field instead.
+ * Not saveable on purpose: keys must not enter savedInstanceState.
+ */
+@Composable
+private fun rememberFieldState(value: String, onChange: (String) -> Unit): TextFieldState {
+    val state = remember { TextFieldState(value) }
+    val latest by rememberUpdatedState(onChange)
+    LaunchedEffect(state) {
+        snapshotFlow { state.text.toString().trim() }.collect { latest(it) }
+    }
+    return state
+}
+
 @Composable
 private fun SettingField(
     label: String,
@@ -464,17 +529,22 @@ private fun SettingField(
     enabled: Boolean,
     error: SettingsError?,
     keyboardType: KeyboardType = KeyboardType.Uri,
+    placeholder: String? = null,
     onChange: (String) -> Unit,
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
+    TextField(
+        state = rememberFieldState(value, onChange),
+        inputTransformation = NoControlChars,
         label = { Text(label) },
-        singleLine = true,
+        placeholder = placeholder?.let { { Text(it) } },
+        lineLimits = TextFieldLineLimits.SingleLine,
         enabled = enabled,
         isError = error != null,
         supportingText = error?.let { { Text(it.message()) } },
         keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = keyboardType),
+        shape = MaterialTheme.shapes.large,
+        colors = fieldColors(),
+        contentPadding = FieldPadding,
         modifier = Modifier.fillMaxWidth(),
     )
 }
@@ -483,15 +553,17 @@ private fun SettingField(
 private fun SecretField(label: String, value: String, enabled: Boolean, error: SettingsError?, onChange: (String) -> Unit) {
     // Not saveable on purpose: a revealed key should not come back revealed after process death.
     var revealed by remember { mutableStateOf(false) }
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
+    SecureTextField(
+        state = rememberFieldState(value, onChange),
+        inputTransformation = NoControlChars,
         label = { Text(label) },
-        singleLine = true,
         enabled = enabled,
         isError = error != null,
         supportingText = error?.let { { Text(it.message()) } },
-        visualTransformation = if (revealed) VisualTransformation.None else PasswordVisualTransformation(),
+        shape = MaterialTheme.shapes.large,
+        colors = fieldColors(),
+        contentPadding = FieldPadding,
+        textObfuscationMode = if (revealed) TextObfuscationMode.Visible else TextObfuscationMode.Hidden,
         trailingIcon = {
             IconButton(onClick = { revealed = !revealed }) {
                 Icon(

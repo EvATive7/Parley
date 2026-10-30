@@ -34,7 +34,7 @@
     <string name="error_timeout">服务响应超时</string>
 
     <string name="settings_title">服务设置</string>
-    <string name="settings_privacy">根据所选服务，语音会在录音时或松手后发送给识别服务，识别出的文字再发送给翻译服务。取消无法撤回已发送的语音。凭据通过 Android Keystore 加密保存，录音和对话卡片不写入磁盘。</string>
+    <string name="settings_privacy">语音和文字仅发送给所选服务，密钥在本机通过 Android Keystore 加密保存。</string>
     <string name="settings_asr">语音识别</string>
     <string name="settings_asr_service">识别服务</string>
     <string name="settings_provider_dashscope">阿里云百炼 DashScope</string>
@@ -61,11 +61,10 @@
     <string name="settings_region_singapore">新加坡</string>
     <string name="settings_app_id">AppID</string>
     <string name="settings_access_token">Access Token</string>
-    <string name="settings_dashscope_hint">地域须与 DashScope API Key 一致，并为 Key 开通 Fun-ASR 实时语音识别权限。</string>
-    <string name="settings_openai_asr_hint">OpenAI API Key 须有权调用所选的语音转写模型。</string>
-    <string name="settings_volcengine_hint">填写火山引擎语音识别的 AppID 和 Access Token，并开通所选服务对应的资源。</string>
+    <string name="settings_dashscope_hint">地域需与 API Key 所属地域一致。</string>
+    <string name="settings_volcengine_hint">需在火山引擎控制台为所选服务开通资源。</string>
     <string name="settings_translation">翻译</string>
-    <string name="settings_translation_provider">OpenAI 兼容接口 · 流式</string>
+    <string name="settings_translation_provider">OpenAI 兼容接口</string>
     <string name="settings_base_url">Base URL（包含 /v1）</string>
     <string name="settings_model">模型名称</string>
     <string name="settings_key">API Key</string>
@@ -77,13 +76,9 @@
     <string name="settings_missing_asr_app_id">请填写火山引擎 AppID，且不可包含控制字符。</string>
     <string name="settings_missing_key">请输入 API Key，且不可包含控制字符。</string>
     <string name="settings_storage_error">无法读取或保存设置和密钥，请检查设备存储，必要时重新填写 Key。</string>
+    <string name="settings_save_failed">保存失败，请重试</string>
     <string name="settings_required">请先配置语音与翻译服务</string>
     <string name="action_back">返回</string>
-    <string name="settings_status_ready">已就绪</string>
-    <string name="settings_status_ready_body">识别：%1$s · 翻译：%2$s</string>
-    <string name="settings_status_setup">尚未完成配置</string>
-    <string name="settings_status_setup_body">为两项服务填写 API Key 后即可开始翻译。</string>
-    <string name="settings_status_error">无法读取设置</string>
     <string name="settings_show_key">显示 Key</string>
     <string name="settings_hide_key">隐藏 Key</string>
     <string name="settings_unsaved">有未保存的更改</string>
