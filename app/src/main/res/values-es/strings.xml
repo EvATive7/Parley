@@ -9,7 +9,6 @@
     <string name="pick_language">Elige un idioma</string>
     <string name="swap_languages">Intercambiar idiomas</string>
     <string name="lang_in_other_slot">Intercambiar</string>
-    <string name="lang_preferred">Preferido</string>
 
     <string name="ptt_hold_to_talk">Mantén pulsado para hablar</string>
     <string name="ptt_release_to_send">Suelta para enviar · Desliza hacia arriba para cancelar</string>

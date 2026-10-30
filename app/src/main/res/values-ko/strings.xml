@@ -9,7 +9,6 @@
     <string name="pick_language">언어 선택</string>
     <string name="swap_languages">언어 바꾸기</string>
     <string name="lang_in_other_slot">바꾸기</string>
-    <string name="lang_preferred">선호 언어</string>
 
     <string name="ptt_hold_to_talk">길게 눌러 말하기</string>
     <string name="ptt_release_to_send">떼면 전송 · 위로 밀어 취소</string>

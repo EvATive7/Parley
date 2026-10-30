@@ -10,7 +10,6 @@
     <string name="pick_language">Choose a language</string>
     <string name="swap_languages">Swap languages</string>
     <string name="lang_in_other_slot">Swap</string>
-    <string name="lang_preferred">Preferred</string>
 
     <!-- Push-to-talk phrases, shown at the bottom in both conversation languages. -->
     <string name="ptt_hold_to_talk">Hold to talk</string>

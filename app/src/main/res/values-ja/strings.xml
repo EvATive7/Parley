@@ -9,7 +9,6 @@
     <string name="pick_language">言語を選択</string>
     <string name="swap_languages">言語を入れ替える</string>
     <string name="lang_in_other_slot">入れ替える</string>
-    <string name="lang_preferred">優先</string>
 
     <string name="ptt_hold_to_talk">押したまま話す</string>
     <string name="ptt_release_to_send">離して送信 · 上にスライドしてキャンセル</string>

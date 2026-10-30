@@ -8,7 +8,6 @@
     <string name="ptt_recognizing">辨識中…</string>
     <string name="ptt_copied">已複製</string>
 
-    <string name="lang_preferred">首選</string>
     <string name="settings_title">服務設定</string>
     <string name="settings_privacy">語音和文字僅傳送給所選服務，金鑰在本機透過 Android Keystore 加密儲存。</string>
     <string name="settings_asr">語音辨識</string>

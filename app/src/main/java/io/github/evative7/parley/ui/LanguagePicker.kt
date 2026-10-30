@@ -1,6 +1,5 @@
 package io.github.evative7.parley.ui
 
-import android.content.res.Resources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,8 +50,6 @@ fun LanguagePickerDialog(selected: Lang, other: Lang, onPick: (Lang) -> Unit, on
                     modifier = Modifier.padding(horizontal = 24.dp),
                 )
                 Spacer(Modifier.height(16.dp))
-                // The language the phone itself is set to, independent of any per-app language.
-                val preferred = remember { Lang.closest(Resources.getSystem().configuration.locales[0]) }
                 // Open with the current choice in view rather than at the top of the list.
                 val listState = rememberLazyListState(
                     initialFirstVisibleItemIndex = (Lang.targets.indexOf(selected) - 2).coerceAtLeast(0),
@@ -69,7 +65,6 @@ fun LanguagePickerDialog(selected: Lang, other: Lang, onPick: (Lang) -> Unit, on
                             lang = lang,
                             selected = lang == selected,
                             inOtherSlot = lang == other,
-                            preferred = lang == preferred,
                             onClick = { onPick(lang) },
                         )
                     }
@@ -80,7 +75,7 @@ fun LanguagePickerDialog(selected: Lang, other: Lang, onPick: (Lang) -> Unit, on
 }
 
 @Composable
-private fun LanguageRow(lang: Lang, selected: Boolean, inOtherSlot: Boolean, preferred: Boolean, onClick: () -> Unit) {
+private fun LanguageRow(lang: Lang, selected: Boolean, inOtherSlot: Boolean, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val content = if (selected) colors.onSecondaryContainer else colors.onSurface
     Row(
@@ -95,13 +90,7 @@ private fun LanguageRow(lang: Lang, selected: Boolean, inOtherSlot: Boolean, pre
         Column(Modifier.weight(1f)) {
             // Each language in its own script, so the other party can find theirs too.
             val native = lang.nativeName()
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(native, style = MaterialTheme.typography.bodyLarge, color = content)
-                if (preferred) {
-                    Spacer(Modifier.width(8.dp))
-                    PreferredBadge()
-                }
-            }
+            Text(native, style = MaterialTheme.typography.bodyLarge, color = content)
             val local = lang.displayName()
             if (local != native) {
                 Text(
@@ -115,19 +104,6 @@ private fun LanguageRow(lang: Lang, selected: Boolean, inOtherSlot: Boolean, pre
             selected -> Icon(painterResource(R.drawable.ic_check), null, tint = content)
             inOtherSlot -> SwapBadge()
         }
-    }
-}
-
-/** Marks the phone's own language, the one its owner most likely speaks. */
-@Composable
-private fun PreferredBadge() {
-    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
-        Text(
-            stringResource(R.string.lang_preferred),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-        )
     }
 }
 

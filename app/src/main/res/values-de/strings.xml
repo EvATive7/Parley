@@ -9,7 +9,6 @@
     <string name="pick_language">Sprache auswählen</string>
     <string name="swap_languages">Sprachen tauschen</string>
     <string name="lang_in_other_slot">Tauschen</string>
-    <string name="lang_preferred">Bevorzugt</string>
 
     <string name="ptt_hold_to_talk">Zum Sprechen gedrückt halten</string>
     <string name="ptt_release_to_send">Zum Senden loslassen · Zum Abbrechen nach oben wischen</string>
