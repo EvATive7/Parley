@@ -15,6 +15,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,8 +34,9 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.FilledTonalButton
@@ -57,6 +59,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.zIndex
@@ -229,7 +232,7 @@ private fun ConversationScreen(
                     listState = faceLists[0],
                     entered = faceEntered[0],
                     onPick = { picking = 0 },
-                    cell = { card, modifier ->
+                    cell = { card, modifier, shape ->
                         ResultCell(
                             card = card,
                             cell = card.cell(card.slotFor(state.langs, 0)),
@@ -242,6 +245,7 @@ private fun ConversationScreen(
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },
                             modifier = modifier,
+                            shape = shape,
                         )
                     },
                     // Above the button, whose voice pulse grows into the hints.
@@ -275,7 +279,7 @@ private fun ConversationScreen(
                     listState = faceLists[1],
                     entered = faceEntered[1],
                     onPick = { picking = 1 },
-                    cell = { card, modifier ->
+                    cell = { card, modifier, shape ->
                         ResultCell(
                             card = card,
                             cell = card.cell(card.slotFor(state.langs, 1)),
@@ -287,6 +291,7 @@ private fun ConversationScreen(
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },
                             modifier = modifier,
+                            shape = shape,
                         )
                     },
                     modifier = Modifier.weight(1f).zIndex(1f).turned(Turn.CounterClockwise),
@@ -305,7 +310,7 @@ private fun ConversationScreen(
                 )
 
                 Box(Modifier.weight(1f).fillMaxWidth()) {
-                    CardList(state.cards, listState, entered) { card, modifier ->
+                    CardList(state.cards, listState, entered) { card, modifier, shape ->
                         ResultCard(
                             card = card,
                             onCopy = onCopy,
@@ -314,6 +319,7 @@ private fun ConversationScreen(
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },
                             modifier = modifier,
+                            shape = shape,
                         )
                     }
                 }
@@ -357,6 +363,10 @@ private fun ConversationScreen(
     }
 }
 
+private val CardGap = 3.dp
+private val CardOuterCorner = 28.dp
+private val CardInnerCorner = 8.dp
+
 /** The face-to-face center column: the button with a hint above and below it, each as deep as this. */
 private val FaceRailWidth = 136.dp
 
@@ -371,7 +381,7 @@ private fun FacingHalf(
     listState: LazyListState,
     entered: MutableSet<Long>,
     onPick: () -> Unit,
-    cell: @Composable (card: CardState, modifier: Modifier) -> Unit,
+    cell: @Composable (card: CardState, modifier: Modifier, shape: Shape) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
@@ -390,6 +400,9 @@ private fun FacingHalf(
  * Newest card next to the button, each coming out of it once: rising from below, or dropping from above in
  * a [turned] face-to-face half, whose button sits at its top. [entered] holds cards that already played their
  * entrance; scrolling back must not replay it.
+ *
+ * The whole conversation is one connected group: round at its two ends, tight where two cards meet.
+ * A card's corners ease into place when a new card or a deletion moves it to or from an end.
  */
 @Composable
 private fun CardList(
@@ -397,22 +410,30 @@ private fun CardList(
     listState: LazyListState,
     entered: MutableSet<Long>,
     turned: Boolean = false,
-    content: @Composable (card: CardState, modifier: Modifier) -> Unit,
+    content: @Composable (card: CardState, modifier: Modifier, shape: Shape) -> Unit,
 ) {
     val motion = MaterialTheme.motionScheme
     val rise = with(LocalDensity.current) { 48.dp.toPx() }
     val reverseLayout = !turned
     // Tighter in portrait, where the whole conversation shares one list.
-    val gap = if (turned) 12.dp else 8.dp
+    val edge = if (turned) 12.dp else 8.dp
     LazyColumn(
         modifier = Modifier.fillMaxSize().then(if (turned) Modifier.turnedScroll(listState) else Modifier),
         state = listState,
         userScrollEnabled = !turned,
         reverseLayout = reverseLayout,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = gap),
-        verticalArrangement = Arrangement.spacedBy(gap, if (reverseLayout) Alignment.Bottom else Alignment.Top),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = edge),
+        verticalArrangement = Arrangement.spacedBy(CardGap, if (reverseLayout) Alignment.Bottom else Alignment.Top),
     ) {
-        items(cards, key = { it.id }) { card ->
+        itemsIndexed(cards, key = { _, card -> card.id }) { index, card ->
+            // Newest first: index 0 is next to the button, at the bottom in portrait and the top when turned.
+            val newest = index == 0
+            val oldest = index == cards.lastIndex
+            val roundTop = if (turned) newest else oldest
+            val roundBottom = if (turned) oldest else newest
+            val top by animateDpAsState(if (roundTop) CardOuterCorner else CardInnerCorner, motion.defaultSpatialSpec(), label = "top")
+            val bottom by animateDpAsState(if (roundBottom) CardOuterCorner else CardInnerCorner, motion.defaultSpatialSpec(), label = "bottom")
+            val shape = RoundedCornerShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom)
             val enter = remember(card.id) { Animatable(if (card.id in entered) 1f else 0f) }
             LaunchedEffect(card.id) {
                 entered += card.id
@@ -434,6 +455,7 @@ private fun CardList(
                         scaleY = 0.85f + 0.15f * p
                         alpha = p.coerceIn(0f, 1f)
                     },
+                shape,
             )
         }
     }

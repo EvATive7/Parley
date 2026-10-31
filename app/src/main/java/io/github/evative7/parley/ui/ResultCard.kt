@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -62,12 +63,13 @@ fun ResultCard(
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
     onEdit: ((String) -> Unit)? = null,
+    shape: Shape = MaterialTheme.shapes.extraLarge,
 ) {
     val motion = MaterialTheme.motionScheme
     TappableCard(
         card, source = card.source, translation = card.translation,
         onCopy = onCopy, onDelete = onDelete, modifier = modifier,
-        onEdit = onEdit, editEnabled = retryEnabled,
+        onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
     ) {
         Column(
             Modifier
@@ -117,6 +119,7 @@ fun ResultCell(
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
     onEdit: ((String) -> Unit)? = null,
+    shape: Shape = MaterialTheme.shapes.extraLarge,
 ) {
     val motion = MaterialTheme.motionScheme
     val listening = card.stage == CardStage.Listening || card.stage == CardStage.Recognizing
@@ -139,7 +142,7 @@ fun ResultCell(
         source = if (translated) "" else text,
         translation = if (translated) text else "",
         onCopy = onCopy, onDelete = onDelete, modifier = modifier, turn = turn,
-        onEdit = onEdit, editEnabled = retryEnabled,
+        onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
     ) {
         Column(
             Modifier
@@ -180,12 +183,12 @@ private fun TappableCard(
     turn: Turn = Turn.None,
     onEdit: ((String) -> Unit)? = null,
     editEnabled: Boolean = true,
+    shape: Shape = MaterialTheme.shapes.extraLarge,
     content: @Composable () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
     val settled = card.stage == CardStage.Done || card.stage == CardStage.Error
     val haptics = LocalHapticFeedback.current
-    val shape = MaterialTheme.shapes.extraLarge
     // Not tappable yet isn't disabled: it looks the same.
     Surface(
         modifier = modifier
