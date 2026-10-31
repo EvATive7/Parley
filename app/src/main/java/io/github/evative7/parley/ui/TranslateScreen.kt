@@ -93,6 +93,7 @@ import io.github.evative7.parley.state.TranslateViewModel
 import io.github.evative7.parley.state.UiState
 import io.github.evative7.parley.state.SettingsViewModel
 import io.github.evative7.parley.state.cell
+import io.github.evative7.parley.state.showsError
 import io.github.evative7.parley.state.slotFor
 import kotlinx.coroutines.launch
 
@@ -233,11 +234,11 @@ private fun ConversationScreen(
                     entered = faceEntered[0],
                     onPick = { picking = 0 },
                     cell = { card, modifier, shape ->
+                        val slot = card.slotFor(state.langs, 0)
                         ResultCell(
                             card = card,
-                            cell = card.cell(card.slotFor(state.langs, 0)),
-                            // The error and its retry stay on one side, so the two lists don't both show them.
-                            showError = true,
+                            cell = card.cell(slot),
+                            showError = card.showsError(slot),
                             onCopy = onCopy,
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
@@ -280,13 +281,14 @@ private fun ConversationScreen(
                     entered = faceEntered[1],
                     onPick = { picking = 1 },
                     cell = { card, modifier, shape ->
+                        val slot = card.slotFor(state.langs, 1)
                         ResultCell(
                             card = card,
-                            cell = card.cell(card.slotFor(state.langs, 1)),
-                            showError = false,
+                            cell = card.cell(slot),
+                            showError = card.showsError(slot),
                             onCopy = onCopy,
                             onDelete = { vm.delete(card.id) },
-                            onRetry = {},
+                            onRetry = { vm.onRetry(card.id) },
                             turn = Turn.CounterClockwise,
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },

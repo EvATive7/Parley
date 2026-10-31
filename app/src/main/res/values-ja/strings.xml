@@ -119,6 +119,7 @@
     <!-- Card details and About -->
     <string name="action_copy_translation">翻訳をコピー</string>
     <string name="action_copy_original">原文をコピー</string>
+    <string name="action_copy_translation_to">翻訳をコピー（%1$s）</string>
     <string name="action_edit_source">原文を編集して再翻訳</string>
     <string name="edit_source_title">原文を編集</string>
     <string name="action_retranslate">再翻訳</string>

@@ -134,7 +134,7 @@ class TranslateViewModelTest {
         runCurrent()
         assertEquals(PttPhase.Result, vm.state.value.phase)
         assertEquals(original.first, targets.single())
-        assertEquals("Hello", vm.state.value.cards.single().translation)
+        assertEquals("Hello", vm.state.value.cards.single().translations.single().text)
         assertTrue(sessions.single().cancelled)
     }
 
@@ -227,7 +227,7 @@ class TranslateViewModelTest {
         runCurrent()
         val old = vm.state.value.cards.single()
         assertTrue(old.canRetry)
-        assertEquals("partial", old.translation)
+        assertEquals("partial", old.translations.single().text)
         nextTranscript = Transcript("第二句", Lang("zh"))
         vm.onPress()
         runCurrent()
@@ -237,8 +237,8 @@ class TranslateViewModelTest {
         vm.onRetry(old.id)
         runCurrent()
         assertEquals(listOf("你好", "第二句", "你好"), translatedSources)
-        assertEquals("done:你好", vm.state.value.cards.first { it.id == old.id }.translation)
-        assertEquals("done:第二句", vm.state.value.cards.first().translation)
+        assertEquals("done:你好", vm.state.value.cards.first { it.id == old.id }.translations.single().text)
+        assertEquals("done:第二句", vm.state.value.cards.first().translations.single().text)
     }
 
     @Test fun `press interrupts translation without turning old card into an error`() = runTest {
@@ -257,7 +257,7 @@ class TranslateViewModelTest {
         assertTrue(interrupted)
         assertEquals(PttPhase.Recording, vm.state.value.phase)
         assertEquals(CardStage.Done, vm.state.value.cards.last().stage)
-        assertEquals("partial", vm.state.value.cards.last().translation)
+        assertEquals("partial", vm.state.value.cards.last().translations.single().text)
         vm.onAbort()
         runCurrent()
     }
@@ -295,7 +295,7 @@ class TranslateViewModelTest {
         assertTrue(sessions.single().cancelled)
     }
 
-    @Test fun `unknown detected language falls back to second conversation language`() = runTest {
+    @Test fun `unknown detected language is translated into both conversation languages`() = runTest {
         nextTranscript = Transcript("ambiguous", null)
         detected = null
         val vm = vm()
@@ -303,6 +303,26 @@ class TranslateViewModelTest {
         runCurrent()
         release(vm)
         runCurrent()
-        assertEquals(vm.state.value.cards.single().langs.second, targets.single())
+        val card = vm.state.value.cards.single()
+        assertEquals(listOf(card.langs.first, card.langs.second), targets)
+        assertEquals(listOf("Hello", "Hello"), card.translations.map { it.text })
+        assertEquals(CardStage.Done, card.stage)
+    }
+
+    @Test fun `a third language is translated into both, and one failure fails the card`() = runTest {
+        nextTranscript = Transcript("Bonjour", Lang("fr"))
+        translation = { flow { emit("x"); throw ServiceException(ServiceFailure.Network) } }
+        val vm = vm()
+        vm.setLang(0, Lang("zh-CN"))
+        vm.setLang(1, Lang("en"))
+        vm.onPress()
+        runCurrent()
+        release(vm)
+        runCurrent()
+        val card = vm.state.value.cards.single()
+        assertEquals(listOf(Lang("zh-CN"), Lang("en")), card.translations.map { it.to })
+        assertEquals(CardStage.Error, card.stage)
+        assertEquals(ErrorKind.Network, card.error)
+        assertTrue(card.canRetry)
     }
 }

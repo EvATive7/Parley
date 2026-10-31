@@ -120,6 +120,7 @@
     <!-- Card details and About -->
     <string name="action_copy_translation">複製譯文</string>
     <string name="action_copy_original">複製原文</string>
+    <string name="action_copy_translation_to">複製譯文（%1$s）</string>
     <string name="action_edit_source">編輯原文並重新翻譯</string>
     <string name="edit_source_title">編輯原文</string>
     <string name="action_retranslate">重新翻譯</string>

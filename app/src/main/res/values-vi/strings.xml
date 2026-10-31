@@ -118,6 +118,7 @@
     <!-- Card details and About -->
     <string name="action_copy_translation">Sao chép bản dịch</string>
     <string name="action_copy_original">Sao chép bản gốc</string>
+    <string name="action_copy_translation_to">Sao chép bản dịch (%1$s)</string>
     <string name="action_edit_source">Sửa bản gốc và dịch lại</string>
     <string name="edit_source_title">Sửa bản gốc</string>
     <string name="action_retranslate">Dịch lại</string>

@@ -118,6 +118,7 @@
     <!-- Card details and About -->
     <string name="action_copy_translation">Salin terjemahan</string>
     <string name="action_copy_original">Salin teks asli</string>
+    <string name="action_copy_translation_to">Salin terjemahan (%1$s)</string>
     <string name="action_edit_source">Edit teks asli dan terjemahkan ulang</string>
     <string name="edit_source_title">Edit teks asli</string>
     <string name="action_retranslate">Terjemahkan ulang</string>

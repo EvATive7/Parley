@@ -118,6 +118,7 @@
     <!-- Card details and About -->
     <string name="action_copy_translation">คัดลอกคำแปล</string>
     <string name="action_copy_original">คัดลอกต้นฉบับ</string>
+    <string name="action_copy_translation_to">คัดลอกคำแปล (%1$s)</string>
     <string name="action_edit_source">แก้ไขต้นฉบับและแปลใหม่</string>
     <string name="edit_source_title">แก้ไขต้นฉบับ</string>
     <string name="action_retranslate">แปลใหม่</string>

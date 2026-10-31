@@ -123,6 +123,7 @@
     <!-- Card details and About -->
     <string name="action_copy_translation">Copy translation</string>
     <string name="action_copy_original">Copy original</string>
+    <string name="action_copy_translation_to">Copy translation (%1$s)</string>
     <string name="action_edit_source">Edit original and retranslate</string>
     <string name="edit_source_title">Edit original</string>
     <string name="action_retranslate">Retranslate</string>

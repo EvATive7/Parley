@@ -1,7 +1,6 @@
 package io.github.evative7.parley.ui
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -51,6 +50,7 @@ import androidx.compose.ui.window.DialogProperties
 import io.github.evative7.parley.R
 import io.github.evative7.parley.state.CardCell
 import io.github.evative7.parley.state.CardStage
+import io.github.evative7.parley.state.CardTranslation
 import io.github.evative7.parley.state.CardState
 import io.github.evative7.parley.state.ErrorKind
 
@@ -64,11 +64,14 @@ fun ResultCard(
     retryEnabled: Boolean = true,
     onEdit: ((String) -> Unit)? = null,
     shape: Shape = MaterialTheme.shapes.extraLarge,
+    turn: Turn = Turn.None,
+    // Face to face, a side shows only the translation into its own language.
+    translations: List<CardTranslation> = card.translations,
 ) {
     val motion = MaterialTheme.motionScheme
     TappableCard(
-        card, source = card.source, translation = card.translation,
-        onCopy = onCopy, onDelete = onDelete, modifier = modifier,
+        card, source = card.source, translations = translations,
+        onCopy = onCopy, onDelete = onDelete, modifier = modifier, turn = turn,
         onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
     ) {
         Column(
@@ -88,14 +91,7 @@ fun ResultCard(
                 )
             }
 
-            if (card.translation.isNotEmpty()) {
-                Spacer(Modifier.size(8.dp))
-                StreamingText(
-                    text = card.translation,
-                    style = MaterialTheme.typography.headlineSmallEmphasized,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
+            Translations(translations, streaming = true)
 
             ErrorRow(card, onRetry, retryEnabled, belowText = card.source.isNotEmpty() || waitingForSource)
         }
@@ -105,6 +101,8 @@ fun ResultCard(
 /**
  * One side of a card in the landscape transcript: only the text in that side's language. The side that
  * reads the translation gets it large; the speaker's own words stay quiet, as in [ResultCard].
+ * Speech translated both ways belongs to neither side, so each gets the whole card: the speech over the
+ * translation into its own language.
  * Either side's tap opens the card, turned toward that side's reader by [turn].
  */
 @Composable
@@ -126,12 +124,17 @@ fun ResultCell(
     val text = when (cell) {
         is CardCell.Hearing -> cell.text
         is CardCell.Source -> cell.text
-        is CardCell.Translation -> cell.text
+        is CardCell.Translation -> cell.translation.text
+        is CardCell.Whole -> {
+            ResultCard(card, onCopy, onDelete, onRetry, modifier, retryEnabled, onEdit, shape, turn, listOf(cell.translation))
+            return
+        }
     }
     val waiting = text.isEmpty() && when (cell) {
         is CardCell.Hearing -> listening
         is CardCell.Source -> false
         is CardCell.Translation -> card.stage == CardStage.Translating
+        is CardCell.Whole -> false
     }
     // An error before anything was heard leaves this side blank; the other side carries the message.
     if (text.isEmpty() && !waiting && !showError) return
@@ -140,7 +143,7 @@ fun ResultCell(
     TappableCard(
         card,
         source = if (translated) "" else text,
-        translation = if (translated) text else "",
+        translations = if (cell is CardCell.Translation) listOf(cell.translation) else emptyList(),
         onCopy = onCopy, onDelete = onDelete, modifier = modifier, turn = turn,
         onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
     ) {
@@ -169,14 +172,14 @@ fun ResultCell(
 
 /**
  * A card that opens in a dialog once it has settled, on a tap or a long press, showing [source] and
- * [translation] with copy and delete, and a correction of the recognized text when [onEdit] is given.
+ * [translations] with copy and delete, and a correction of the recognized text when [onEdit] is given.
  * A card still being heard or translated can't be opened yet, and has nothing final to copy.
  */
 @Composable
 private fun TappableCard(
     card: CardState,
     source: String,
-    translation: String,
+    translations: List<CardTranslation>,
     onCopy: (String) -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
@@ -211,7 +214,7 @@ private fun TappableCard(
     if (open) {
         val edit = onEdit?.takeIf { card.source.isNotEmpty() }
         CardDialog(
-            card, source, translation,
+            card, source, translations.filter { it.text.isNotEmpty() },
             onCopy = { open = false; onCopy(it) },
             onDelete = { open = false; onDelete() },
             onEdit = edit?.let { { text: String -> open = false; it(text) } },
@@ -227,7 +230,7 @@ private fun TappableCard(
 private fun CardDialog(
     card: CardState,
     source: String,
-    translation: String,
+    translations: List<CardTranslation>,
     onCopy: (String) -> Unit,
     onDelete: () -> Unit,
     onEdit: ((String) -> Unit)?,
@@ -278,16 +281,9 @@ private fun CardDialog(
                         if (source.isNotEmpty()) {
                             Text(source, style = MaterialTheme.typography.bodyLarge, color = colors.onSurfaceVariant)
                         }
-                        if (source.isNotEmpty() && translation.isNotEmpty()) Spacer(Modifier.size(12.dp))
-                        if (translation.isNotEmpty()) {
-                            Text(
-                                translation,
-                                style = MaterialTheme.typography.headlineSmallEmphasized,
-                                color = colors.onSurface,
-                            )
-                        }
+                        Translations(translations, streaming = false, spaced = source.isNotEmpty())
                         if (card.stage == CardStage.Error) {
-                            if (source.isNotEmpty() || translation.isNotEmpty()) Spacer(Modifier.size(16.dp))
+                            if (source.isNotEmpty() || translations.isNotEmpty()) Spacer(Modifier.size(16.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(painterResource(R.drawable.ic_error), null, Modifier.size(20.dp), tint = colors.error)
                                 Spacer(Modifier.width(8.dp))
@@ -301,24 +297,36 @@ private fun CardDialog(
                     }
 
                     Spacer(Modifier.size(24.dp))
-                    // The translation first: it's what the other person needs.
-                    val both = source.isNotEmpty() && translation.isNotEmpty()
+                    // Translations first: they're what the other person needs.
+                    val plain = source.isEmpty() || translations.isEmpty()
+                    val copyLabel = stringResource(R.string.action_copy)
+                    val copyTranslation = stringResource(R.string.action_copy_translation)
+                    val copyOriginal = stringResource(R.string.action_copy_original)
+                    val named = translations.associateWith {
+                        stringResource(R.string.action_copy_translation_to, it.to.nativeName())
+                    }
+                    val editLabel = stringResource(R.string.action_edit_source)
                     val actions = buildList {
-                        if (translation.isNotEmpty()) {
-                            add(Action(R.drawable.ic_copy, if (both) R.string.action_copy_translation else R.string.action_copy) { onCopy(translation) })
+                        for (t in translations) {
+                            val label = when {
+                                translations.size > 1 -> named.getValue(t)
+                                plain -> copyLabel
+                                else -> copyTranslation
+                            }
+                            add(Action(R.drawable.ic_copy, label) { onCopy(t.text) })
                         }
                         if (source.isNotEmpty()) {
-                            add(Action(R.drawable.ic_copy, if (both) R.string.action_copy_original else R.string.action_copy) { onCopy(source) })
+                            add(Action(R.drawable.ic_copy, if (plain) copyLabel else copyOriginal) { onCopy(source) })
                         }
                         if (onEdit != null) {
-                            add(Action(R.drawable.ic_edit, R.string.action_edit_source, enabled = editEnabled) { editing = true })
+                            add(Action(R.drawable.ic_edit, editLabel, enabled = editEnabled) { editing = true })
                         }
                     }
                     Column(Modifier.padding(horizontal = 16.dp)) {
                         ActionGroup(actions)
                         if (actions.isNotEmpty()) Spacer(Modifier.size(12.dp))
                         ActionBar(
-                            Action(R.drawable.ic_delete, R.string.action_delete, onClick = onDelete),
+                            Action(R.drawable.ic_delete, stringResource(R.string.action_delete), onClick = onDelete),
                             shape = BarShapes.single,
                             container = colors.errorContainer,
                             content = colors.onErrorContainer,
@@ -328,6 +336,28 @@ private fun CardDialog(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * The card's translations under its speech. With more than one, each is named by its language, in that
+ * language, so each reader finds theirs. [streaming] text grows as it arrives; the dialog shows it settled.
+ */
+@Composable
+private fun Translations(translations: List<CardTranslation>, streaming: Boolean, spaced: Boolean = true) {
+    val colors = MaterialTheme.colorScheme
+    val named = translations.size > 1
+    translations.filter { it.text.isNotEmpty() }.forEachIndexed { i, t ->
+        if (spaced || i > 0) Spacer(Modifier.size(if (named) 12.dp else 8.dp))
+        if (named) {
+            Text(t.to.nativeName(), style = MaterialTheme.typography.labelMedium, color = colors.primary)
+            Spacer(Modifier.size(2.dp))
+        }
+        if (streaming) {
+            StreamingText(text = t.text, style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
+        } else {
+            Text(t.text, style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
         }
     }
 }
@@ -355,7 +385,7 @@ private fun SourceEditor(source: String, enabled: Boolean, onSubmit: (String) ->
     Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(BarGap)) {
         ActionBar(
             Action(
-                R.drawable.ic_translate, R.string.action_retranslate,
+                R.drawable.ic_translate, stringResource(R.string.action_retranslate),
                 // Unchanged text would only translate the same thing again.
                 enabled = enabled && text.isNotBlank() && text.trim() != source,
             ) { onSubmit(text) },
@@ -366,7 +396,7 @@ private fun SourceEditor(source: String, enabled: Boolean, onSubmit: (String) ->
             onBadge = colors.onPrimary,
         )
         ActionBar(
-            Action(R.drawable.ic_arrow_back, R.string.action_cancel, onClick = onCancel),
+            Action(R.drawable.ic_arrow_back, stringResource(R.string.action_cancel), onClick = onCancel),
             shape = BarShapes.last,
         )
     }
@@ -374,7 +404,7 @@ private fun SourceEditor(source: String, enabled: Boolean, onSubmit: (String) ->
 
 private class Action(
     @DrawableRes val icon: Int,
-    @StringRes val label: Int,
+    val label: String,
     val enabled: Boolean = true,
     val onClick: () -> Unit,
 )
@@ -448,7 +478,7 @@ private fun ActionBar(
             }
             Spacer(Modifier.width(14.dp))
             Text(
-                stringResource(action.label),
+                action.label,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
@@ -457,12 +487,12 @@ private fun ActionBar(
 }
 
 /** Which way the card translates, each language named in itself so both readers find theirs. */
-private fun CardState.direction(): String =
-    target?.let { to ->
-        sourceLang?.nativeName()?.let { "$it → ${to.nativeName()}" } ?: "→ ${to.nativeName()}"
-    }
-        // Until the speaker's language is known, either direction is possible.
-        ?: "${langs.first.nativeName()} ⇄ ${langs.second.nativeName()}"
+private fun CardState.direction(): String {
+    // Until the speech has been recognized, either direction is possible.
+    if (translations.isEmpty()) return "${langs.first.nativeName()} ⇄ ${langs.second.nativeName()}"
+    val to = translations.joinToString(" · ") { it.to.nativeName() }
+    return sourceLang?.let { "${it.nativeName()} → $to" } ?: "→ $to"
+}
 
 /** What went wrong, with a retry when there is recognized text to resend. */
 @Composable

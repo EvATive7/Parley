@@ -118,6 +118,7 @@
     <!-- Card details and About -->
     <string name="action_copy_translation">نسخ الترجمة</string>
     <string name="action_copy_original">نسخ النص الأصلي</string>
+    <string name="action_copy_translation_to">نسخ الترجمة (%1$s)</string>
     <string name="action_edit_source">تعديل النص الأصلي وإعادة الترجمة</string>
     <string name="edit_source_title">تعديل النص الأصلي</string>
     <string name="action_retranslate">إعادة الترجمة</string>

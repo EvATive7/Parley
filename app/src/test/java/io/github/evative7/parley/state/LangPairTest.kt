@@ -9,13 +9,26 @@ class LangPairTest {
     private val zhEn = LangPair(Lang("zh-CN"), Lang("en"))
 
     @Test fun `speech in either language goes to the other`() {
-        assertEquals(Lang("en"), zhEn.targetFor(Lang("zh-CN")))
-        assertEquals(Lang("zh-CN"), zhEn.targetFor(Lang("en")))
+        assertEquals(listOf(Lang("en")), zhEn.targetsFor(Lang("zh-CN")))
+        assertEquals(listOf(Lang("zh-CN")), zhEn.targetsFor(Lang("en")))
+        // A detector reports the base language, or another region of it.
+        assertEquals(listOf(Lang("en")), zhEn.targetsFor(Lang("zh")))
+        assertEquals(listOf(Lang("zh-CN")), zhEn.targetsFor(Lang("en-GB")))
     }
 
-    @Test fun `a language outside the pair goes to the second slot`() {
-        assertEquals(Lang("en"), zhEn.targetFor(Lang("ja")))
-        assertEquals(Lang("en"), zhEn.targetFor(null))
+    @Test fun `a language outside the pair goes to both`() {
+        assertEquals(listOf(Lang("zh-CN"), Lang("en")), zhEn.targetsFor(Lang("ja")))
+    }
+
+    @Test fun `an unknown language goes to both`() {
+        assertEquals(listOf(Lang("zh-CN"), Lang("en")), zhEn.targetsFor(null))
+    }
+
+    @Test fun `variants of one language are told apart only by their exact tag`() {
+        val scripts = LangPair(Lang("zh-CN"), Lang("zh-TW"))
+        assertEquals(listOf(Lang("zh-TW")), scripts.targetsFor(Lang("zh-CN")))
+        assertEquals(listOf(Lang("zh-CN")), scripts.targetsFor(Lang("zh-tw")))
+        assertEquals(listOf(Lang("zh-CN"), Lang("zh-TW")), scripts.targetsFor(Lang("zh")))
     }
 
     @Test fun `picking the other slot's language swaps`() {

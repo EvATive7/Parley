@@ -119,6 +119,7 @@
     <!-- Card details and About -->
     <string name="action_copy_translation">Copier la traduction</string>
     <string name="action_copy_original">Copier l\'original</string>
+    <string name="action_copy_translation_to">Copier la traduction (%1$s)</string>
     <string name="action_edit_source">Modifier l\'original et retraduire</string>
     <string name="edit_source_title">Modifier l\'original</string>
     <string name="action_retranslate">Retraduire</string>

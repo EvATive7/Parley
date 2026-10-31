@@ -16,6 +16,7 @@ import io.github.evative7.parley.translate.Translator
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -135,7 +136,7 @@ class TranslateViewModel @Inject constructor(
                 copy(
                     source = edited,
                     sourceLang = sourceLang,
-                    target = langs.targetFor(sourceLang),
+                    translations = langs.targetsFor(sourceLang).map(::CardTranslation),
                     stage = CardStage.Error,
                     canRetry = true,
                 )
@@ -178,7 +179,9 @@ class TranslateViewModel @Inject constructor(
                 ?.takeIf { it.canRetry }
                 ?.let { card ->
                     releasedAt = clock.nowMs()
-                    updateCard(card.id) { copy(stage = CardStage.Translating, translation = "", error = null) }
+                    updateCard(card.id) {
+                        copy(stage = CardStage.Translating, translations = translations.map { it.copy(text = "") }, error = null)
+                    }
                     pipelineJob = viewModelScope.launch { translate(card.id, card.source, card.sourceLang) }
                 }
             is PttEffect.Discard -> discard()
@@ -308,7 +311,7 @@ class TranslateViewModel @Inject constructor(
                 copy(
                     source = transcript.text,
                     sourceLang = sourceLang,
-                    target = langs.targetFor(sourceLang),
+                    translations = langs.targetsFor(sourceLang).map(::CardTranslation),
                     stage = CardStage.Translating,
                     canRetry = true,
                 )
@@ -318,19 +321,28 @@ class TranslateViewModel @Inject constructor(
         }
     }
 
+    /** Translates into each of the card's targets at once; the first failure stops them all. */
     private suspend fun translate(id: Long, text: String, from: Lang?) {
         val card = _state.value.cards.firstOrNull { it.id == id } ?: return
-        val to = card.target ?: card.langs.targetFor(from)
+        val targets = card.translations.map { it.to }.ifEmpty { card.langs.targetsFor(from) }
         val start = clock.nowMs()
         var chunks = 0
         var chars = 0
-        DebugLog.log(TAG) { "#$id translate ${from?.tag ?: "auto"} → ${to.tag} (${text.length} chars)" }
+        DebugLog.log(TAG) {
+            "#$id translate ${from?.tag ?: "auto"} → ${targets.joinToString { it.tag }} (${text.length} chars)"
+        }
         try {
             withTimeout(TIMEOUT_MS) {
-                translator.translate(text, from, to).collect { fragment ->
-                    if (chunks++ == 0) DebugLog.log(TAG) { "#$id first translated text +${clock.nowMs() - start} ms" }
-                    chars += fragment.length
-                    updateCard(id) { copy(translation = translation + fragment) }
+                coroutineScope {
+                    for (to in targets) launch {
+                        translator.translate(text, from, to).collect { fragment ->
+                            if (chunks++ == 0) DebugLog.log(TAG) { "#$id first translated text +${clock.nowMs() - start} ms" }
+                            chars += fragment.length
+                            updateCard(id) {
+                                copy(translations = translations.map { if (it.to == to) it.copy(text = it.text + fragment) else it })
+                            }
+                        }
+                    }
                 }
             }
         } catch (e: CancellationException) {

@@ -119,6 +119,7 @@
     <!-- Card details and About -->
     <string name="action_copy_translation">번역 복사</string>
     <string name="action_copy_original">원문 복사</string>
+    <string name="action_copy_translation_to">번역 복사 (%1$s)</string>
     <string name="action_edit_source">원문 편집 후 다시 번역</string>
     <string name="edit_source_title">원문 편집</string>
     <string name="action_retranslate">다시 번역</string>
