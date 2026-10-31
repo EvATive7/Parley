@@ -1,12 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
+    <string name="onboarding_title">O Parley precisa de acesso ao microfone</string>
+    <string name="onboarding_body">Mantenha o botão pressionado e fale. Sua voz será enviada ao serviço de reconhecimento escolhido, e apenas o texto será mantido neste dispositivo.</string>
+    <string name="onboarding_grant">Permitir acesso ao microfone</string>
+    <string name="onboarding_open_settings">Abrir configurações do sistema</string>
+    <string name="onboarding_denied_hint">O acesso ao microfone foi desativado. Ative-o nas configurações do sistema e volte.</string>
+
+    <string name="pick_language">Escolha um idioma</string>
+    <string name="swap_languages">Trocar idiomas</string>
+    <string name="face_to_face">Modo frente a frente</string>
+    <string name="face_to_face_exit">Sair do modo frente a frente</string>
+    <string name="lang_in_other_slot">Trocar</string>
+
     <string name="ptt_hold_to_talk">Mantenha pressionado para falar</string>
     <string name="ptt_release_to_send">Solte para enviar · Deslize ↑ para cancelar</string>
     <string name="ptt_time_left">Faltam %1$d s</string>
     <string name="ptt_release_to_cancel">Solte para cancelar</string>
     <string name="ptt_recognizing">Reconhecendo…</string>
     <string name="ptt_copied">Copiado</string>
-    <string name="face_to_face">Modo frente a frente</string>
-    <string name="face_to_face_exit">Sair do modo frente a frente</string>
+
+    <string name="action_copy">Copiar</string>
+    <string name="action_delete">Excluir</string>
+    <string name="action_retry">Tentar novamente</string>
+
+    <string name="ptt_description">Mantenha pressionado para falar</string>
+    <string name="state_recording">Gravando</string>
+    <string name="state_cancel_armed">Solte para cancelar</string>
+    <string name="state_busy">Traduzindo</string>
+
+    <string name="error_mic">Não foi possível abrir o microfone</string>
+    <string name="error_generic">Algo deu errado</string>
+    <string name="error_no_speech">Não foi possível entender. Tente novamente.</string>
+    <string name="error_timeout">O serviço demorou muito para responder</string>
+
+    <string name="settings_title">Serviços</string>
+    <string name="settings_privacy">Áudio e texto são enviados apenas aos serviços escolhidos. As chaves são criptografadas neste dispositivo com o Android Keystore.</string>
+    <string name="settings_asr">Reconhecimento de fala</string>
+    <string name="settings_asr_service">Serviço de reconhecimento</string>
+    <string name="settings_provider_dashscope">DashScope</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_volcengine">Volcengine</string>
+    <string name="settings_asr_fun_stream">Fun-ASR-RealTime (entrada em streaming)</string>
+    <string name="settings_asr_fun_stream_desc">Modelo de transcrição em tempo real da Alibaba, com alta qualidade, reconhecimento rápido e boa precisão, adequado para situações gerais em chinês e inglês. A versão com entrada em streaming oferece menor latência e maior velocidade de reconhecimento.</string>
+    <string name="settings_asr_fun_non_stream">Fun-ASR-RealTime (entrada sem streaming)</string>
+    <string name="settings_asr_fun_non_stream_desc">Modelo de transcrição em tempo real da Alibaba, com alta qualidade, reconhecimento rápido e boa precisão, adequado para situações gerais em chinês e inglês. A versão com entrada sem streaming oferece maior precisão e uma estrutura semântica e textual mais completa.</string>
+    <string name="settings_asr_gpt_realtime">GPT Realtime Whisper</string>
+    <string name="settings_asr_gpt_realtime_desc">Modelo de transcrição em streaming e em tempo real da OpenAI para sessões Realtime. Ideal para legendas de baixa latência e ditado ao vivo.</string>
+    <string name="settings_asr_gpt_4o">GPT-4o Transcribe (entrada sem streaming)</string>
+    <string name="settings_asr_gpt_4o_desc">Modelo de transcrição da OpenAI com alta qualidade e ótimo reconhecimento, especialmente eficaz para inglês, cenários internacionais multilíngues, inglês com sotaque e idiomas internacionais. A versão com entrada sem streaming oferece maior precisão e uma estrutura semântica e textual mais completa.</string>
+    <string name="settings_asr_gpt_4o_mini">GPT-4o Mini Transcribe (entrada sem streaming)</string>
+    <string name="settings_asr_gpt_4o_mini_desc">Modelo de transcrição leve da OpenAI que mantém os pontos fortes do GPT-4o Transcribe com menor custo e latência, adequado para uso frequente e contínuo. A versão com entrada sem streaming oferece maior precisão e uma estrutura semântica e textual mais completa.</string>
+    <string name="settings_asr_doubao_stream">Doubao Seed ASR 2.0 (entrada em streaming)</string>
+    <string name="settings_asr_doubao_stream_desc">Modelo de transcrição Doubao da ByteDance com maior precisão em áreas especializadas, melhor reconhecimento em situações complexas, suporte a contexto e mais recursos. A versão com entrada em streaming oferece menor latência e maior velocidade e aceita apenas chinês e inglês.</string>
+    <string name="settings_asr_doubao_non_stream">Doubao Seed ASR 2.0 (entrada sem streaming)</string>
+    <string name="settings_asr_doubao_non_stream_desc">Modelo de transcrição Doubao da ByteDance com maior precisão em áreas especializadas, melhor reconhecimento em situações complexas, suporte a contexto e mais recursos. A versão com entrada sem streaming oferece maior precisão e uma estrutura semântica e textual mais completa.</string>
+    <string name="settings_asr_doubao_turbo">Doubao Seed ASR 2.0 (entrada sem streaming turbo)</string>
+    <string name="settings_asr_doubao_turbo_desc">Modelo de transcrição da ByteDance que mantém os pontos fortes do Doubao Seed ASR 2.0 (entrada sem streaming) com menor latência e maior velocidade. A versão com entrada sem streaming oferece maior precisão e uma estrutura semântica e textual mais completa.</string>
+    <string name="settings_dashscope_region">Região</string>
+    <string name="settings_region_beijing">Pequim</string>
+    <string name="settings_region_singapore">Singapura</string>
+    <string name="settings_app_id">AppID</string>
+    <string name="settings_access_token">Token de acesso</string>
+    <string name="settings_dashscope_hint">A região deve corresponder àquela em que a chave de API foi criada.</string>
+    <string name="settings_volcengine_hint">Ative o recurso do serviço selecionado no console da Volcengine.</string>
+    <string name="settings_translation">Tradução</string>
+    <string name="settings_translation_provider">API compatível com OpenAI</string>
+    <string name="settings_base_url">URL base (incluindo /v1)</string>
+    <string name="settings_model">Modelo</string>
+    <string name="settings_key">Chave de API</string>
+    <string name="settings_save">Salvar</string>
+    <string name="settings_saving">Salvando…</string>
+    <string name="settings_invalid_translation_url">Insira uma URL base de tradução https:// sem credenciais, parâmetros de consulta ou fragmentos.</string>
+    <string name="settings_missing_model">Insira o nome de um modelo.</string>
+    <string name="settings_missing_asr_key">Insira a credencial exigida pelo serviço de fala selecionado sem caracteres de controle.</string>
+    <string name="settings_missing_asr_app_id">Insira o AppID da Volcengine sem caracteres de controle.</string>
+    <string name="settings_missing_key">Insira uma chave de API sem caracteres de controle.</string>
+    <string name="settings_storage_error">Não foi possível ler ou salvar as configurações ou chaves. Verifique o armazenamento do dispositivo e insira as chaves novamente, se necessário.</string>
+    <string name="settings_save_failed">Não foi possível salvar. Tente novamente.</string>
+    <string name="settings_required">Configure os serviços de fala e tradução</string>
+    <string name="action_back">Voltar</string>
+    <string name="settings_show_key">Mostrar chave</string>
+    <string name="settings_hide_key">Ocultar chave</string>
+    <string name="settings_unsaved">Alterações não salvas</string>
+
+    <string name="settings_debug_mode">Modo de depuração</string>
+    <string name="settings_debug_mode_body">Mostra os principais registros do aplicativo em uma janela flutuante.</string>
+    <string name="debug_log_title">Registro</string>
+    <string name="debug_log_empty">Nenhum evento</string>
+    <string name="debug_log_copy">Copiar registro</string>
+    <string name="debug_log_clear">Limpar registro</string>
+    <string name="debug_log_collapse">Minimizar registro</string>
+    <string name="debug_log_expand">Mostrar registro</string>
+    <string name="settings_revert">Desfazer</string>
+    <string name="settings_discard_title">Descartar alterações?</string>
+    <string name="settings_discard_body">As alterações feitas nesta página serão perdidas.</string>
+    <string name="settings_discard">Descartar</string>
+    <string name="settings_keep_editing">Continuar editando</string>
+    <string name="error_configuration">Configure primeiro os serviços de fala e tradução</string>
+    <string name="error_authentication">Falha na autenticação. Verifique a chave, o endpoint e a região.</string>
+    <string name="error_permission">Acesso à chave de API negado. Verifique o modelo selecionado, o espaço de trabalho e as restrições de IP.</string>
+    <string name="error_rate_limit">Limite do serviço atingido. Tente novamente mais tarde.</string>
+    <string name="error_network">Conexão perdida. Verifique a rede.</string>
+    <string name="error_service">O serviço retornou uma resposta inválida ou incompleta</string>
+
+    <string name="settings_translation_add">Adicionar serviço</string>
+    <string name="settings_translation_empty">Ainda não há serviço de tradução.</string>
+    <string name="settings_translation_new">Novo serviço de tradução</string>
+    <string name="settings_translation_edit">Editar serviço de tradução</string>
+    <string name="settings_translation_name">Nome</string>
+    <string name="settings_translation_missing_name">Insira um nome.</string>
+    <string name="settings_translation_choose">Escolha um serviço de tradução.</string>
+    <string name="settings_translation_add_first">Adicione um serviço de tradução.</string>
+    <string name="settings_translation_incomplete">Este serviço está incompleto. Edite-o para corrigir.</string>
+    <string name="action_done">Concluído</string>
+    <string name="action_cancel">Cancelar</string>
 </resources>

@@ -195,9 +195,9 @@ private fun ConversationScreen(
             )
         }
     }
-    val onCopy = { card: CardState ->
+    val onCopy = { text: String ->
         scope.launch {
-            clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("translation", card.translation)))
+            clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("translation", text)))
         }
         // Android 13+ shows its own clipboard confirmation.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) vm.showHint(Hint.Copied)
@@ -229,11 +229,12 @@ private fun ConversationScreen(
                         ResultCell(
                             card = card,
                             cell = card.cell(card.slotFor(state.langs, 0)),
-                            // Copy, delete and retry stay on one side, so the two lists don't both offer them.
-                            showActions = true,
-                            onCopy = { onCopy(card) },
+                            // The error and its retry stay on one side, so the two lists don't both show them.
+                            showError = true,
+                            onCopy = onCopy,
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
+                            turn = Turn.Clockwise,
                             retryEnabled = !busy,
                             modifier = modifier,
                         )
@@ -273,10 +274,11 @@ private fun ConversationScreen(
                         ResultCell(
                             card = card,
                             cell = card.cell(card.slotFor(state.langs, 1)),
-                            showActions = false,
-                            onCopy = {},
-                            onDelete = {},
+                            showError = false,
+                            onCopy = onCopy,
+                            onDelete = { vm.delete(card.id) },
                             onRetry = {},
+                            turn = Turn.CounterClockwise,
                             modifier = modifier,
                         )
                     },
@@ -299,7 +301,7 @@ private fun ConversationScreen(
                     CardList(state.cards, listState, entered) { card, modifier ->
                         ResultCard(
                             card = card,
-                            onCopy = { onCopy(card) },
+                            onCopy = onCopy,
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
                             retryEnabled = !busy,
@@ -480,7 +482,8 @@ private fun LanguageButton(lang: Lang, onClick: () -> Unit, modifier: Modifier =
             modifier = Modifier.weight(1f, fill = false),
             label = "lang",
         ) { l ->
-            Text(l.displayName(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            // In its own script, so each party recognizes theirs whatever the phone's language.
+            Text(l.nativeName(), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Icon(painterResource(R.drawable.ic_arrow_drop_down), null)
     }

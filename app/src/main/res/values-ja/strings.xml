@@ -82,6 +82,15 @@
     <string name="settings_show_key">キーを表示</string>
     <string name="settings_hide_key">キーを非表示</string>
     <string name="settings_unsaved">未保存の変更</string>
+
+    <string name="settings_debug_mode">デバッグモード</string>
+    <string name="settings_debug_mode_body">アプリ内のフローティングウィンドウに主要なログを表示します。</string>
+    <string name="debug_log_title">ログ</string>
+    <string name="debug_log_empty">イベントはまだありません</string>
+    <string name="debug_log_copy">ログをコピー</string>
+    <string name="debug_log_clear">ログを消去</string>
+    <string name="debug_log_collapse">ログを最小化</string>
+    <string name="debug_log_expand">ログを表示</string>
     <string name="settings_revert">元に戻す</string>
     <string name="settings_discard_title">変更を破棄しますか？</string>
     <string name="settings_discard_body">このページで行った変更は失われます。</string>

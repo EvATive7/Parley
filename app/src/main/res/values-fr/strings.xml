@@ -82,6 +82,15 @@
     <string name="settings_show_key">Afficher la clé</string>
     <string name="settings_hide_key">Masquer la clé</string>
     <string name="settings_unsaved">Modifications non enregistrées</string>
+
+    <string name="settings_debug_mode">Mode débogage</string>
+    <string name="settings_debug_mode_body">Affiche les principaux journaux de l\'application dans une fenêtre flottante intégrée.</string>
+    <string name="debug_log_title">Journal</string>
+    <string name="debug_log_empty">Aucun événement pour le moment</string>
+    <string name="debug_log_copy">Copier le journal</string>
+    <string name="debug_log_clear">Effacer le journal</string>
+    <string name="debug_log_collapse">Réduire le journal</string>
+    <string name="debug_log_expand">Afficher le journal</string>
     <string name="settings_revert">Annuler</string>
     <string name="settings_discard_title">Ignorer les modifications ?</string>
     <string name="settings_discard_body">Les modifications apportées sur cette page seront perdues.</string>

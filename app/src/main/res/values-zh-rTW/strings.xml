@@ -1,12 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
+    <string name="onboarding_title">Parley 需要使用麥克風</string>
+    <string name="onboarding_body">按住按鈕說話即可翻譯。語音會傳送給你選擇的辨識服務，本機只保留文字。</string>
+    <string name="onboarding_grant">允許使用麥克風</string>
+    <string name="onboarding_open_settings">開啟系統設定</string>
+    <string name="onboarding_denied_hint">麥克風權限已關閉。請在系統設定中開啟後返回。</string>
+
+    <string name="pick_language">選擇語言</string>
+    <string name="swap_languages">互換語言</string>
+    <string name="lang_in_other_slot">互換</string>
+
     <string name="ptt_hold_to_talk">按住說話</string>
     <string name="ptt_release_to_send">放開傳送 · 上滑取消</string>
     <string name="ptt_time_left">還剩 %1$d 秒</string>
     <string name="ptt_release_to_cancel">放開取消</string>
     <string name="ptt_recognizing">辨識中…</string>
     <string name="ptt_copied">已複製</string>
+
+    <string name="action_copy">複製</string>
+    <string name="action_delete">刪除</string>
+    <string name="action_retry">重試</string>
+
+    <string name="ptt_description">按住說話</string>
+    <string name="state_recording">錄音中</string>
+    <string name="state_cancel_armed">放開取消</string>
+    <string name="state_busy">翻譯中</string>
+
+    <string name="error_mic">無法開啟麥克風</string>
+    <string name="error_generic">發生錯誤</string>
+    <string name="error_no_speech">沒有聽清楚，請重試。</string>
+    <string name="error_timeout">服務回應時間過長</string>
 
     <string name="settings_title">服務設定</string>
     <string name="settings_privacy">語音和文字僅傳送給所選服務，金鑰在本機透過 Android Keystore 加密儲存。</string>

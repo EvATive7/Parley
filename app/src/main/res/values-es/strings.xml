@@ -82,6 +82,15 @@
     <string name="settings_show_key">Mostrar clave</string>
     <string name="settings_hide_key">Ocultar clave</string>
     <string name="settings_unsaved">Cambios sin guardar</string>
+
+    <string name="settings_debug_mode">Modo de depuración</string>
+    <string name="settings_debug_mode_body">Muestra los registros principales de la aplicación en una ventana flotante.</string>
+    <string name="debug_log_title">Registro</string>
+    <string name="debug_log_empty">Aún no hay eventos</string>
+    <string name="debug_log_copy">Copiar registro</string>
+    <string name="debug_log_clear">Borrar registro</string>
+    <string name="debug_log_collapse">Minimizar registro</string>
+    <string name="debug_log_expand">Mostrar registro</string>
     <string name="settings_revert">Deshacer</string>
     <string name="settings_discard_title">¿Descartar los cambios?</string>
     <string name="settings_discard_body">Se perderán los cambios realizados en esta página.</string>

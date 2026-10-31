@@ -1,41 +1,120 @@
-# Parley
+<div align="center">
 
-开源安卓语音翻译 App：按住说话，云端 ASR 实时转写，再由 LLM 翻译，译文流式显示。
+# 🗣️ Parley
 
-> **当前阶段：多 ASR 服务接入。** 已对齐 Voxaia 的 DashScope、OpenAI 与火山引擎转写服务；翻译使用 OpenAI 兼容接口。应用不内置任何凭据。
+An open-source face-to-face translation app for Android.
 
-## 使用
+[![Latest release](https://img.shields.io/github/v/release/EvATive7/Parley.svg?label=latest)](https://github.com/EvATive7/Parley/releases/latest)
+![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3DDC84.svg?logo=android&logoColor=white)
 
-1. 打开 App，授予麦克风权限。
-2. 进入首页的「服务设置」：
-   - **语音识别**：只需选择预设服务并填写该提供商的凭据。DashScope 需要地域与 API Key；OpenAI 需要 API Key；火山引擎需要 AppID 与 Access Token。同一提供商的凭据在其服务之间共用。
-   - **翻译**：填写 OpenAI 兼容 Base URL（例如 `https://api.openai.com/v1`）、模型与 API Key。App 自动追加 `/chat/completions`。
-3. 选择双方语言，按住按钮说话，松开发送；上滑后松开取消。
+**English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 
-可选 ASR 包括：Fun-ASR-RealTime（流式输入）、Fun-ASR-RealTime（非流式输入）、GPT Realtime Whisper、GPT-4o Transcribe（非流式输入）、GPT-4o Mini Transcribe（非流式输入）、Doubao Seed ASR 2.0（流式输入）、Doubao Seed ASR 2.0（非流式输入）和 Doubao Seed ASR 2.0（非流式输入极速版）。服务名称及描述与 Voxaia 对齐；服务地址、模型和资源 ID 均为内置预设，不能手工修改。
+[**Download APK**](https://github.com/EvATive7/Parley/releases/latest)
 
-DashScope Key 必须开通 Fun-ASR 实时语音识别权限，并选择与 Key 一致的北京或新加坡地域；OpenAI Key 必须有权调用所选转写模型；火山引擎账号必须开通所选服务对应的 `volc.seedasr.sauc.duration`、`volc.seedasr.auc` 或 `volc.bigasr.auc_turbo` 资源。
+</div>
 
-**语言限制**：语言栏列出的是翻译目标语言，不代表当前 ASR 模型全部支持。默认 Fun-ASR 的语种范围见 [参考文档](docs/APIs/transcriber/aliyun_dashscope/docs/实时语音识别-Fun-ASR_Gummy_Paraformer.md)。ASR 未返回语言时使用本地 ML Kit 文字语言识别；短句、混合语言可能无法可靠判断，未知语言按语言 2 作为翻译目标。
+---
 
-## 已有能力
+Hold to speak and release to translate. The other person does the same, and each side sees the translation. Parley is designed for situations that need immediate communication, such as asking for directions abroad or joining multilingual meetings.
 
-- M1 的 Material 3 Expressive 主题、形变按钮（录音时随音量起伏）、双语提示、权限引导与结果卡片动画
-- 触碰录音、误触丢弃、上滑取消、60 秒限时、后台丢弃录音
-- DashScope：Fun-ASR-RealTime（流式输入）和 Fun-ASR-RealTime（非流式输入），支持北京/新加坡地域
-- OpenAI：GPT Realtime Whisper，以及 GPT-4o Transcribe（非流式输入）和 GPT-4o Mini Transcribe（非流式输入）
-- 火山引擎：Doubao Seed ASR 2.0（流式输入）、Doubao Seed ASR 2.0（非流式输入）和 Doubao Seed ASR 2.0（非流式输入极速版）
-- ASR 路由按预设自动选择协议、固定地址、模型与资源 ID；切换同一提供商的服务会复用已保存凭据
-- OpenAI 兼容 Chat Completions + SSE：译文片段流式显示、取消时终止 HTTP 请求
-- 配置、鉴权、限流、网络、超时、服务结果异常的分类提示
-- 按指定卡片重试翻译；只有最终识别文本可以重试，ASR 的未完成片段不能冒充完整原文
-- DataStore 保存设置，API Key 由 Android Keystore AES-GCM 加密；备份与设备迁移排除应用数据
+<div align="center">
+<table>
+<tr>
+<td><img src="docs/screenshots/translate-zh-ja.jpg" width="240" alt="Chinese–Japanese translation"></td>
+<td><img src="docs/screenshots/recording.jpg" width="240" alt="Recording"></td>
+<td><img src="docs/screenshots/translate-zh-en.jpg" width="240" alt="Chinese–English translation"></td>
+</tr>
+<tr>
+<td align="center">Translation result</td>
+<td align="center">Hold to record</td>
+<td align="center">Bilingual prompts</td>
+</tr>
+</table>
 
-尚未实现的范围：Azure ASR、持久化历史、更完整的设置/本地化。TTS 仍只保留接口，V1 无播放入口。
+<img src="docs/screenshots/face-to-face.jpg" width="600" alt="Face-to-face mode">
 
-## 构建与检查
+*Face-to-face mode: the screen is split in two, with each side facing one person.*
 
-需要 JDK 17+ 与 Android SDK Platform 37，最低支持 Android 8.0（API 26）。
+</div>
+
+## ✨ Features
+
+- **Automatic translation direction**: choose two languages once; speaking either language automatically translates into the other.
+- **Streaming output**: translations appear word by word without waiting for the whole sentence.
+- **Face-to-face mode**: place the phone flat on a table. The screen splits in two, with each side facing one person and showing the other person’s language.
+- **Hold to talk**: hold to record, release to send, or slide up to cancel.
+- **Bilingual prompts**: button instructions appear in both languages so each person can understand them.
+- **Card actions**: tap a card to view the full text, copy it, or delete it; failed translations can be retried.
+- **Direct end-to-end connections**: there is no intermediary server. Audio and text go directly to the providers you configure, and API keys are encrypted with Android Keystore.
+
+## 📦 Getting started
+
+1. Download and install the APK from [Releases](https://github.com/EvATive7/Parley/releases/latest) (Android 8.0 or later is required).
+2. Open Settings using the gear icon in the upper-right corner, then configure a speech recognition service and an OpenAI-compatible translation service.
+3. Choose the two languages, hold the button, and speak.
+
+> Parley itself is free and does not provide accounts or usage credits. Your chosen providers charge for speech recognition and translation.
+
+## 🎙️ Speech recognition services
+
+| Provider | Service | Required configuration |
+| --- | --- | --- |
+| Alibaba Cloud DashScope | Fun-ASR-RealTime (streaming / non-streaming) | API key and region (Beijing or Singapore) |
+| OpenAI | GPT Realtime Whisper, GPT-4o Transcribe, GPT-4o Mini Transcribe | API key |
+| Volcengine | Doubao Seed ASR 2.0 (streaming / non-streaming / non-streaming turbo) | AppID and Access Token; the corresponding resource must be enabled in the console |
+
+Streaming services return results while you speak. Non-streaming services return the result after you finish and are usually more accurate. Different services from the same provider share one set of credentials.
+
+## 🌏 Supported languages
+
+**Translation and interface**: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish, Italian, Portuguese, Russian, Arabic, Thai, Vietnamese, and Indonesian.
+
+The languages that can actually be recognized depend on the selected speech recognition service. For example, Volcengine’s streaming service supports only Chinese and English.
+
+## 🔒 Privacy
+
+- Audio and text are sent only to the providers you configure and never pass through an intermediary server.
+- Recordings are processed only in memory. Conversations are not persisted and are lost when the app closes.
+- API keys are encrypted with Android Keystore, excluded from logs, and not included in backups.
+
+## ❓ FAQ
+
+<details>
+<summary><b>Why is the translation direction sometimes wrong?</b></summary>
+
+When the speech recognition service does not return language information, Parley identifies the language locally. Very short sentences or mixed Chinese and English can be misidentified. If the language cannot be determined, Parley translates into the second selected language.
+
+</details>
+
+<details>
+<summary><b>What happens to audio already sent when I slide up to cancel?</b></summary>
+
+With a streaming service, audio is sent in real time while the button is held. Cancelling immediately stops further transmission and discards the result, but audio that has already been sent cannot be recalled.
+
+</details>
+
+<details>
+<summary><b>Why do I need to enter my keys again after reinstalling?</b></summary>
+
+Keys are tied to encrypted storage on the device and are not backed up. You must configure them again after reinstalling the app or after the system resets its encryption keys.
+
+</details>
+
+<details>
+<summary><b>How can I troubleshoot a problem?</b></summary>
+
+Enable **Debug mode** in Settings to show a floating in-app log window. Copy the log and report the problem in [Issues](https://github.com/EvATive7/Parley/issues).
+
+</details>
+
+## 🛠️ Development
+
+<details>
+<summary>Build, release, and project structure</summary>
+
+### Build
+
+JDK 17+ and Android SDK Platform 37 are required.
 
 ```sh
 ./gradlew testDebugUnitTest
@@ -44,52 +123,40 @@ DashScope Key 必须开通 Fun-ASR 实时语音识别权限，并选择与 Key �
 ./gradlew assembleRelease
 ```
 
-产物：
+Outputs are written to `app/build/outputs/apk/{debug,release}/`. The debug package is `io.github.evative7.parley.debug`, uses the name “Parley Debug” and an amber icon, and can be installed alongside the release build. Local builds use the fixed version `0.1.0`. If `app/release.jks` is absent, the release APK is signed with the debug key.
 
-- `app/build/outputs/apk/debug/app-debug.apk`
-- `app/build/outputs/apk/release/app-release.apk`
+### Release
 
-Debug 包名为 `io.github.evative7.parley.debug`、应用名 `Parley Debug`（琥珀色图标），可与 release 同时安装。本地构建的版本号固定为 `0.1.0`；本地没有 `app/release.jks` 时 release 回退为 debug 签名。
-
-### 发版
-
-Git tag 是版本号的唯一来源。推送 annotated tag 即触发 `.github/workflows/release.yml`：
+The Git tag is the sole source of the version number. Pushing an annotated tag triggers `.github/workflows/release.yml`:
 
 ```sh
-git tag -a v0.3.0 -m "Release v0.3.0"
-git push origin v0.3.0
+git tag -a v0.5.0 -m "Release v0.5.0"
+git push origin v0.5.0
 ```
 
-CI 由 tag 得到 `versionName`，并按 `major*10000 + minor*100 + patch` 计算 `versionCode`，跑单测后用正式密钥签名并把 APK 上传到 GitHub Release。仓库需配置 secrets：`KEYSTORE_BASE64`（`release.jks` 的 base64）、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`。
+CI extracts `versionName` from the tag, calculates `versionCode` as `major*10000 + minor*100 + patch`, runs unit tests, signs the APK, and uploads it to a GitHub Release. The repository must define these secrets: `KEYSTORE_BASE64` (base64 of `release.jks`), `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD`.
 
-会话按钮提示有 15 种语言；其余界面目前为英文、简体中文、繁体中文，其他区域回退英文。`app/lint.xml` 将这项已知的缺译工作保留为 warning，而非隐藏报告。
+Volcengine resource IDs: `volc.seedasr.sauc.duration`, `volc.seedasr.auc`, and `volc.bigasr.auc_turbo`.
 
-## 结构
+### Project structure
 
 ```
 app/src/main/java/io/github/evative7/parley/
-├─ ui/        主界面、按住说话按钮、卡片、权限引导、服务设置
-├─ state/     TranslateViewModel、SettingsViewModel、PTT 状态机
-├─ audio/     AudioSource、AudioRecorder、VolumeMeter、WAV/重采样工具
-├─ asr/       服务预设、路由，以及 DashScope/OpenAI/火山引擎识别器
-├─ translate/ Translator、OpenAiCompatibleTranslator
-├─ network/   SSE 分帧、脱敏服务错误
-├─ model/     语言、离线文字语言识别
-├─ data/      SettingsRepository、ServiceSettings、KeyVault
-├─ tts/       TextToSpeaker（仅接口）
-└─ di/        Hilt 绑定与网络配置
+├─ ui/        UI, talk button, cards, face-to-face layout, service settings
+├─ state/     TranslateViewModel, SettingsViewModel, talk-button state machine
+├─ audio/     Recording, volume, WAV, and resampling
+├─ asr/       Speech presets and routing; DashScope, OpenAI, and Volcengine recognizers
+├─ translate/ OpenAI-compatible streaming translation
+├─ network/   SSE parsing, connection warm-up, sanitized service errors
+├─ model/     Languages and on-device language identification
+├─ data/      Settings, translation services, Keystore-backed secret storage
+├─ debug/     In-app debug log
+├─ tts/       Text-to-speech interface only
+└─ di/        Hilt bindings and network configuration
 ```
 
-## 文档
+### Documentation
 
-- [文档索引与来源](docs/README.md)
-- [现有设计文档 PDF](docs/Parley-设计文档.pdf)
-- [M2 实施记录与验收清单](docs/M2-实施与验收.md)
-- [2026-10-30 云端故障修复与真机回归](docs/M2-云端回归-2026-10-30.md)
-- [从 Voxaia 复制的 transcriber 文档](docs/APIs/transcriber/README.md)
+- [Speech service API reference](docs/APIs/transcriber/README.md)
 
-## 隐私
-
-语音与文本直接发给你设置的服务商，不经过 Parley 自建中转。真实流式识别会在按住期间发送语音；取消只能停止后续发送，不能撤回服务商已经收到的音频。录音始终只在内存处理；M2 对话卡片同样只保留在内存，尚无本地历史数据库。
-
-API Key 不进入源码、APK、日志、URL 或明文 DataStore。设置页中的 Key 被遮挡，表单不写入 Android 保存的界面状态；应用数据禁止备份与设备迁移。设备卸载或 Keystore 密钥失效后，可能需要重新输入 Key。
+</details>

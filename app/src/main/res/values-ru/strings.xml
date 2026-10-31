@@ -1,12 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
+    <string name="onboarding_title">Parley требуется доступ к микрофону</string>
+    <string name="onboarding_body">Удерживайте кнопку и говорите. Голос отправляется выбранному сервису распознавания речи, а на устройстве сохраняется только текст.</string>
+    <string name="onboarding_grant">Разрешить доступ к микрофону</string>
+    <string name="onboarding_open_settings">Открыть системные настройки</string>
+    <string name="onboarding_denied_hint">Доступ к микрофону отключён. Включите его в системных настройках и вернитесь.</string>
+
+    <string name="pick_language">Выберите язык</string>
+    <string name="swap_languages">Поменять языки местами</string>
+    <string name="face_to_face">Режим лицом к лицу</string>
+    <string name="face_to_face_exit">Выйти из режима лицом к лицу</string>
+    <string name="lang_in_other_slot">Поменять</string>
+
     <string name="ptt_hold_to_talk">Удерживайте, чтобы говорить</string>
     <string name="ptt_release_to_send">Отпустите — отправить · Вверх — отмена</string>
     <string name="ptt_time_left">Осталось %1$d с</string>
     <string name="ptt_release_to_cancel">Отпустите для отмены</string>
     <string name="ptt_recognizing">Распознавание…</string>
     <string name="ptt_copied">Скопировано</string>
-    <string name="face_to_face">Режим лицом к лицу</string>
-    <string name="face_to_face_exit">Выйти из режима лицом к лицу</string>
+
+    <string name="action_copy">Копировать</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_retry">Повторить</string>
+
+    <string name="ptt_description">Удерживайте, чтобы говорить</string>
+    <string name="state_recording">Запись</string>
+    <string name="state_cancel_armed">Отпустите для отмены</string>
+    <string name="state_busy">Перевод</string>
+
+    <string name="error_mic">Не удалось открыть микрофон</string>
+    <string name="error_generic">Что-то пошло не так</string>
+    <string name="error_no_speech">Не удалось разобрать речь. Попробуйте ещё раз.</string>
+    <string name="error_timeout">Сервис слишком долго не отвечал</string>
+
+    <string name="settings_title">Сервисы</string>
+    <string name="settings_privacy">Аудио и текст отправляются только выбранным сервисам. Ключи зашифрованы на этом устройстве с помощью Android Keystore.</string>
+    <string name="settings_asr">Распознавание речи</string>
+    <string name="settings_asr_service">Сервис распознавания</string>
+    <string name="settings_provider_dashscope">DashScope</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_volcengine">Volcengine</string>
+    <string name="settings_asr_fun_stream">Fun-ASR-RealTime (потоковый ввод)</string>
+    <string name="settings_asr_fun_stream_desc">Модель транскрибирования Alibaba в реальном времени с высоким качеством, быстрым распознаванием и хорошей точностью, подходящая для обычных сценариев на китайском и английском языках. Версия с потоковым вводом обеспечивает меньшую задержку и более быстрое распознавание.</string>
+    <string name="settings_asr_fun_non_stream">Fun-ASR-RealTime (непотоковый ввод)</string>
+    <string name="settings_asr_fun_non_stream_desc">Модель транскрибирования Alibaba в реальном времени с высоким качеством, быстрым распознаванием и хорошей точностью, подходящая для обычных сценариев на китайском и английском языках. Версия с непотоковым вводом обеспечивает более высокую точность и более полную структуру текста и смысла.</string>
+    <string name="settings_asr_gpt_realtime">GPT Realtime Whisper</string>
+    <string name="settings_asr_gpt_realtime_desc">Потоковая модель транскрибирования OpenAI в реальном времени для сеансов Realtime. Лучше всего подходит для субтитров с малой задержкой и живой диктовки.</string>
+    <string name="settings_asr_gpt_4o">GPT-4o Transcribe (непотоковый ввод)</string>
+    <string name="settings_asr_gpt_4o_desc">Высококачественная модель транскрибирования OpenAI с отличным распознаванием, особенно эффективная для английского языка, международных многоязычных сценариев, английской речи с акцентом и других языков. Версия с непотоковым вводом обеспечивает более высокую точность и более полную структуру текста и смысла.</string>
+    <string name="settings_asr_gpt_4o_mini">GPT-4o Mini Transcribe (непотоковый ввод)</string>
+    <string name="settings_asr_gpt_4o_mini_desc">Облегчённая модель транскрибирования OpenAI, сохраняющая преимущества GPT-4o Transcribe при меньшей стоимости и задержке и подходящая для частого непрерывного использования. Версия с непотоковым вводом обеспечивает более высокую точность и более полную структуру текста и смысла.</string>
+    <string name="settings_asr_doubao_stream">Doubao Seed ASR 2.0 (потоковый ввод)</string>
+    <string name="settings_asr_doubao_stream_desc">Модель транскрибирования Doubao от ByteDance с повышенной точностью в специализированных областях, лучшим распознаванием в сложных условиях, поддержкой контекста и дополнительными функциями. Версия с потоковым вводом обеспечивает меньшую задержку и более высокую скорость и поддерживает только китайский и английский языки.</string>
+    <string name="settings_asr_doubao_non_stream">Doubao Seed ASR 2.0 (непотоковый ввод)</string>
+    <string name="settings_asr_doubao_non_stream_desc">Модель транскрибирования Doubao от ByteDance с повышенной точностью в специализированных областях, лучшим распознаванием в сложных условиях, поддержкой контекста и дополнительными функциями. Версия с непотоковым вводом обеспечивает более высокую точность и более полную структуру текста и смысла.</string>
+    <string name="settings_asr_doubao_turbo">Doubao Seed ASR 2.0 (непотоковый ввод, turbo)</string>
+    <string name="settings_asr_doubao_turbo_desc">Модель транскрибирования ByteDance, сохраняющая преимущества Doubao Seed ASR 2.0 с непотоковым вводом при меньшей задержке и более высокой скорости. Версия с непотоковым вводом обеспечивает более высокую точность и более полную структуру текста и смысла.</string>
+    <string name="settings_dashscope_region">Регион</string>
+    <string name="settings_region_beijing">Пекин</string>
+    <string name="settings_region_singapore">Сингапур</string>
+    <string name="settings_app_id">AppID</string>
+    <string name="settings_access_token">Токен доступа</string>
+    <string name="settings_dashscope_hint">Регион должен совпадать с регионом, в котором был создан ключ API.</string>
+    <string name="settings_volcengine_hint">Включите ресурс для выбранного сервиса в консоли Volcengine.</string>
+    <string name="settings_translation">Перевод</string>
+    <string name="settings_translation_provider">API, совместимый с OpenAI</string>
+    <string name="settings_base_url">Базовый URL (включая /v1)</string>
+    <string name="settings_model">Модель</string>
+    <string name="settings_key">Ключ API</string>
+    <string name="settings_save">Сохранить</string>
+    <string name="settings_saving">Сохранение…</string>
+    <string name="settings_invalid_translation_url">Введите базовый URL перевода https:// без учётных данных, параметров запроса и фрагментов.</string>
+    <string name="settings_missing_model">Введите название модели.</string>
+    <string name="settings_missing_asr_key">Введите учётные данные для выбранного речевого сервиса без управляющих символов.</string>
+    <string name="settings_missing_asr_app_id">Введите AppID Volcengine без управляющих символов.</string>
+    <string name="settings_missing_key">Введите ключ API без управляющих символов.</string>
+    <string name="settings_storage_error">Не удалось прочитать или сохранить настройки либо ключи. Проверьте хранилище устройства и при необходимости введите ключи заново.</string>
+    <string name="settings_save_failed">Не удалось сохранить. Попробуйте ещё раз.</string>
+    <string name="settings_required">Настройте сервисы распознавания и перевода</string>
+    <string name="action_back">Назад</string>
+    <string name="settings_show_key">Показать ключ</string>
+    <string name="settings_hide_key">Скрыть ключ</string>
+    <string name="settings_unsaved">Несохранённые изменения</string>
+
+    <string name="settings_debug_mode">Режим отладки</string>
+    <string name="settings_debug_mode_body">Показывает основные журналы приложения во всплывающем окне.</string>
+    <string name="debug_log_title">Журнал</string>
+    <string name="debug_log_empty">Событий пока нет</string>
+    <string name="debug_log_copy">Копировать журнал</string>
+    <string name="debug_log_clear">Очистить журнал</string>
+    <string name="debug_log_collapse">Свернуть журнал</string>
+    <string name="debug_log_expand">Показать журнал</string>
+    <string name="settings_revert">Отменить</string>
+    <string name="settings_discard_title">Отменить изменения?</string>
+    <string name="settings_discard_body">Изменения на этой странице будут потеряны.</string>
+    <string name="settings_discard">Отменить изменения</string>
+    <string name="settings_keep_editing">Продолжить редактирование</string>
+    <string name="error_configuration">Сначала настройте сервисы распознавания и перевода</string>
+    <string name="error_authentication">Ошибка аутентификации. Проверьте ключ, адрес и регион.</string>
+    <string name="error_permission">Доступ по ключу API запрещён. Проверьте выбранную модель, рабочую область и ограничения IP.</string>
+    <string name="error_rate_limit">Достигнут лимит сервиса. Повторите попытку позже.</string>
+    <string name="error_network">Соединение потеряно. Проверьте сеть.</string>
+    <string name="error_service">Сервис вернул недопустимый или неполный ответ</string>
+
+    <string name="settings_translation_add">Добавить сервис</string>
+    <string name="settings_translation_empty">Сервисов перевода пока нет.</string>
+    <string name="settings_translation_new">Новый сервис перевода</string>
+    <string name="settings_translation_edit">Изменить сервис перевода</string>
+    <string name="settings_translation_name">Название</string>
+    <string name="settings_translation_missing_name">Введите название.</string>
+    <string name="settings_translation_choose">Выберите сервис перевода.</string>
+    <string name="settings_translation_add_first">Добавьте сервис перевода.</string>
+    <string name="settings_translation_incomplete">Настройка сервиса не завершена. Измените её.</string>
+    <string name="action_done">Готово</string>
+    <string name="action_cancel">Отмена</string>
 </resources>

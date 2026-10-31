@@ -1,12 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
+    <string name="onboarding_title">يحتاج Parley إلى الميكروفون</string>
+    <string name="onboarding_body">اضغط مطولاً على الزر وتحدث. يُرسل صوتك إلى خدمة التعرّف على الكلام التي تختارها، ولا يُحتفظ على هذا الجهاز إلا بالنص.</string>
+    <string name="onboarding_grant">السماح بالوصول إلى الميكروفون</string>
+    <string name="onboarding_open_settings">فتح إعدادات النظام</string>
+    <string name="onboarding_denied_hint">تم إيقاف الوصول إلى الميكروفون. فعّله في إعدادات النظام ثم ارجع.</string>
+
+    <string name="pick_language">اختر لغة</string>
+    <string name="swap_languages">تبديل اللغتين</string>
+    <string name="face_to_face">وضع وجهًا لوجه</string>
+    <string name="face_to_face_exit">الخروج من وضع وجهًا لوجه</string>
+    <string name="lang_in_other_slot">تبديل</string>
+
     <string name="ptt_hold_to_talk">اضغط مطولاً للتحدث</string>
     <string name="ptt_release_to_send">أفلت للإرسال · اسحب لأعلى للإلغاء</string>
     <string name="ptt_time_left">متبقٍ %1$d ث</string>
     <string name="ptt_release_to_cancel">أفلت للإلغاء</string>
     <string name="ptt_recognizing">جارٍ التعرّف…</string>
     <string name="ptt_copied">تم النسخ</string>
-    <string name="face_to_face">وضع وجهًا لوجه</string>
-    <string name="face_to_face_exit">الخروج من وضع وجهًا لوجه</string>
+
+    <string name="action_copy">نسخ</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_retry">إعادة المحاولة</string>
+
+    <string name="ptt_description">اضغط مطولاً للتحدث</string>
+    <string name="state_recording">جارٍ التسجيل</string>
+    <string name="state_cancel_armed">أفلت للإلغاء</string>
+    <string name="state_busy">جارٍ الترجمة</string>
+
+    <string name="error_mic">تعذّر فتح الميكروفون</string>
+    <string name="error_generic">حدث خطأ ما</string>
+    <string name="error_no_speech">لم أتمكن من سماع ذلك. حاول مرة أخرى.</string>
+    <string name="error_timeout">استغرقت الخدمة وقتًا طويلاً للاستجابة</string>
+
+    <string name="settings_title">الخدمات</string>
+    <string name="settings_privacy">لا يُرسل الصوت والنص إلا إلى الخدمات التي تختارها. تُشفّر المفاتيح على هذا الجهاز باستخدام Android Keystore.</string>
+    <string name="settings_asr">التعرّف على الكلام</string>
+    <string name="settings_asr_service">خدمة التعرّف</string>
+    <string name="settings_provider_dashscope">DashScope</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_volcengine">Volcengine</string>
+    <string name="settings_asr_fun_stream">Fun-ASR-RealTime (إدخال متدفق)</string>
+    <string name="settings_asr_fun_stream_desc">نموذج نسخ فوري من Alibaba بجودة عالية وسرعة تعرّف ودقة جيدة، مناسب للاستخدامات العامة بالصينية والإنجليزية. يوفّر إصدار الإدخال المتدفق زمن استجابة أقل وسرعة تعرّف أعلى.</string>
+    <string name="settings_asr_fun_non_stream">Fun-ASR-RealTime (إدخال غير متدفق)</string>
+    <string name="settings_asr_fun_non_stream_desc">نموذج نسخ فوري من Alibaba بجودة عالية وسرعة تعرّف ودقة جيدة، مناسب للاستخدامات العامة بالصينية والإنجليزية. يوفّر إصدار الإدخال غير المتدفق دقة أعلى وبنية دلالية ونصية أكثر اكتمالاً.</string>
+    <string name="settings_asr_gpt_realtime">GPT Realtime Whisper</string>
+    <string name="settings_asr_gpt_realtime_desc">نموذج نسخ فوري متدفق من OpenAI لجلسات Realtime. مناسب للتسميات التوضيحية منخفضة التأخير والإملاء المباشر.</string>
+    <string name="settings_asr_gpt_4o">GPT-4o Transcribe (إدخال غير متدفق)</string>
+    <string name="settings_asr_gpt_4o_desc">نموذج نسخ عالي الجودة من OpenAI يتميز بقوة التعرّف، وخصوصًا للإنجليزية والبيئات الدولية متعددة اللغات والإنجليزية ذات اللهجات واللغات العالمية. يوفّر إصدار الإدخال غير المتدفق دقة أعلى وبنية دلالية ونصية أكثر اكتمالاً.</string>
+    <string name="settings_asr_gpt_4o_mini">GPT-4o Mini Transcribe (إدخال غير متدفق)</string>
+    <string name="settings_asr_gpt_4o_mini_desc">نموذج نسخ خفيف من OpenAI يحتفظ بمزايا GPT-4o Transcribe مع تكلفة وزمن استجابة أقل، ومناسب للاستخدام المتكرر والمستمر. يوفّر إصدار الإدخال غير المتدفق دقة أعلى وبنية دلالية ونصية أكثر اكتمالاً.</string>
+    <string name="settings_asr_doubao_stream">Doubao Seed ASR 2.0 (إدخال متدفق)</string>
+    <string name="settings_asr_doubao_stream_desc">نموذج نسخ Doubao من ByteDance بدقة أعلى في المجالات المتخصصة وتعرّف أفضل في الظروف المعقدة ودعم للسياق وميزات إضافية. يوفّر إصدار الإدخال المتدفق زمن استجابة أقل وسرعة أعلى، ويدعم الصينية والإنجليزية فقط.</string>
+    <string name="settings_asr_doubao_non_stream">Doubao Seed ASR 2.0 (إدخال غير متدفق)</string>
+    <string name="settings_asr_doubao_non_stream_desc">نموذج نسخ Doubao من ByteDance بدقة أعلى في المجالات المتخصصة وتعرّف أفضل في الظروف المعقدة ودعم للسياق وميزات إضافية. يوفّر إصدار الإدخال غير المتدفق دقة أعلى وبنية دلالية ونصية أكثر اكتمالاً.</string>
+    <string name="settings_asr_doubao_turbo">Doubao Seed ASR 2.0 (إدخال غير متدفق سريع)</string>
+    <string name="settings_asr_doubao_turbo_desc">نموذج نسخ من ByteDance يحتفظ بمزايا Doubao Seed ASR 2.0 ذي الإدخال غير المتدفق مع زمن استجابة أقل وسرعة نسخ أعلى. يوفّر إصدار الإدخال غير المتدفق دقة أعلى وبنية دلالية ونصية أكثر اكتمالاً.</string>
+    <string name="settings_dashscope_region">المنطقة</string>
+    <string name="settings_region_beijing">بكين</string>
+    <string name="settings_region_singapore">سنغافورة</string>
+    <string name="settings_app_id">AppID</string>
+    <string name="settings_access_token">رمز الوصول</string>
+    <string name="settings_dashscope_hint">يجب أن تطابق المنطقة مكان إنشاء مفتاح API.</string>
+    <string name="settings_volcengine_hint">فعّل مورد الخدمة المحددة في وحدة تحكم Volcengine.</string>
+    <string name="settings_translation">الترجمة</string>
+    <string name="settings_translation_provider">واجهة API متوافقة مع OpenAI</string>
+    <string name="settings_base_url">عنوان URL الأساسي (يتضمن /v1)</string>
+    <string name="settings_model">النموذج</string>
+    <string name="settings_key">مفتاح API</string>
+    <string name="settings_save">حفظ</string>
+    <string name="settings_saving">جارٍ الحفظ…</string>
+    <string name="settings_invalid_translation_url">أدخل عنوان URL أساسيًا للترجمة يبدأ بـ https:// ومن دون بيانات اعتماد أو معلمات استعلام أو أجزاء.</string>
+    <string name="settings_missing_model">أدخل اسم النموذج.</string>
+    <string name="settings_missing_asr_key">أدخل بيانات الاعتماد المطلوبة لخدمة الكلام المحددة من دون محارف تحكم.</string>
+    <string name="settings_missing_asr_app_id">أدخل AppID الخاص بـ Volcengine من دون محارف تحكم.</string>
+    <string name="settings_missing_key">أدخل مفتاح API من دون محارف تحكم.</string>
+    <string name="settings_storage_error">تعذّرت قراءة الإعدادات أو المفاتيح أو حفظها. تحقق من مساحة تخزين الجهاز وأعد إدخال المفاتيح عند الحاجة.</string>
+    <string name="settings_save_failed">تعذّر الحفظ. حاول مرة أخرى.</string>
+    <string name="settings_required">أعِدّ خدمات الكلام والترجمة</string>
+    <string name="action_back">رجوع</string>
+    <string name="settings_show_key">إظهار المفتاح</string>
+    <string name="settings_hide_key">إخفاء المفتاح</string>
+    <string name="settings_unsaved">تغييرات غير محفوظة</string>
+
+    <string name="settings_debug_mode">وضع تصحيح الأخطاء</string>
+    <string name="settings_debug_mode_body">يعرض سجلات التطبيق المهمة في نافذة عائمة داخل التطبيق.</string>
+    <string name="debug_log_title">السجل</string>
+    <string name="debug_log_empty">لا توجد أحداث بعد</string>
+    <string name="debug_log_copy">نسخ السجل</string>
+    <string name="debug_log_clear">مسح السجل</string>
+    <string name="debug_log_collapse">تصغير السجل</string>
+    <string name="debug_log_expand">إظهار السجل</string>
+    <string name="settings_revert">تراجع</string>
+    <string name="settings_discard_title">تجاهل التغييرات؟</string>
+    <string name="settings_discard_body">ستُفقد التغييرات التي أجريتها في هذه الصفحة.</string>
+    <string name="settings_discard">تجاهل</string>
+    <string name="settings_keep_editing">متابعة التعديل</string>
+    <string name="error_configuration">أعِدّ خدمات الكلام والترجمة أولاً</string>
+    <string name="error_authentication">فشلت المصادقة. تحقق من المفتاح ونقطة النهاية والمنطقة.</string>
+    <string name="error_permission">رُفض الوصول بمفتاح API. تحقق من النموذج المحدد ومساحة العمل وقيود عناوين IP.</string>
+    <string name="error_rate_limit">تم بلوغ حد الخدمة. حاول لاحقًا.</string>
+    <string name="error_network">انقطع الاتصال. تحقق من الشبكة.</string>
+    <string name="error_service">أعادت الخدمة استجابة غير صالحة أو غير مكتملة</string>
+
+    <string name="settings_translation_add">إضافة خدمة</string>
+    <string name="settings_translation_empty">لا توجد خدمة ترجمة بعد.</string>
+    <string name="settings_translation_new">خدمة ترجمة جديدة</string>
+    <string name="settings_translation_edit">تعديل خدمة الترجمة</string>
+    <string name="settings_translation_name">الاسم</string>
+    <string name="settings_translation_missing_name">أدخل اسمًا.</string>
+    <string name="settings_translation_choose">اختر خدمة ترجمة.</string>
+    <string name="settings_translation_add_first">أضف خدمة ترجمة.</string>
+    <string name="settings_translation_incomplete">إعداد هذه الخدمة غير مكتمل. عدّله لإصلاحه.</string>
+    <string name="action_done">تم</string>
+    <string name="action_cancel">إلغاء</string>
 </resources>

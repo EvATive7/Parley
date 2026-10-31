@@ -1,12 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
+    <string name="onboarding_title">Parley memerlukan mikrofon</string>
+    <string name="onboarding_body">Tahan tombol lalu bicara. Suara Anda dikirim ke layanan pengenalan ucapan yang dipilih, dan hanya teks yang disimpan di perangkat ini.</string>
+    <string name="onboarding_grant">Izinkan akses mikrofon</string>
+    <string name="onboarding_open_settings">Buka setelan sistem</string>
+    <string name="onboarding_denied_hint">Akses mikrofon dinonaktifkan. Aktifkan di setelan sistem, lalu kembali.</string>
+
+    <string name="pick_language">Pilih bahasa</string>
+    <string name="swap_languages">Tukar bahasa</string>
+    <string name="face_to_face">Mode tatap muka</string>
+    <string name="face_to_face_exit">Keluar dari mode tatap muka</string>
+    <string name="lang_in_other_slot">Tukar</string>
+
     <string name="ptt_hold_to_talk">Tahan untuk bicara</string>
     <string name="ptt_release_to_send">Lepas untuk kirim · Geser ke atas untuk batal</string>
     <string name="ptt_time_left">Sisa %1$d dtk</string>
     <string name="ptt_release_to_cancel">Lepas untuk batal</string>
     <string name="ptt_recognizing">Mengenali…</string>
     <string name="ptt_copied">Disalin</string>
-    <string name="face_to_face">Mode tatap muka</string>
-    <string name="face_to_face_exit">Keluar dari mode tatap muka</string>
+
+    <string name="action_copy">Salin</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_retry">Coba lagi</string>
+
+    <string name="ptt_description">Tahan untuk bicara</string>
+    <string name="state_recording">Merekam</string>
+    <string name="state_cancel_armed">Lepas untuk batal</string>
+    <string name="state_busy">Menerjemahkan</string>
+
+    <string name="error_mic">Tidak dapat membuka mikrofon</string>
+    <string name="error_generic">Terjadi kesalahan</string>
+    <string name="error_no_speech">Tidak terdengar jelas. Coba lagi.</string>
+    <string name="error_timeout">Layanan terlalu lama merespons</string>
+
+    <string name="settings_title">Layanan</string>
+    <string name="settings_privacy">Audio dan teks hanya dikirim ke layanan yang Anda pilih. Kunci dienkripsi di perangkat ini dengan Android Keystore.</string>
+    <string name="settings_asr">Pengenalan ucapan</string>
+    <string name="settings_asr_service">Layanan pengenalan</string>
+    <string name="settings_provider_dashscope">DashScope</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_volcengine">Volcengine</string>
+    <string name="settings_asr_fun_stream">Fun-ASR-RealTime (input streaming)</string>
+    <string name="settings_asr_fun_stream_desc">Model transkripsi real-time Alibaba dengan kualitas tinggi, pengenalan cepat, dan akurasi baik, cocok untuk penggunaan umum dalam bahasa Mandarin dan Inggris. Versi input streaming memiliki latensi lebih rendah dan kecepatan pengenalan lebih tinggi.</string>
+    <string name="settings_asr_fun_non_stream">Fun-ASR-RealTime (input non-streaming)</string>
+    <string name="settings_asr_fun_non_stream_desc">Model transkripsi real-time Alibaba dengan kualitas tinggi, pengenalan cepat, dan akurasi baik, cocok untuk penggunaan umum dalam bahasa Mandarin dan Inggris. Versi input non-streaming memberikan akurasi lebih tinggi dengan struktur semantik dan teks yang lebih lengkap.</string>
+    <string name="settings_asr_gpt_realtime">GPT Realtime Whisper</string>
+    <string name="settings_asr_gpt_realtime_desc">Model transkripsi streaming real-time OpenAI untuk sesi Realtime. Ideal untuk teks langsung berlatensi rendah dan dikte langsung.</string>
+    <string name="settings_asr_gpt_4o">GPT-4o Transcribe (input non-streaming)</string>
+    <string name="settings_asr_gpt_4o_desc">Model transkripsi OpenAI berkualitas tinggi dengan pengenalan yang kuat, terutama untuk bahasa Inggris, situasi internasional multibahasa, bahasa Inggris beraksen, dan bahasa internasional. Versi input non-streaming memberikan akurasi lebih tinggi dengan struktur semantik dan teks yang lebih lengkap.</string>
+    <string name="settings_asr_gpt_4o_mini">GPT-4o Mini Transcribe (input non-streaming)</string>
+    <string name="settings_asr_gpt_4o_mini_desc">Model transkripsi ringan OpenAI yang mempertahankan keunggulan GPT-4o Transcribe dengan biaya dan latensi lebih rendah, cocok untuk penggunaan yang sering dan berkelanjutan. Versi input non-streaming memberikan akurasi lebih tinggi dengan struktur semantik dan teks yang lebih lengkap.</string>
+    <string name="settings_asr_doubao_stream">Doubao Seed ASR 2.0 (input streaming)</string>
+    <string name="settings_asr_doubao_stream_desc">Model transkripsi Doubao dari ByteDance dengan akurasi lebih tinggi dalam bidang khusus, pengenalan lebih baik dalam situasi kompleks, dukungan konteks, dan lebih banyak fitur. Versi input streaming memiliki latensi lebih rendah dan kecepatan lebih tinggi, serta hanya mendukung bahasa Mandarin dan Inggris.</string>
+    <string name="settings_asr_doubao_non_stream">Doubao Seed ASR 2.0 (input non-streaming)</string>
+    <string name="settings_asr_doubao_non_stream_desc">Model transkripsi Doubao dari ByteDance dengan akurasi lebih tinggi dalam bidang khusus, pengenalan lebih baik dalam situasi kompleks, dukungan konteks, dan lebih banyak fitur. Versi input non-streaming memberikan akurasi lebih tinggi dengan struktur semantik dan teks yang lebih lengkap.</string>
+    <string name="settings_asr_doubao_turbo">Doubao Seed ASR 2.0 (input non-streaming turbo)</string>
+    <string name="settings_asr_doubao_turbo_desc">Model transkripsi ByteDance yang mempertahankan keunggulan Doubao Seed ASR 2.0 input non-streaming dengan latensi lebih rendah dan kecepatan lebih tinggi. Versi input non-streaming memberikan akurasi lebih tinggi dengan struktur semantik dan teks yang lebih lengkap.</string>
+    <string name="settings_dashscope_region">Wilayah</string>
+    <string name="settings_region_beijing">Beijing</string>
+    <string name="settings_region_singapore">Singapura</string>
+    <string name="settings_app_id">AppID</string>
+    <string name="settings_access_token">Token Akses</string>
+    <string name="settings_dashscope_hint">Wilayah harus sama dengan tempat kunci API dibuat.</string>
+    <string name="settings_volcengine_hint">Aktifkan sumber daya untuk layanan yang dipilih di konsol Volcengine.</string>
+    <string name="settings_translation">Terjemahan</string>
+    <string name="settings_translation_provider">API kompatibel OpenAI</string>
+    <string name="settings_base_url">URL dasar (termasuk /v1)</string>
+    <string name="settings_model">Model</string>
+    <string name="settings_key">Kunci API</string>
+    <string name="settings_save">Simpan</string>
+    <string name="settings_saving">Menyimpan…</string>
+    <string name="settings_invalid_translation_url">Masukkan URL dasar terjemahan https:// tanpa kredensial, parameter kueri, atau fragmen.</string>
+    <string name="settings_missing_model">Masukkan nama model.</string>
+    <string name="settings_missing_asr_key">Masukkan kredensial yang diperlukan layanan ucapan terpilih tanpa karakter kontrol.</string>
+    <string name="settings_missing_asr_app_id">Masukkan AppID Volcengine tanpa karakter kontrol.</string>
+    <string name="settings_missing_key">Masukkan kunci API tanpa karakter kontrol.</string>
+    <string name="settings_storage_error">Setelan atau kunci tidak dapat dibaca atau disimpan. Periksa penyimpanan perangkat dan masukkan kembali kunci jika perlu.</string>
+    <string name="settings_save_failed">Tidak dapat menyimpan. Coba lagi.</string>
+    <string name="settings_required">Siapkan layanan ucapan dan terjemahan</string>
+    <string name="action_back">Kembali</string>
+    <string name="settings_show_key">Tampilkan kunci</string>
+    <string name="settings_hide_key">Sembunyikan kunci</string>
+    <string name="settings_unsaved">Perubahan belum disimpan</string>
+
+    <string name="settings_debug_mode">Mode debug</string>
+    <string name="settings_debug_mode_body">Menampilkan log penting aplikasi dalam jendela mengambang di dalam aplikasi.</string>
+    <string name="debug_log_title">Log</string>
+    <string name="debug_log_empty">Belum ada peristiwa</string>
+    <string name="debug_log_copy">Salin log</string>
+    <string name="debug_log_clear">Hapus log</string>
+    <string name="debug_log_collapse">Minimalkan log</string>
+    <string name="debug_log_expand">Tampilkan log</string>
+    <string name="settings_revert">Urungkan</string>
+    <string name="settings_discard_title">Buang perubahan?</string>
+    <string name="settings_discard_body">Perubahan yang Anda buat di halaman ini akan hilang.</string>
+    <string name="settings_discard">Buang</string>
+    <string name="settings_keep_editing">Lanjutkan mengedit</string>
+    <string name="error_configuration">Konfigurasikan layanan ucapan dan terjemahan terlebih dahulu</string>
+    <string name="error_authentication">Autentikasi gagal. Periksa kunci, endpoint, dan wilayah.</string>
+    <string name="error_permission">Akses kunci API ditolak. Periksa model yang dipilih, ruang kerja, dan pembatasan IP.</string>
+    <string name="error_rate_limit">Batas layanan tercapai. Coba lagi nanti.</string>
+    <string name="error_network">Koneksi terputus. Periksa jaringan Anda.</string>
+    <string name="error_service">Layanan mengembalikan respons yang tidak valid atau tidak lengkap</string>
+
+    <string name="settings_translation_add">Tambah layanan</string>
+    <string name="settings_translation_empty">Belum ada layanan terjemahan.</string>
+    <string name="settings_translation_new">Layanan terjemahan baru</string>
+    <string name="settings_translation_edit">Edit layanan terjemahan</string>
+    <string name="settings_translation_name">Nama</string>
+    <string name="settings_translation_missing_name">Masukkan nama.</string>
+    <string name="settings_translation_choose">Pilih layanan terjemahan.</string>
+    <string name="settings_translation_add_first">Tambahkan layanan terjemahan.</string>
+    <string name="settings_translation_incomplete">Konfigurasi layanan ini belum lengkap. Edit untuk memperbaikinya.</string>
+    <string name="action_done">Selesai</string>
+    <string name="action_cancel">Batal</string>
 </resources>

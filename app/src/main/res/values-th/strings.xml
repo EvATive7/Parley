@@ -1,12 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
+    <string name="onboarding_title">Parley ต้องใช้ไมโครโฟน</string>
+    <string name="onboarding_body">กดปุ่มค้างไว้แล้วพูด เสียงของคุณจะถูกส่งไปยังบริการรู้จำเสียงที่เลือก และอุปกรณ์นี้จะเก็บไว้เฉพาะข้อความเท่านั้น</string>
+    <string name="onboarding_grant">อนุญาตให้ใช้ไมโครโฟน</string>
+    <string name="onboarding_open_settings">เปิดการตั้งค่าระบบ</string>
+    <string name="onboarding_denied_hint">ปิดการเข้าถึงไมโครโฟนอยู่ โปรดเปิดในการตั้งค่าระบบแล้วกลับมา</string>
+
+    <string name="pick_language">เลือกภาษา</string>
+    <string name="swap_languages">สลับภาษา</string>
+    <string name="face_to_face">โหมดตัวต่อตัว</string>
+    <string name="face_to_face_exit">ออกจากโหมดตัวต่อตัว</string>
+    <string name="lang_in_other_slot">สลับ</string>
+
     <string name="ptt_hold_to_talk">กดค้างเพื่อพูด</string>
     <string name="ptt_release_to_send">ปล่อยเพื่อส่ง · เลื่อนขึ้นเพื่อยกเลิก</string>
     <string name="ptt_time_left">เหลือ %1$d วินาที</string>
     <string name="ptt_release_to_cancel">ปล่อยเพื่อยกเลิก</string>
     <string name="ptt_recognizing">กำลังจดจำเสียง…</string>
     <string name="ptt_copied">คัดลอกแล้ว</string>
-    <string name="face_to_face">โหมดตัวต่อตัว</string>
-    <string name="face_to_face_exit">ออกจากโหมดตัวต่อตัว</string>
+
+    <string name="action_copy">คัดลอก</string>
+    <string name="action_delete">ลบ</string>
+    <string name="action_retry">ลองอีกครั้ง</string>
+
+    <string name="ptt_description">กดค้างเพื่อพูด</string>
+    <string name="state_recording">กำลังบันทึก</string>
+    <string name="state_cancel_armed">ปล่อยเพื่อยกเลิก</string>
+    <string name="state_busy">กำลังแปล</string>
+
+    <string name="error_mic">เปิดไมโครโฟนไม่ได้</string>
+    <string name="error_generic">เกิดข้อผิดพลาด</string>
+    <string name="error_no_speech">ฟังไม่ชัด โปรดลองอีกครั้ง</string>
+    <string name="error_timeout">บริการใช้เวลาตอบกลับนานเกินไป</string>
+
+    <string name="settings_title">บริการ</string>
+    <string name="settings_privacy">เสียงและข้อความจะถูกส่งไปยังบริการที่คุณเลือกเท่านั้น คีย์จะถูกเข้ารหัสบนอุปกรณ์นี้ด้วย Android Keystore</string>
+    <string name="settings_asr">การรู้จำเสียงพูด</string>
+    <string name="settings_asr_service">บริการรู้จำเสียง</string>
+    <string name="settings_provider_dashscope">DashScope</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_volcengine">Volcengine</string>
+    <string name="settings_asr_fun_stream">Fun-ASR-RealTime (อินพุตแบบสตรีม)</string>
+    <string name="settings_asr_fun_stream_desc">โมเดลถอดเสียงแบบเรียลไทม์ของ Alibaba ที่มีคุณภาพสูง รู้จำได้รวดเร็วและแม่นยำ เหมาะกับสถานการณ์ทั่วไปในภาษาจีนและอังกฤษ รุ่นอินพุตแบบสตรีมมีเวลาแฝงต่ำและรู้จำได้เร็วกว่า</string>
+    <string name="settings_asr_fun_non_stream">Fun-ASR-RealTime (อินพุตแบบไม่สตรีม)</string>
+    <string name="settings_asr_fun_non_stream_desc">โมเดลถอดเสียงแบบเรียลไทม์ของ Alibaba ที่มีคุณภาพสูง รู้จำได้รวดเร็วและแม่นยำ เหมาะกับสถานการณ์ทั่วไปในภาษาจีนและอังกฤษ รุ่นอินพุตแบบไม่สตรีมมีความแม่นยำสูงกว่า พร้อมความหมายและโครงสร้างข้อความที่สมบูรณ์กว่า</string>
+    <string name="settings_asr_gpt_realtime">GPT Realtime Whisper</string>
+    <string name="settings_asr_gpt_realtime_desc">โมเดลถอดเสียงแบบสตรีมเรียลไทม์ของ OpenAI สำหรับเซสชัน Realtime เหมาะสำหรับคำบรรยายที่มีเวลาแฝงต่ำและการป้อนตามคำบอกแบบสด</string>
+    <string name="settings_asr_gpt_4o">GPT-4o Transcribe (อินพุตแบบไม่สตรีม)</string>
+    <string name="settings_asr_gpt_4o_desc">โมเดลถอดเสียงคุณภาพสูงของ OpenAI ที่รู้จำได้ดี โดยเฉพาะภาษาอังกฤษ สถานการณ์นานาชาติหลายภาษา ภาษาอังกฤษที่มีสำเนียง และภาษาต่างประเทศ รุ่นอินพุตแบบไม่สตรีมมีความแม่นยำสูงกว่า พร้อมความหมายและโครงสร้างข้อความที่สมบูรณ์กว่า</string>
+    <string name="settings_asr_gpt_4o_mini">GPT-4o Mini Transcribe (อินพุตแบบไม่สตรีม)</string>
+    <string name="settings_asr_gpt_4o_mini_desc">โมเดลถอดเสียงขนาดเบาของ OpenAI ที่คงจุดเด่นของ GPT-4o Transcribe ไว้ พร้อมต้นทุนและเวลาแฝงที่ต่ำกว่า เหมาะกับการใช้งานบ่อยและต่อเนื่อง รุ่นอินพุตแบบไม่สตรีมมีความแม่นยำสูงกว่า พร้อมความหมายและโครงสร้างข้อความที่สมบูรณ์กว่า</string>
+    <string name="settings_asr_doubao_stream">Doubao Seed ASR 2.0 (อินพุตแบบสตรีม)</string>
+    <string name="settings_asr_doubao_stream_desc">โมเดลถอดเสียง Doubao ของ ByteDance ที่แม่นยำขึ้นในงานเฉพาะด้าน รู้จำสถานการณ์ซับซ้อนได้ดีขึ้น รองรับบริบทและมีคุณสมบัติมากขึ้น รุ่นอินพุตแบบสตรีมมีเวลาแฝงต่ำและเร็วกว่า โดยรองรับเฉพาะภาษาจีนและอังกฤษ</string>
+    <string name="settings_asr_doubao_non_stream">Doubao Seed ASR 2.0 (อินพุตแบบไม่สตรีม)</string>
+    <string name="settings_asr_doubao_non_stream_desc">โมเดลถอดเสียง Doubao ของ ByteDance ที่แม่นยำขึ้นในงานเฉพาะด้าน รู้จำสถานการณ์ซับซ้อนได้ดีขึ้น รองรับบริบทและมีคุณสมบัติมากขึ้น รุ่นอินพุตแบบไม่สตรีมมีความแม่นยำสูงกว่า พร้อมความหมายและโครงสร้างข้อความที่สมบูรณ์กว่า</string>
+    <string name="settings_asr_doubao_turbo">Doubao Seed ASR 2.0 (อินพุตไม่สตรีมแบบเทอร์โบ)</string>
+    <string name="settings_asr_doubao_turbo_desc">โมเดลถอดเสียงของ ByteDance ที่คงจุดเด่นของ Doubao Seed ASR 2.0 แบบอินพุตไม่สตรีม พร้อมเวลาแฝงที่ต่ำลงและความเร็วที่สูงขึ้น รุ่นอินพุตแบบไม่สตรีมมีความแม่นยำสูงกว่า พร้อมความหมายและโครงสร้างข้อความที่สมบูรณ์กว่า</string>
+    <string name="settings_dashscope_region">ภูมิภาค</string>
+    <string name="settings_region_beijing">ปักกิ่ง</string>
+    <string name="settings_region_singapore">สิงคโปร์</string>
+    <string name="settings_app_id">AppID</string>
+    <string name="settings_access_token">โทเค็นการเข้าถึง</string>
+    <string name="settings_dashscope_hint">ภูมิภาคต้องตรงกับที่สร้างคีย์ API</string>
+    <string name="settings_volcengine_hint">เปิดใช้ทรัพยากรของบริการที่เลือกในคอนโซล Volcengine</string>
+    <string name="settings_translation">การแปล</string>
+    <string name="settings_translation_provider">API ที่เข้ากันได้กับ OpenAI</string>
+    <string name="settings_base_url">URL ฐาน (รวม /v1)</string>
+    <string name="settings_model">โมเดล</string>
+    <string name="settings_key">คีย์ API</string>
+    <string name="settings_save">บันทึก</string>
+    <string name="settings_saving">กำลังบันทึก…</string>
+    <string name="settings_invalid_translation_url">ป้อน URL ฐานสำหรับการแปลที่ขึ้นต้นด้วย https:// โดยไม่มีข้อมูลรับรอง พารามิเตอร์คิวรี หรือส่วนย่อย</string>
+    <string name="settings_missing_model">ป้อนชื่อโมเดล</string>
+    <string name="settings_missing_asr_key">ป้อนข้อมูลรับรองที่บริการเสียงที่เลือกต้องใช้ โดยไม่มีอักขระควบคุม</string>
+    <string name="settings_missing_asr_app_id">ป้อน AppID ของ Volcengine โดยไม่มีอักขระควบคุม</string>
+    <string name="settings_missing_key">ป้อนคีย์ API โดยไม่มีอักขระควบคุม</string>
+    <string name="settings_storage_error">อ่านหรือบันทึกการตั้งค่าหรือคีย์ไม่ได้ โปรดตรวจสอบพื้นที่เก็บข้อมูลของอุปกรณ์และป้อนคีย์ใหม่หากจำเป็น</string>
+    <string name="settings_save_failed">บันทึกไม่ได้ โปรดลองอีกครั้ง</string>
+    <string name="settings_required">ตั้งค่าบริการเสียงและการแปล</string>
+    <string name="action_back">ย้อนกลับ</string>
+    <string name="settings_show_key">แสดงคีย์</string>
+    <string name="settings_hide_key">ซ่อนคีย์</string>
+    <string name="settings_unsaved">การเปลี่ยนแปลงที่ยังไม่ได้บันทึก</string>
+
+    <string name="settings_debug_mode">โหมดแก้ไขข้อบกพร่อง</string>
+    <string name="settings_debug_mode_body">แสดงบันทึกสำคัญของแอปในหน้าต่างลอยภายในแอป</string>
+    <string name="debug_log_title">บันทึก</string>
+    <string name="debug_log_empty">ยังไม่มีกิจกรรม</string>
+    <string name="debug_log_copy">คัดลอกบันทึก</string>
+    <string name="debug_log_clear">ล้างบันทึก</string>
+    <string name="debug_log_collapse">ย่อบันทึก</string>
+    <string name="debug_log_expand">แสดงบันทึก</string>
+    <string name="settings_revert">เลิกทำ</string>
+    <string name="settings_discard_title">ละทิ้งการเปลี่ยนแปลงไหม</string>
+    <string name="settings_discard_body">การเปลี่ยนแปลงที่ทำในหน้านี้จะสูญหาย</string>
+    <string name="settings_discard">ละทิ้ง</string>
+    <string name="settings_keep_editing">แก้ไขต่อ</string>
+    <string name="error_configuration">ตั้งค่าบริการเสียงและการแปลก่อน</string>
+    <string name="error_authentication">การยืนยันตัวตนล้มเหลว โปรดตรวจสอบคีย์ ปลายทาง และภูมิภาค</string>
+    <string name="error_permission">คีย์ API ถูกปฏิเสธการเข้าถึง โปรดตรวจสอบโมเดล พื้นที่ทำงาน และข้อจำกัด IP</string>
+    <string name="error_rate_limit">ถึงขีดจำกัดของบริการแล้ว โปรดลองใหม่ภายหลัง</string>
+    <string name="error_network">การเชื่อมต่อขาดหาย โปรดตรวจสอบเครือข่าย</string>
+    <string name="error_service">บริการส่งการตอบกลับที่ไม่ถูกต้องหรือไม่สมบูรณ์</string>
+
+    <string name="settings_translation_add">เพิ่มบริการ</string>
+    <string name="settings_translation_empty">ยังไม่มีบริการแปล</string>
+    <string name="settings_translation_new">บริการแปลใหม่</string>
+    <string name="settings_translation_edit">แก้ไขบริการแปล</string>
+    <string name="settings_translation_name">ชื่อ</string>
+    <string name="settings_translation_missing_name">ป้อนชื่อ</string>
+    <string name="settings_translation_choose">เลือกบริการแปล</string>
+    <string name="settings_translation_add_first">เพิ่มบริการแปล</string>
+    <string name="settings_translation_incomplete">การตั้งค่าบริการนี้ไม่สมบูรณ์ โปรดแก้ไข</string>
+    <string name="action_done">เสร็จสิ้น</string>
+    <string name="action_cancel">ยกเลิก</string>
 </resources>

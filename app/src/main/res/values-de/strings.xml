@@ -82,6 +82,15 @@
     <string name="settings_show_key">Schlüssel anzeigen</string>
     <string name="settings_hide_key">Schlüssel ausblenden</string>
     <string name="settings_unsaved">Nicht gespeicherte Änderungen</string>
+
+    <string name="settings_debug_mode">Debug-Modus</string>
+    <string name="settings_debug_mode_body">Zeigt wichtige App-Protokolle in einem schwebenden Fenster innerhalb der App.</string>
+    <string name="debug_log_title">Protokoll</string>
+    <string name="debug_log_empty">Noch keine Ereignisse</string>
+    <string name="debug_log_copy">Protokoll kopieren</string>
+    <string name="debug_log_clear">Protokoll löschen</string>
+    <string name="debug_log_collapse">Protokoll minimieren</string>
+    <string name="debug_log_expand">Protokoll anzeigen</string>
     <string name="settings_revert">Rückgängig</string>
     <string name="settings_discard_title">Änderungen verwerfen?</string>
     <string name="settings_discard_body">Die auf dieser Seite vorgenommenen Änderungen gehen verloren.</string>

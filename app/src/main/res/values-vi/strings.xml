@@ -1,12 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Only the push-to-talk phrases, shown at the bottom in both conversation languages. -->
 <resources>
+    <string name="onboarding_title">Parley cần quyền dùng micrô</string>
+    <string name="onboarding_body">Nhấn giữ nút và nói. Giọng nói của bạn được gửi đến dịch vụ nhận dạng đã chọn và thiết bị này chỉ lưu lại văn bản.</string>
+    <string name="onboarding_grant">Cho phép dùng micrô</string>
+    <string name="onboarding_open_settings">Mở cài đặt hệ thống</string>
+    <string name="onboarding_denied_hint">Quyền dùng micrô đã bị tắt. Hãy bật quyền này trong cài đặt hệ thống rồi quay lại.</string>
+
+    <string name="pick_language">Chọn ngôn ngữ</string>
+    <string name="swap_languages">Đổi ngôn ngữ</string>
+    <string name="face_to_face">Chế độ đối diện</string>
+    <string name="face_to_face_exit">Thoát chế độ đối diện</string>
+    <string name="lang_in_other_slot">Đổi</string>
+
     <string name="ptt_hold_to_talk">Nhấn giữ để nói</string>
     <string name="ptt_release_to_send">Thả để gửi · Vuốt lên để hủy</string>
     <string name="ptt_time_left">Còn %1$d giây</string>
     <string name="ptt_release_to_cancel">Thả để hủy</string>
     <string name="ptt_recognizing">Đang nhận dạng…</string>
     <string name="ptt_copied">Đã sao chép</string>
-    <string name="face_to_face">Chế độ đối diện</string>
-    <string name="face_to_face_exit">Thoát chế độ đối diện</string>
+
+    <string name="action_copy">Sao chép</string>
+    <string name="action_delete">Xóa</string>
+    <string name="action_retry">Thử lại</string>
+
+    <string name="ptt_description">Nhấn giữ để nói</string>
+    <string name="state_recording">Đang ghi âm</string>
+    <string name="state_cancel_armed">Thả để hủy</string>
+    <string name="state_busy">Đang dịch</string>
+
+    <string name="error_mic">Không thể mở micrô</string>
+    <string name="error_generic">Đã xảy ra lỗi</string>
+    <string name="error_no_speech">Không nghe rõ. Hãy thử lại.</string>
+    <string name="error_timeout">Dịch vụ phản hồi quá chậm</string>
+
+    <string name="settings_title">Dịch vụ</string>
+    <string name="settings_privacy">Âm thanh và văn bản chỉ được gửi đến các dịch vụ bạn chọn. Khóa được mã hóa trên thiết bị này bằng Android Keystore.</string>
+    <string name="settings_asr">Nhận dạng giọng nói</string>
+    <string name="settings_asr_service">Dịch vụ nhận dạng</string>
+    <string name="settings_provider_dashscope">DashScope</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_volcengine">Volcengine</string>
+    <string name="settings_asr_fun_stream">Fun-ASR-RealTime (đầu vào truyền trực tiếp)</string>
+    <string name="settings_asr_fun_stream_desc">Mô hình phiên âm thời gian thực của Alibaba có chất lượng cao, nhận dạng nhanh và chính xác, phù hợp với các tình huống thông thường bằng tiếng Trung và tiếng Anh. Phiên bản đầu vào truyền trực tiếp có độ trễ thấp hơn và tốc độ nhận dạng nhanh hơn.</string>
+    <string name="settings_asr_fun_non_stream">Fun-ASR-RealTime (đầu vào không truyền trực tiếp)</string>
+    <string name="settings_asr_fun_non_stream_desc">Mô hình phiên âm thời gian thực của Alibaba có chất lượng cao, nhận dạng nhanh và chính xác, phù hợp với các tình huống thông thường bằng tiếng Trung và tiếng Anh. Phiên bản đầu vào không truyền trực tiếp có độ chính xác cao hơn, ngữ nghĩa và cấu trúc văn bản đầy đủ hơn.</string>
+    <string name="settings_asr_gpt_realtime">GPT Realtime Whisper</string>
+    <string name="settings_asr_gpt_realtime_desc">Mô hình phiên âm truyền trực tiếp theo thời gian thực của OpenAI dành cho phiên Realtime. Phù hợp nhất cho phụ đề có độ trễ thấp và đọc chính tả trực tiếp.</string>
+    <string name="settings_asr_gpt_4o">GPT-4o Transcribe (đầu vào không truyền trực tiếp)</string>
+    <string name="settings_asr_gpt_4o_desc">Mô hình phiên âm chất lượng cao của OpenAI với khả năng nhận dạng tốt, đặc biệt hiệu quả cho tiếng Anh, môi trường quốc tế đa ngôn ngữ, tiếng Anh có giọng địa phương và các ngôn ngữ quốc tế. Phiên bản đầu vào không truyền trực tiếp có độ chính xác cao hơn, ngữ nghĩa và cấu trúc văn bản đầy đủ hơn.</string>
+    <string name="settings_asr_gpt_4o_mini">GPT-4o Mini Transcribe (đầu vào không truyền trực tiếp)</string>
+    <string name="settings_asr_gpt_4o_mini_desc">Mô hình phiên âm nhẹ của OpenAI kế thừa ưu điểm của GPT-4o Transcribe nhưng có chi phí và độ trễ thấp hơn, phù hợp để sử dụng thường xuyên và liên tục. Phiên bản đầu vào không truyền trực tiếp có độ chính xác cao hơn, ngữ nghĩa và cấu trúc văn bản đầy đủ hơn.</string>
+    <string name="settings_asr_doubao_stream">Doubao Seed ASR 2.0 (đầu vào truyền trực tiếp)</string>
+    <string name="settings_asr_doubao_stream_desc">Mô hình phiên âm Doubao của ByteDance có độ chính xác cao hơn trong các lĩnh vực chuyên biệt, nhận dạng tốt hơn trong tình huống phức tạp, hỗ trợ ngữ cảnh và nhiều tính năng hơn. Phiên bản đầu vào truyền trực tiếp có độ trễ thấp hơn và tốc độ nhanh hơn, chỉ hỗ trợ tiếng Trung và tiếng Anh.</string>
+    <string name="settings_asr_doubao_non_stream">Doubao Seed ASR 2.0 (đầu vào không truyền trực tiếp)</string>
+    <string name="settings_asr_doubao_non_stream_desc">Mô hình phiên âm Doubao của ByteDance có độ chính xác cao hơn trong các lĩnh vực chuyên biệt, nhận dạng tốt hơn trong tình huống phức tạp, hỗ trợ ngữ cảnh và nhiều tính năng hơn. Phiên bản đầu vào không truyền trực tiếp có độ chính xác cao hơn, ngữ nghĩa và cấu trúc văn bản đầy đủ hơn.</string>
+    <string name="settings_asr_doubao_turbo">Doubao Seed ASR 2.0 (đầu vào không truyền trực tiếp turbo)</string>
+    <string name="settings_asr_doubao_turbo_desc">Mô hình phiên âm của ByteDance kế thừa ưu điểm của Doubao Seed ASR 2.0 đầu vào không truyền trực tiếp, đồng thời có độ trễ thấp hơn và tốc độ nhanh hơn. Phiên bản đầu vào không truyền trực tiếp có độ chính xác cao hơn, ngữ nghĩa và cấu trúc văn bản đầy đủ hơn.</string>
+    <string name="settings_dashscope_region">Khu vực</string>
+    <string name="settings_region_beijing">Bắc Kinh</string>
+    <string name="settings_region_singapore">Singapore</string>
+    <string name="settings_app_id">AppID</string>
+    <string name="settings_access_token">Mã truy cập</string>
+    <string name="settings_dashscope_hint">Khu vực phải trùng với nơi tạo khóa API.</string>
+    <string name="settings_volcengine_hint">Bật tài nguyên cho dịch vụ đã chọn trong bảng điều khiển Volcengine.</string>
+    <string name="settings_translation">Dịch thuật</string>
+    <string name="settings_translation_provider">API tương thích với OpenAI</string>
+    <string name="settings_base_url">URL cơ sở (bao gồm /v1)</string>
+    <string name="settings_model">Mô hình</string>
+    <string name="settings_key">Khóa API</string>
+    <string name="settings_save">Lưu</string>
+    <string name="settings_saving">Đang lưu…</string>
+    <string name="settings_invalid_translation_url">Nhập URL cơ sở dịch thuật https:// không chứa thông tin đăng nhập, tham số truy vấn hoặc đoạn neo.</string>
+    <string name="settings_missing_model">Nhập tên mô hình.</string>
+    <string name="settings_missing_asr_key">Nhập thông tin xác thực mà dịch vụ giọng nói đã chọn yêu cầu, không có ký tự điều khiển.</string>
+    <string name="settings_missing_asr_app_id">Nhập AppID Volcengine, không có ký tự điều khiển.</string>
+    <string name="settings_missing_key">Nhập khóa API, không có ký tự điều khiển.</string>
+    <string name="settings_storage_error">Không thể đọc hoặc lưu cài đặt hay khóa. Hãy kiểm tra bộ nhớ thiết bị và nhập lại khóa nếu cần.</string>
+    <string name="settings_save_failed">Không thể lưu. Hãy thử lại.</string>
+    <string name="settings_required">Thiết lập dịch vụ giọng nói và dịch thuật</string>
+    <string name="action_back">Quay lại</string>
+    <string name="settings_show_key">Hiện khóa</string>
+    <string name="settings_hide_key">Ẩn khóa</string>
+    <string name="settings_unsaved">Thay đổi chưa lưu</string>
+
+    <string name="settings_debug_mode">Chế độ gỡ lỗi</string>
+    <string name="settings_debug_mode_body">Hiển thị các nhật ký quan trọng của ứng dụng trong cửa sổ nổi.</string>
+    <string name="debug_log_title">Nhật ký</string>
+    <string name="debug_log_empty">Chưa có sự kiện</string>
+    <string name="debug_log_copy">Sao chép nhật ký</string>
+    <string name="debug_log_clear">Xóa nhật ký</string>
+    <string name="debug_log_collapse">Thu nhỏ nhật ký</string>
+    <string name="debug_log_expand">Hiện nhật ký</string>
+    <string name="settings_revert">Hoàn tác</string>
+    <string name="settings_discard_title">Hủy thay đổi?</string>
+    <string name="settings_discard_body">Các thay đổi bạn thực hiện trên trang này sẽ bị mất.</string>
+    <string name="settings_discard">Hủy thay đổi</string>
+    <string name="settings_keep_editing">Tiếp tục chỉnh sửa</string>
+    <string name="error_configuration">Hãy thiết lập dịch vụ giọng nói và dịch thuật trước</string>
+    <string name="error_authentication">Xác thực thất bại. Hãy kiểm tra khóa, điểm cuối và khu vực.</string>
+    <string name="error_permission">Khóa API bị từ chối truy cập. Hãy kiểm tra mô hình, không gian làm việc và giới hạn IP.</string>
+    <string name="error_rate_limit">Đã đạt giới hạn dịch vụ. Hãy thử lại sau.</string>
+    <string name="error_network">Mất kết nối. Hãy kiểm tra mạng.</string>
+    <string name="error_service">Dịch vụ trả về phản hồi không hợp lệ hoặc không đầy đủ</string>
+
+    <string name="settings_translation_add">Thêm dịch vụ</string>
+    <string name="settings_translation_empty">Chưa có dịch vụ dịch thuật.</string>
+    <string name="settings_translation_new">Dịch vụ dịch thuật mới</string>
+    <string name="settings_translation_edit">Sửa dịch vụ dịch thuật</string>
+    <string name="settings_translation_name">Tên</string>
+    <string name="settings_translation_missing_name">Nhập tên.</string>
+    <string name="settings_translation_choose">Chọn dịch vụ dịch thuật.</string>
+    <string name="settings_translation_add_first">Thêm dịch vụ dịch thuật.</string>
+    <string name="settings_translation_incomplete">Dịch vụ này chưa được cấu hình đầy đủ. Hãy chỉnh sửa để khắc phục.</string>
+    <string name="action_done">Xong</string>
+    <string name="action_cancel">Hủy</string>
 </resources>

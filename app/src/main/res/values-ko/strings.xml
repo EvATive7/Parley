@@ -82,6 +82,15 @@
     <string name="settings_show_key">키 표시</string>
     <string name="settings_hide_key">키 숨기기</string>
     <string name="settings_unsaved">저장되지 않은 변경사항</string>
+
+    <string name="settings_debug_mode">디버그 모드</string>
+    <string name="settings_debug_mode_body">앱 내 플로팅 창에 주요 앱 로그를 표시합니다.</string>
+    <string name="debug_log_title">로그</string>
+    <string name="debug_log_empty">아직 이벤트가 없습니다</string>
+    <string name="debug_log_copy">로그 복사</string>
+    <string name="debug_log_clear">로그 지우기</string>
+    <string name="debug_log_collapse">로그 최소화</string>
+    <string name="debug_log_expand">로그 표시</string>
     <string name="settings_revert">되돌리기</string>
     <string name="settings_discard_title">변경사항을 취소할까요?</string>
     <string name="settings_discard_body">이 페이지에서 변경한 내용이 사라집니다.</string>
