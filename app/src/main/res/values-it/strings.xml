@@ -7,4 +7,6 @@
     <string name="ptt_release_to_cancel">Rilascia per annullare</string>
     <string name="ptt_recognizing">Riconoscimento…</string>
     <string name="ptt_copied">Copiato</string>
+    <string name="face_to_face">Modalità faccia a faccia</string>
+    <string name="face_to_face_exit">Esci dalla modalità faccia a faccia</string>
 </resources>

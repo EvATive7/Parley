@@ -7,4 +7,6 @@
     <string name="ptt_release_to_cancel">Thả để hủy</string>
     <string name="ptt_recognizing">Đang nhận dạng…</string>
     <string name="ptt_copied">Đã sao chép</string>
+    <string name="face_to_face">Chế độ đối diện</string>
+    <string name="face_to_face_exit">Thoát chế độ đối diện</string>
 </resources>

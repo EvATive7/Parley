@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.evative7.parley.R
+import io.github.evative7.parley.state.CardCell
 import io.github.evative7.parley.state.CardStage
 import io.github.evative7.parley.state.CardState
 import io.github.evative7.parley.state.ErrorKind
@@ -84,49 +85,125 @@ fun ResultCard(
                 )
             }
 
-            if (card.stage == CardStage.Error) {
-                Spacer(Modifier.size(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painterResource(R.drawable.ic_error), null,
-                        Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(card.error.message()),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.weight(1f),
-                    )
-                    // Without recognized text there is nothing to resend.
-                    if (card.canRetry) {
-                        TextButton(onClick = onRetry, enabled = retryEnabled) { Text(stringResource(R.string.action_retry)) }
-                    }
-                    DeleteButton(onDelete)
-                }
-            }
-
-            AnimatedVisibility(
-                visible = card.stage == CardStage.Done,
-                enter = fadeIn(motion.defaultEffectsSpec()) + expandVertically(motion.defaultSpatialSpec()),
-                exit = fadeOut(motion.fastEffectsSpec()) + shrinkVertically(motion.fastSpatialSpec()),
-            ) {
-                Row(
-                    Modifier.fillMaxWidth().padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    IconButton(onClick = onCopy) {
-                        Icon(
-                            painterResource(R.drawable.ic_copy), stringResource(R.string.action_copy),
-                            Modifier.size(ActionIconSize),
-                        )
-                    }
-                    DeleteButton(onDelete)
-                }
-            }
-            if (card.stage != CardStage.Done) Spacer(Modifier.size(12.dp))
+            CardActions(card, onCopy, onDelete, onRetry, retryEnabled)
         }
     }
+}
+
+/**
+ * One side of a card in the landscape transcript: only the text in that side's language. The side that
+ * reads the translation gets it large; the speaker's own words stay quiet, as in [ResultCard].
+ */
+@Composable
+fun ResultCell(
+    card: CardState,
+    cell: CardCell,
+    showActions: Boolean,
+    onCopy: () -> Unit,
+    onDelete: () -> Unit,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+    retryEnabled: Boolean = true,
+) {
+    val motion = MaterialTheme.motionScheme
+    val listening = card.stage == CardStage.Listening || card.stage == CardStage.Recognizing
+    val text = when (cell) {
+        is CardCell.Hearing -> cell.text
+        is CardCell.Source -> cell.text
+        is CardCell.Translation -> cell.text
+    }
+    val waiting = text.isEmpty() && when (cell) {
+        is CardCell.Hearing -> listening
+        is CardCell.Source -> false
+        is CardCell.Translation -> card.stage == CardStage.Translating
+    }
+    // An error before anything was heard leaves this side blank; the other side carries the message.
+    if (text.isEmpty() && !waiting && !showActions) return
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    ) {
+        Column(
+            Modifier
+                .animateContentSize(motion.defaultSpatialSpec())
+                .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 8.dp),
+        ) {
+            if (waiting) {
+                SkeletonLines(Modifier.fillMaxWidth())
+            } else if (text.isNotEmpty()) {
+                val translated = cell is CardCell.Translation
+                StreamingText(
+                    text = text,
+                    style = if (translated) {
+                        MaterialTheme.typography.headlineSmallEmphasized
+                    } else {
+                        MaterialTheme.typography.bodyLarge
+                    },
+                    color = if (translated) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (showActions) {
+                CardActions(card, onCopy, onDelete, onRetry, retryEnabled)
+            } else {
+                Spacer(Modifier.size(12.dp))
+            }
+        }
+    }
+}
+
+/** The error row while failed, copy and delete once done. */
+@Composable
+private fun CardActions(
+    card: CardState,
+    onCopy: () -> Unit,
+    onDelete: () -> Unit,
+    onRetry: () -> Unit,
+    retryEnabled: Boolean,
+) {
+    val motion = MaterialTheme.motionScheme
+    if (card.stage == CardStage.Error) {
+        Spacer(Modifier.size(12.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painterResource(R.drawable.ic_error), null,
+                Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error,
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = stringResource(card.error.message()),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.weight(1f),
+            )
+            // Without recognized text there is nothing to resend.
+            if (card.canRetry) {
+                TextButton(onClick = onRetry, enabled = retryEnabled) { Text(stringResource(R.string.action_retry)) }
+            }
+            DeleteButton(onDelete)
+        }
+    }
+
+    AnimatedVisibility(
+        visible = card.stage == CardStage.Done,
+        enter = fadeIn(motion.defaultEffectsSpec()) + expandVertically(motion.defaultSpatialSpec()),
+        exit = fadeOut(motion.fastEffectsSpec()) + shrinkVertically(motion.fastSpatialSpec()),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(top = 4.dp),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            IconButton(onClick = onCopy) {
+                Icon(
+                    painterResource(R.drawable.ic_copy), stringResource(R.string.action_copy),
+                    Modifier.size(ActionIconSize),
+                )
+            }
+            DeleteButton(onDelete)
+        }
+    }
+    if (card.stage != CardStage.Done) Spacer(Modifier.size(12.dp))
 }
 
 @Composable

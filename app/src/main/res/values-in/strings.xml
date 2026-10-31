@@ -7,4 +7,6 @@
     <string name="ptt_release_to_cancel">Lepas untuk batal</string>
     <string name="ptt_recognizing">Mengenali…</string>
     <string name="ptt_copied">Disalin</string>
+    <string name="face_to_face">Mode tatap muka</string>
+    <string name="face_to_face_exit">Keluar dari mode tatap muka</string>
 </resources>

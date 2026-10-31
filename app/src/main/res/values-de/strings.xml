@@ -8,6 +8,8 @@
 
     <string name="pick_language">Sprache auswählen</string>
     <string name="swap_languages">Sprachen tauschen</string>
+    <string name="face_to_face">Gegenüber-Modus</string>
+    <string name="face_to_face_exit">Gegenüber-Modus beenden</string>
     <string name="lang_in_other_slot">Tauschen</string>
 
     <string name="ptt_hold_to_talk">Zum Sprechen gedrückt halten</string>

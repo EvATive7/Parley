@@ -7,4 +7,6 @@
     <string name="ptt_release_to_cancel">ปล่อยเพื่อยกเลิก</string>
     <string name="ptt_recognizing">กำลังจดจำเสียง…</string>
     <string name="ptt_copied">คัดลอกแล้ว</string>
+    <string name="face_to_face">โหมดตัวต่อตัว</string>
+    <string name="face_to_face_exit">ออกจากโหมดตัวต่อตัว</string>
 </resources>

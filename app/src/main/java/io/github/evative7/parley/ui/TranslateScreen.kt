@@ -1,9 +1,12 @@
 package io.github.evative7.parley.ui
 
 import android.content.ClipData
+import android.content.pm.ActivityInfo
 import android.os.Build
 import android.view.HapticFeedbackConstants
 import android.view.View
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -17,13 +20,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Badge
@@ -35,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +56,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.zIndex
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalDensity
@@ -55,6 +67,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -70,13 +83,37 @@ import io.github.evative7.parley.state.LangPair
 import io.github.evative7.parley.state.PttPhase
 import io.github.evative7.parley.state.PttStateMachine
 import io.github.evative7.parley.state.TranslateViewModel
+import io.github.evative7.parley.state.UiState
 import io.github.evative7.parley.state.SettingsViewModel
+import io.github.evative7.parley.state.cell
+import io.github.evative7.parley.state.slotFor
 import kotlinx.coroutines.launch
 
 @Composable
 fun TranslateScreen(vm: TranslateViewModel = viewModel(), settingsVm: SettingsViewModel = viewModel()) {
     val settings by settingsVm.settings.collectAsStateWithLifecycle()
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    var faceToFace by rememberSaveable { mutableStateOf(false) }
+
+    // The app stays portrait (see the manifest); face to face is always landscape. Lying flat on a table the
+    // sensor can't tell which way is up, so neither follows rotation.
+    val activity = LocalActivity.current
+    DisposableEffect(faceToFace, activity) {
+        if (faceToFace && activity != null) {
+            val previous = activity.requestedOrientation
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            // Nothing between the two halves but the conversation; a swipe from an edge brings the bars back briefly.
+            val bars = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+            bars.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            bars.hide(WindowInsetsCompat.Type.systemBars())
+            onDispose {
+                bars.show(WindowInsetsCompat.Type.systemBars())
+                activity.requestedOrientation = previous
+            }
+        } else {
+            onDispose {}
+        }
+    }
 
     // Lives above both pages, so leaving the app from the settings page also releases the socket.
     LifecycleEventEffect(Lifecycle.Event.ON_START) { vm.onForeground() }
@@ -98,74 +135,188 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel(), settingsVm: SettingsVi
         if (settingsOpen) {
             SettingsScreen(settingsVm, onBack = { showSettings = false })
         } else {
-            ConversationScreen(vm, settings, onOpenSettings = { showSettings = true })
+            ConversationScreen(
+                vm,
+                settings,
+                faceToFace = faceToFace,
+                onFaceToFace = { faceToFace = it },
+                onOpenSettings = { showSettings = true },
+            )
         }
     }
 }
 
 @Composable
-private fun ConversationScreen(vm: TranslateViewModel, settings: ServiceSettings?, onOpenSettings: () -> Unit) {
+private fun ConversationScreen(
+    vm: TranslateViewModel,
+    settings: ServiceSettings?,
+    faceToFace: Boolean,
+    onFaceToFace: (Boolean) -> Unit,
+    onOpenSettings: () -> Unit,
+) {
     val state by vm.state.collectAsStateWithLifecycle()
     val volume = vm.volume.collectAsStateWithLifecycle()
     val elapsed = vm.elapsedMs.collectAsStateWithLifecycle()
     val clipboard = LocalClipboard.current
     val scope = rememberCoroutineScope()
     // Which language bar slot the picker dialog is open for.
-    var picking by remember { mutableStateOf<Int?>(null) }
+    var picking by rememberSaveable { mutableStateOf<Int?>(null) }
+    val listState = rememberLazyListState()
+    val entered = remember { mutableSetOf<Long>() }
+    // Face to face, each person has a list of their own.
+    val faceLists = List(2) { rememberLazyListState() }
+    val faceEntered = remember { List(2) { mutableSetOf<Long>() } }
+    // A new recording adds its card at index 0; bring it into view even if the user had scrolled up.
+    val newest = state.cards.firstOrNull()?.id
+    LaunchedEffect(newest, faceToFace) {
+        if (newest == null) return@LaunchedEffect
+        if (faceToFace) faceLists.forEach { launch { it.animateScrollToItem(0) } } else listState.animateScrollToItem(0)
+    }
+    BackHandler(enabled = faceToFace) { onFaceToFace(false) }
 
     PhaseHaptics(state.phase)
 
+    val busy = state.phase in setOf(PttPhase.Recording, PttPhase.CancelArmed, PttPhase.Recognizing, PttPhase.Translating)
+    val settingsButton = @Composable {
+        SettingsButton(settings = settings, enabled = !busy, onClick = onOpenSettings)
+    }
+    val faceToFaceButton = @Composable {
+        IconButton(onClick = { onFaceToFace(!faceToFace) }, enabled = !busy) {
+            Icon(
+                painterResource(R.drawable.ic_face_to_face),
+                stringResource(if (faceToFace) R.string.face_to_face_exit else R.string.face_to_face),
+            )
+        }
+    }
+    val onCopy = { card: CardState ->
+        scope.launch {
+            clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("translation", card.translation)))
+        }
+        // Android 13+ shows its own clipboard confirmation.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) vm.showHint(Hint.Copied)
+    }
+    val pttButton = @Composable { modifier: Modifier ->
+        PttButton(
+            phase = state.phase,
+            volume = { volume.value },
+            onPress = vm::onPress,
+            onDrag = vm::onDrag,
+            onRelease = vm::onRelease,
+            onAbort = vm::onAbort,
+            modifier = modifier,
+            cancelAnyDirection = faceToFace,
+        )
+    }
+
     Surface(color = MaterialTheme.colorScheme.surface) {
-        Column(Modifier.fillMaxSize()) {
-            LanguageBar(
-                langs = state.langs,
-                onPick = { picking = it },
-                onSwap = vm::swapLangs,
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .padding(top = 12.dp),
-            ) {
-                SettingsButton(
-                    settings = settings,
-                    enabled = state.phase !in setOf(PttPhase.Recording, PttPhase.CancelArmed, PttPhase.Recognizing, PttPhase.Translating),
-                    onClick = onOpenSettings,
-                )
-            }
-
-            Box(Modifier.weight(1f).fillMaxWidth()) {
-                CardList(
-                    cards = state.cards,
-                    onCopy = { card ->
-                        scope.launch {
-                            clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("translation", card.translation)))
-                        }
-                        // Android 13+ shows its own clipboard confirmation.
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) vm.showHint(Hint.Copied)
+        if (faceToFace) {
+            // Flat on the table, one person at each end: each half is turned to face its reader.
+            Row(Modifier.fillMaxSize().safeDrawingPadding()) {
+                FacingHalf(
+                    slot = 0,
+                    state = state,
+                    listState = faceLists[0],
+                    entered = faceEntered[0],
+                    onPick = { picking = 0 },
+                    cell = { card, modifier ->
+                        ResultCell(
+                            card = card,
+                            cell = card.cell(card.slotFor(state.langs, 0)),
+                            // Copy, delete and retry stay on one side, so the two lists don't both offer them.
+                            showActions = true,
+                            onCopy = { onCopy(card) },
+                            onDelete = { vm.delete(card.id) },
+                            onRetry = { vm.onRetry(card.id) },
+                            retryEnabled = !busy,
+                            modifier = modifier,
+                        )
                     },
-                    onDelete = { vm.delete(it.id) },
-                    onRetry = { vm.onRetry(it.id) },
-                    retryEnabled = state.phase !in setOf(PttPhase.Recording, PttPhase.CancelArmed, PttPhase.Recognizing, PttPhase.Translating),
+                    // Above the button, whose voice pulse grows into the hints.
+                    modifier = Modifier.weight(1f).zIndex(1f).turned(Turn.Clockwise),
+                )
+                // Back leaves face to face; settings wait until then. Each hint fills the blank above or below
+                // the button, turned toward its reader on their left hand, and drawn over the voice pulse.
+                Column(
+                    Modifier.fillMaxHeight().width(FaceRailWidth),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(Modifier.weight(1f).zIndex(1f)) {
+                        HintLine(
+                            state.phase, state.hint, listOf(state.langs.first), { elapsed.value },
+                            Modifier.turned(Turn.Clockwise).fillMaxSize(),
+                            maxLines = Int.MAX_VALUE,
+                        )
+                    }
+                    pttButton(Modifier)
+                    Box(Modifier.weight(1f).zIndex(1f)) {
+                        HintLine(
+                            state.phase, state.hint, listOf(state.langs.second), { elapsed.value },
+                            Modifier.turned(Turn.CounterClockwise).fillMaxSize(),
+                            maxLines = Int.MAX_VALUE,
+                        )
+                    }
+                }
+                FacingHalf(
+                    slot = 1,
+                    state = state,
+                    listState = faceLists[1],
+                    entered = faceEntered[1],
+                    onPick = { picking = 1 },
+                    cell = { card, modifier ->
+                        ResultCell(
+                            card = card,
+                            cell = card.cell(card.slotFor(state.langs, 1)),
+                            showActions = false,
+                            onCopy = {},
+                            onDelete = {},
+                            onRetry = {},
+                            modifier = modifier,
+                        )
+                    },
+                    modifier = Modifier.weight(1f).zIndex(1f).turned(Turn.CounterClockwise),
                 )
             }
+        } else {
+            Column(Modifier.fillMaxSize()) {
+                LanguageBar(
+                    langs = state.langs,
+                    onPick = { picking = it },
+                    onSwap = vm::swapLangs,
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(top = 12.dp),
+                    trailing = {
+                        faceToFaceButton()
+                        settingsButton()
+                    },
+                )
 
-            HintLine(
-                phase = state.phase,
-                hint = state.hint,
-                langs = state.langs,
-                elapsedMs = { elapsed.value },
-            )
-            PttButton(
-                phase = state.phase,
-                volume = { volume.value },
-                onPress = vm::onPress,
-                onDrag = vm::onDrag,
-                onRelease = vm::onRelease,
-                onAbort = vm::onAbort,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .navigationBarsPadding()
-                    .padding(bottom = 40.dp),
-            )
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    CardList(state.cards, listState, entered) { card, modifier ->
+                        ResultCard(
+                            card = card,
+                            onCopy = { onCopy(card) },
+                            onDelete = { vm.delete(card.id) },
+                            onRetry = { vm.onRetry(card.id) },
+                            retryEnabled = !busy,
+                            modifier = modifier,
+                        )
+                    }
+                }
+
+                HintLine(
+                    phase = state.phase,
+                    hint = state.hint,
+                    langs = listOf(state.langs.first, state.langs.second),
+                    elapsedMs = { elapsed.value },
+                )
+                pttButton(
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .navigationBarsPadding()
+                        .padding(bottom = 40.dp),
+                )
+            }
         }
     }
 
@@ -175,34 +326,68 @@ private fun ConversationScreen(vm: TranslateViewModel, settings: ServiceSettings
             other = state.langs[1 - slot],
             onPick = { vm.setLang(slot, it); picking = null },
             onDismiss = { picking = null },
+            // Face to face, the picker turns toward whoever tapped it.
+            turn = when {
+                !faceToFace -> Turn.None
+                slot == 0 -> Turn.Clockwise
+                else -> Turn.CounterClockwise
+            },
         )
     }
 }
 
+/** The face-to-face center column: the button with a hint above and below it, each as deep as this. */
+private val FaceRailWidth = 136.dp
+
+/**
+ * One person's half of the face-to-face view, laid out from their side before it is turned toward them:
+ * the newest card next to the button, their language picker at the edge nearest them.
+ */
+@Composable
+private fun FacingHalf(
+    slot: Int,
+    state: UiState,
+    listState: LazyListState,
+    entered: MutableSet<Long>,
+    onPick: () -> Unit,
+    cell: @Composable (card: CardState, modifier: Modifier) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            CardList(state.cards, listState, entered, turned = true, content = cell)
+        }
+        LanguageButton(
+            state.langs[slot],
+            onClick = onPick,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+    }
+}
+
+/**
+ * Newest card next to the button, each coming out of it once: rising from below, or dropping from above in
+ * a [turned] face-to-face half, whose button sits at its top. [entered] holds cards that already played their
+ * entrance; scrolling back must not replay it.
+ */
 @Composable
 private fun CardList(
     cards: List<CardState>,
-    onCopy: (CardState) -> Unit,
-    onDelete: (CardState) -> Unit,
-    onRetry: (CardState) -> Unit,
-    retryEnabled: Boolean,
+    listState: LazyListState,
+    entered: MutableSet<Long>,
+    turned: Boolean = false,
+    content: @Composable (card: CardState, modifier: Modifier) -> Unit,
 ) {
     val motion = MaterialTheme.motionScheme
-    // Cards that already played their entrance; scrolling back must not replay it.
-    val entered = remember { mutableSetOf<Long>() }
     val rise = with(LocalDensity.current) { 48.dp.toPx() }
-    val listState = rememberLazyListState()
-    // A new recording adds its card at index 0; bring it into view even if the user had scrolled up.
-    val newest = cards.firstOrNull()?.id
-    LaunchedEffect(newest) {
-        if (newest != null) listState.animateScrollToItem(0)
-    }
+    val reverseLayout = !turned
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().then(if (turned) Modifier.turnedScroll(listState) else Modifier),
         state = listState,
-        reverseLayout = true, // newest sits right above the button it came out of
+        userScrollEnabled = !turned,
+        reverseLayout = reverseLayout,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom),
+        verticalArrangement = Arrangement.spacedBy(12.dp, if (reverseLayout) Alignment.Bottom else Alignment.Top),
     ) {
         items(cards, key = { it.id }) { card ->
             val enter = remember(card.id) { Animatable(if (card.id in entered) 1f else 0f) }
@@ -210,13 +395,9 @@ private fun CardList(
                 entered += card.id
                 enter.animateTo(1f, motion.slowSpatialSpec())
             }
-            ResultCard(
-                card = card,
-                onCopy = { onCopy(card) },
-                onDelete = { onDelete(card) },
-                onRetry = { onRetry(card) },
-                retryEnabled = retryEnabled,
-                modifier = Modifier
+            content(
+                card,
+                Modifier
                     .animateItem(
                         fadeInSpec = null,
                         placementSpec = motion.defaultSpatialSpec(),
@@ -224,8 +405,8 @@ private fun CardList(
                     )
                     .graphicsLayer {
                         val p = enter.value
-                        transformOrigin = TransformOrigin(0.5f, 1f)
-                        translationY = (1f - p) * rise
+                        transformOrigin = TransformOrigin(0.5f, if (reverseLayout) 1f else 0f)
+                        translationY = (1f - p) * if (reverseLayout) rise else -rise
                         scaleX = 0.85f + 0.15f * p
                         scaleY = 0.85f + 0.15f * p
                         alpha = p.coerceIn(0f, 1f)
@@ -301,11 +482,22 @@ private enum class Phrase(@StringRes val res: Int) {
     Copied(R.string.ptt_copied),
 }
 
-private data class HintText(val phrase: Phrase, val seconds: Int, val langs: LangPair)
+private data class HintText(val phrase: Phrase, val seconds: Int, val langs: List<Lang>)
 
-/** What the button does right now, in both languages, so whoever holds the phone can read it. */
+/**
+ * What the button does right now, in each of [langs], so whoever holds the phone can read it.
+ * Face to face gives each person their own hint in their own language, wrapping up to [maxLines] within the
+ * space the [modifier] gives it.
+ */
 @Composable
-private fun HintLine(phase: PttPhase, hint: Hint?, langs: LangPair, elapsedMs: () -> Long) {
+private fun HintLine(
+    phase: PttPhase,
+    hint: Hint?,
+    langs: List<Lang>,
+    elapsedMs: () -> Long,
+    modifier: Modifier = Modifier,
+    maxLines: Int = 1,
+) {
     val leftSec = ((PttStateMachine.MAX_RECORD_MS - elapsedMs()) / 1000 + 1).toInt()
     val phrase = when {
         phase == PttPhase.CancelArmed -> Phrase.ReleaseToCancel
@@ -319,7 +511,7 @@ private fun HintLine(phase: PttPhase, hint: Hint?, langs: LangPair, elapsedMs: (
     val motion = MaterialTheme.motionScheme
     Box(
         // Above the button, whose voice pulse grows into this space.
-        Modifier.zIndex(1f).fillMaxWidth().height(40.dp).padding(horizontal = 24.dp),
+        modifier.zIndex(1f).fillMaxWidth().height(40.dp).padding(horizontal = 24.dp),
         contentAlignment = Alignment.Center,
     ) {
         AnimatedContent(
@@ -331,23 +523,16 @@ private fun HintLine(phase: PttPhase, hint: Hint?, langs: LangPair, elapsedMs: (
             val colors = MaterialTheme.colorScheme
             // Both languages look the same: neither party is the main one.
             val color = if (t.phrase == Phrase.ReleaseToCancel) colors.error else colors.onSurfaceVariant
-            val first = rememberLangResources(t.langs.first).getString(t.phrase.res, t.seconds)
-            val second = rememberLangResources(t.langs.second).getString(t.phrase.res, t.seconds)
+            val lines = t.langs.map { rememberLangResources(it).getString(t.phrase.res, t.seconds) }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    first,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = color,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
                 // Languages without their own phrases fall back to English; don't print it twice.
-                if (second != first) {
+                for (line in lines.distinct()) {
                     Text(
-                        second,
+                        line,
                         style = MaterialTheme.typography.labelLarge,
                         color = color,
-                        maxLines = 1,
+                        textAlign = TextAlign.Center,
+                        maxLines = maxLines,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }

@@ -8,6 +8,8 @@
 
     <string name="pick_language">Choisir une langue</string>
     <string name="swap_languages">Permuter les langues</string>
+    <string name="face_to_face">Mode face à face</string>
+    <string name="face_to_face_exit">Quitter le mode face à face</string>
     <string name="lang_in_other_slot">Permuter</string>
 
     <string name="ptt_hold_to_talk">Maintenez pour parler</string>

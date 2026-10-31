@@ -9,6 +9,8 @@
 
     <string name="pick_language">选择语言</string>
     <string name="swap_languages">互换语言</string>
+    <string name="face_to_face">面对面模式</string>
+    <string name="face_to_face_exit">退出面对面模式</string>
     <string name="lang_in_other_slot">互换</string>
 
     <string name="ptt_hold_to_talk">按住说话</string>

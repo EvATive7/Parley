@@ -31,13 +31,29 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import io.github.evative7.parley.R
 import io.github.evative7.parley.model.Lang
 
-/** Picks the language for one side of the conversation; [other] is what the other side currently uses. */
+/**
+ * Picks the language for one side of the conversation; [other] is what the other side currently uses.
+ * Face to face, [turn] points the dialog toward the person who opened it.
+ */
 @Composable
-fun LanguagePickerDialog(selected: Lang, other: Lang, onPick: (Lang) -> Unit, onDismiss: () -> Unit) {
-    BasicAlertDialog(onDismissRequest = onDismiss) {
+fun LanguagePickerDialog(
+    selected: Lang,
+    other: Lang,
+    onPick: (Lang) -> Unit,
+    onDismiss: () -> Unit,
+    turn: Turn = Turn.None,
+) {
+    BasicAlertDialog(
+        onDismissRequest = onDismiss,
+        // Turned, the dialog's width runs along the short side of the screen; keep it off the edges.
+        modifier = if (turn == Turn.None) Modifier else Modifier.padding(vertical = 24.dp).turned(turn),
+        // The platform width cap would become the turned dialog's height and leave room for only a few rows.
+        properties = DialogProperties(usePlatformDefaultWidth = turn == Turn.None),
+    ) {
         Surface(
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -55,8 +71,11 @@ fun LanguagePickerDialog(selected: Lang, other: Lang, onPick: (Lang) -> Unit, on
                     initialFirstVisibleItemIndex = (Lang.targets.indexOf(selected) - 2).coerceAtLeast(0),
                 )
                 LazyColumn(
-                    modifier = Modifier.heightIn(max = 440.dp),
+                    modifier = Modifier
+                        .heightIn(max = if (turn == Turn.None) 440.dp else 600.dp)
+                        .then(if (turn == Turn.None) Modifier else Modifier.turnedScroll(listState)),
                     state = listState,
+                    userScrollEnabled = turn == Turn.None,
                     contentPadding = PaddingValues(horizontal = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {

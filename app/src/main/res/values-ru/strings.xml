@@ -7,4 +7,6 @@
     <string name="ptt_release_to_cancel">Отпустите для отмены</string>
     <string name="ptt_recognizing">Распознавание…</string>
     <string name="ptt_copied">Скопировано</string>
+    <string name="face_to_face">Режим лицом к лицу</string>
+    <string name="face_to_face_exit">Выйти из режима лицом к лицу</string>
 </resources>

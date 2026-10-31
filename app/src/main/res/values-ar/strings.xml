@@ -7,4 +7,6 @@
     <string name="ptt_release_to_cancel">أفلت للإلغاء</string>
     <string name="ptt_recognizing">جارٍ التعرّف…</string>
     <string name="ptt_copied">تم النسخ</string>
+    <string name="face_to_face">وضع وجهًا لوجه</string>
+    <string name="face_to_face_exit">الخروج من وضع وجهًا لوجه</string>
 </resources>

@@ -9,6 +9,8 @@
 
     <string name="pick_language">Choose a language</string>
     <string name="swap_languages">Swap languages</string>
+    <string name="face_to_face">Face-to-face mode</string>
+    <string name="face_to_face_exit">Exit face-to-face mode</string>
     <string name="lang_in_other_slot">Swap</string>
 
     <!-- Push-to-talk phrases, shown at the bottom in both conversation languages. -->

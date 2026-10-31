@@ -77,6 +77,8 @@ fun PttButton(
     onRelease: () -> Unit,
     onAbort: () -> Unit,
     modifier: Modifier = Modifier,
+    // Face to face, the person across has "up" pointing the other way: sliding off in any direction cancels.
+    cancelAnyDirection: Boolean = false,
     idleContainer: Color = MaterialTheme.colorScheme.primaryContainer,
     idleContent: Color = MaterialTheme.colorScheme.onPrimaryContainer,
 ) {
@@ -144,6 +146,7 @@ fun PttButton(
     val drag by rememberUpdatedState(onDrag)
     val release by rememberUpdatedState(onRelease)
     val abort by rememberUpdatedState(onAbort)
+    val anyDirection by rememberUpdatedState(cancelAnyDirection)
 
     val description = stringResource(R.string.ptt_description)
     val stateText = when {
@@ -186,7 +189,8 @@ fun PttButton(
                                 if (change.changedToUpIgnoreConsumed() || !change.pressed) {
                                     release(); break
                                 }
-                                val nowArmed = down.position.y - change.position.y > threshold
+                                val offset = change.position - down.position
+                                val nowArmed = if (anyDirection) offset.getDistance() > threshold else -offset.y > threshold
                                 if (nowArmed != isArmed) {
                                     isArmed = nowArmed
                                     drag(nowArmed)

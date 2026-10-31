@@ -7,4 +7,6 @@
     <string name="ptt_release_to_cancel">Solte para cancelar</string>
     <string name="ptt_recognizing">Reconhecendo…</string>
     <string name="ptt_copied">Copiado</string>
+    <string name="face_to_face">Modo frente a frente</string>
+    <string name="face_to_face_exit">Sair do modo frente a frente</string>
 </resources>

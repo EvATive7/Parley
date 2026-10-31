@@ -91,4 +91,6 @@
     <string name="settings_translation_incomplete">所選服務的設定不完整，請編輯。</string>
     <string name="action_done">完成</string>
     <string name="action_cancel">取消</string>
+    <string name="face_to_face">面對面模式</string>
+    <string name="face_to_face_exit">退出面對面模式</string>
 </resources>
