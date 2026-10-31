@@ -28,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -63,7 +64,7 @@ fun ResultCard(
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
     onEdit: ((String) -> Unit)? = null,
-    shape: Shape = MaterialTheme.shapes.extraLarge,
+    shape: Shape = CardShape,
     turn: Turn = Turn.None,
     // Face to face, a side shows only the translation into its own language.
     translations: List<CardTranslation> = card.translations,
@@ -117,7 +118,7 @@ fun ResultCell(
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
     onEdit: ((String) -> Unit)? = null,
-    shape: Shape = MaterialTheme.shapes.extraLarge,
+    shape: Shape = CardShape,
 ) {
     val motion = MaterialTheme.motionScheme
     val listening = card.stage == CardStage.Listening || card.stage == CardStage.Recognizing
@@ -186,7 +187,7 @@ private fun TappableCard(
     turn: Turn = Turn.None,
     onEdit: ((String) -> Unit)? = null,
     editEnabled: Boolean = true,
-    shape: Shape = MaterialTheme.shapes.extraLarge,
+    shape: Shape = CardShape,
     content: @Composable () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
@@ -349,15 +350,19 @@ private fun Translations(translations: List<CardTranslation>, streaming: Boolean
     val colors = MaterialTheme.colorScheme
     val named = translations.size > 1
     translations.filter { it.text.isNotEmpty() }.forEachIndexed { i, t ->
-        if (spaced || i > 0) Spacer(Modifier.size(if (named) 12.dp else 8.dp))
-        if (named) {
-            Text(t.to.nativeName(), style = MaterialTheme.typography.labelMedium, color = colors.primary)
-            Spacer(Modifier.size(2.dp))
-        }
-        if (streaming) {
-            StreamingText(text = t.text, style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
-        } else {
-            Text(t.text, style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
+        // Keyed by language: when one translation starts before the other, each keeps its own fade state
+        // instead of inheriting the one that was in its position.
+        key(t.to) {
+            if (spaced || i > 0) Spacer(Modifier.size(if (named) 12.dp else 8.dp))
+            if (named) {
+                Text(t.to.nativeName(), style = MaterialTheme.typography.labelMedium, color = colors.primary)
+                Spacer(Modifier.size(2.dp))
+            }
+            if (streaming) {
+                StreamingText(text = t.text, style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
+            } else {
+                Text(t.text, style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
+            }
         }
     }
 }
@@ -485,6 +490,9 @@ private fun ActionBar(
         }
     }
 }
+
+/** A card's corners: rounded, but not so much that short cards turn into pills at a small gap. */
+private val CardShape = RoundedCornerShape(20.dp)
 
 /** Which way the card translates, each language named in itself so both readers find theirs. */
 private fun CardState.direction(): String {

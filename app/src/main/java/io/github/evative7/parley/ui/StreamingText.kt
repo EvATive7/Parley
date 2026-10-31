@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -71,24 +72,31 @@ fun StreamingText(
         }
     }
 
-    val annotated = buildAnnotatedString {
-        var cursor = 0
-        for (seg in segments) {
-            if (seg.start > text.length) break
-            append(text.substring(cursor.coerceAtMost(seg.start), seg.start))
-            withStyle(SpanStyle(color = color.copy(alpha = color.alpha * seg.alpha.value))) {
-                append(text.substring(seg.start, seg.end.coerceAtMost(text.length)))
-            }
-            cursor = seg.end
-        }
-        if (cursor < text.length) {
-            // Arrived this frame but not registered yet: keep it invisible for one frame.
-            if (cursor < known) append(text.substring(cursor, known))
-            if (known < text.length) withStyle(SpanStyle(color = Color.Transparent)) { append(text.substring(known)) }
-        }
-    }
+    val annotated = streamingText(text, known, segments.map { it.start until it.end to it.alpha.value }, color)
     Text(annotated, modifier, color = color, style = style)
 }
+
+/**
+ * [text] with each fading [segments] range at its alpha, and anything past [known] (arrived this frame, not
+ * registered yet) invisible. [known] and the ranges come from the previous text and are only brought up to
+ * date after composition, so text that just shrank or was replaced can be shorter than they say: every index
+ * is clamped to [text].
+ */
+internal fun streamingText(text: String, known: Int, segments: List<Pair<IntRange, Float>>, color: Color): AnnotatedString =
+    buildAnnotatedString {
+        val end = text.length
+        var cursor = 0
+        for ((range, alpha) in segments) {
+            val start = range.first.coerceIn(cursor, end)
+            val stop = (range.last + 1).coerceIn(start, end)
+            append(text.substring(cursor, start))
+            withStyle(SpanStyle(color = color.copy(alpha = color.alpha * alpha))) { append(text.substring(start, stop)) }
+            cursor = stop
+        }
+        val shown = known.coerceIn(cursor, end)
+        append(text.substring(cursor, shown))
+        if (shown < end) withStyle(SpanStyle(color = Color.Transparent)) { append(text.substring(shown)) }
+    }
 
 /** Placeholder lines shown while a whole-file ASR service is working. */
 @Composable
