@@ -3,6 +3,8 @@ package io.github.evative7.parley.data
 import io.github.evative7.parley.asr.AsrProvider
 import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.asr.DashScopeRegion
+import io.github.evative7.parley.mock.MockAsrFault
+import io.github.evative7.parley.mock.MockSpeed
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** Keys are plaintext only in memory; persistence is handled by KeyVault. */
@@ -13,6 +15,9 @@ data class ServiceSettings(
     val openAiAsrKey: String = "",
     val volcAppId: String = "",
     val volcAccessToken: String = "",
+    /** Used by the mock recognizer only. */
+    val mockAsrSpeed: MockSpeed = MockSpeed.Normal,
+    val mockAsrFault: MockAsrFault = MockAsrFault.None,
     // The active translation service, copied from the selected preset. The translator reads only these.
     val translationUrl: String = "https://api.openai.com/v1",
     val translationModel: String = "gpt-4o-mini",
@@ -61,7 +66,10 @@ data class ServiceSettings(
                 if (!validValue(volcAppId)) add(SettingsError.AsrAppId)
                 if (!validSecret(volcAccessToken)) add(SettingsError.AsrKey)
             }
+            AsrProvider.Mock -> Unit
         }
+        // The mock translator needs no endpoint.
+        if (selectedTranslation?.mock == true) return@buildList
         if (!secureUrl(translationUrl)) add(SettingsError.TranslationUrl)
         if (translationModel.isBlank()) add(SettingsError.TranslationModel)
         if (!validSecret(translationKey)) add(SettingsError.TranslationKey)

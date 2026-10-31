@@ -58,6 +58,8 @@ android {
 
     buildFeatures {
         compose = true
+        // BuildConfig.DEBUG keeps the mock services out of release builds.
+        buildConfig = true
     }
 
     // Both conversation languages must be available offline when switching hint resources.

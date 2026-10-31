@@ -1,7 +1,10 @@
 package io.github.evative7.parley.data
 
 import kotlinx.serialization.json.Json
+import io.github.evative7.parley.mock.MockSpeed
+import io.github.evative7.parley.mock.MockTranslationFault
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
@@ -18,12 +21,17 @@ data class TranslationPreset(
     val url: String,
     val model: String,
     val key: String,
+    /** Answered offline by the mock translator; only offered in debug builds. */
+    val mock: Boolean = false,
+    val mockSpeed: MockSpeed = MockSpeed.Normal,
+    val mockFault: MockTranslationFault = MockTranslationFault.None,
 ) {
     val host: String get() = url.toHttpUrlOrNull()?.host ?: url
 
     /** Every invalid field, in dialog order. */
     fun validationErrors(): List<SettingsError> = buildList {
         if (name.isBlank()) add(SettingsError.PresetName)
+        if (mock) return@buildList
         if (!ServiceSettings.secureUrl(url)) add(SettingsError.TranslationUrl)
         if (model.isBlank() || model.any { it.isISOControl() }) add(SettingsError.TranslationModel)
         if (key.isBlank() || key.any { it.isISOControl() }) add(SettingsError.TranslationKey)
@@ -46,6 +54,11 @@ internal fun encodePresets(
             put("url", preset.url)
             put("model", preset.model)
             put("key_encrypted", encrypt(preset.key, keyField(preset.id)))
+            if (preset.mock) {
+                put("mock", true)
+                put("mock_speed", preset.mockSpeed.name)
+                put("mock_fault", preset.mockFault.name)
+            }
         })
     }
 }.toString()
@@ -66,6 +79,9 @@ internal fun decodePresets(
             url = o["url"]?.jsonPrimitive?.content.orEmpty(),
             model = o["model"]?.jsonPrimitive?.content.orEmpty(),
             key = runCatching { decrypt(o["key_encrypted"]?.jsonPrimitive?.content.orEmpty(), keyField(id)) }.getOrDefault(""),
+            mock = o["mock"]?.jsonPrimitive?.booleanOrNull == true,
+            mockSpeed = MockSpeed.fromName(o["mock_speed"]?.jsonPrimitive?.content),
+            mockFault = MockTranslationFault.fromName(o["mock_fault"]?.jsonPrimitive?.content),
         )
     }
 }

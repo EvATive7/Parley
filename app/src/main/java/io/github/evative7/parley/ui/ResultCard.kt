@@ -3,11 +3,8 @@ package io.github.evative7.parley.ui
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -43,18 +39,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.lerp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.github.evative7.parley.R
@@ -126,6 +116,7 @@ fun ResultCell(
     turn: Turn,
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
+    onEdit: ((String) -> Unit)? = null,
 ) {
     val motion = MaterialTheme.motionScheme
     val listening = card.stage == CardStage.Listening || card.stage == CardStage.Recognizing
@@ -148,6 +139,7 @@ fun ResultCell(
         source = if (translated) "" else text,
         translation = if (translated) text else "",
         onCopy = onCopy, onDelete = onDelete, modifier = modifier, turn = turn,
+        onEdit = onEdit, editEnabled = retryEnabled,
     ) {
         Column(
             Modifier
@@ -242,6 +234,8 @@ private fun CardDialog(
 ) {
     val colors = MaterialTheme.colorScheme
     var editing by rememberSaveable { mutableStateOf(false) }
+    // Face to face, the editor turns back upright: the keyboard follows the device, not either reader.
+    val turn = if (editing) Turn.None else turn
     Dialog(
         onDismissRequest = onDismiss,
         // Turned, the platform width cap would become the dialog's height.
@@ -418,7 +412,7 @@ private fun ActionGroup(actions: List<Action>) {
     }
 }
 
-/** A full-width action: an icon in a round badge, then its label. Pressed, its corners round out into a pill. */
+/** A full-width action: an icon in a round badge, then its label. */
 @Composable
 private fun ActionBar(
     action: Action,
@@ -428,18 +422,12 @@ private fun ActionBar(
     badge: Color = MaterialTheme.colorScheme.secondaryContainer,
     onBadge: Color = MaterialTheme.colorScheme.onSecondaryContainer,
 ) {
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val morph by animateFloatAsState(
-        if (pressed) 1f else 0f, MaterialTheme.motionScheme.fastSpatialSpec(), label = "press",
-    )
     Surface(
         onClick = action.onClick,
         enabled = action.enabled,
-        shape = if (morph == 0f) shape else MorphedShape(shape, PillShape, morph),
+        shape = shape,
         color = container,
         contentColor = content,
-        interactionSource = interaction,
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
@@ -465,33 +453,13 @@ private fun ActionBar(
     }
 }
 
-private val PillShape = RoundedCornerShape(50)
-
-/** Each corner [fraction] of the way from [from] to [to]. */
-private class MorphedShape(
-    private val from: RoundedCornerShape,
-    private val to: RoundedCornerShape,
-    private val fraction: Float,
-) : Shape {
-    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
-        fun corner(a: CornerSize, b: CornerSize): Float =
-            lerp(a.toPx(size, density), b.toPx(size, density), fraction)
-        return RoundedCornerShape(
-            topStart = corner(from.topStart, to.topStart),
-            topEnd = corner(from.topEnd, to.topEnd),
-            bottomEnd = corner(from.bottomEnd, to.bottomEnd),
-            bottomStart = corner(from.bottomStart, to.bottomStart),
-        ).createOutline(size, layoutDirection, density)
-    }
-}
-
-/** Which way the card translates. */
+/** Which way the card translates, each language named in itself so both readers find theirs. */
 private fun CardState.direction(): String =
     target?.let { to ->
-        sourceLang?.displayName()?.let { "$it → ${to.displayName()}" } ?: "→ ${to.displayName()}"
+        sourceLang?.nativeName()?.let { "$it → ${to.nativeName()}" } ?: "→ ${to.nativeName()}"
     }
         // Until the speaker's language is known, either direction is possible.
-        ?: "${langs.first.displayName()} ⇄ ${langs.second.displayName()}"
+        ?: "${langs.first.nativeName()} ⇄ ${langs.second.nativeName()}"
 
 /** What went wrong, with a retry when there is recognized text to resend. */
 @Composable

@@ -48,6 +48,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -95,6 +97,8 @@ import kotlinx.coroutines.launch
 fun TranslateScreen(vm: TranslateViewModel = viewModel(), settingsVm: SettingsViewModel = viewModel()) {
     val settings by settingsVm.settings.collectAsStateWithLifecycle()
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    // Bumped on each opening, so the page never picks up the edits of the one still sliding out.
+    var settingsVisit by rememberSaveable { mutableIntStateOf(0) }
     var faceToFace by rememberSaveable { mutableStateOf(false) }
 
     // The app stays portrait (see the manifest); face to face is always landscape. Lying flat on a table the
@@ -135,14 +139,14 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel(), settingsVm: SettingsVi
         label = "page",
     ) { settingsOpen ->
         if (settingsOpen) {
-            SettingsScreen(settingsVm, onBack = { showSettings = false })
+            key(settingsVisit) { SettingsScreen(settingsVm, onBack = { showSettings = false }) }
         } else {
             ConversationScreen(
                 vm,
                 settings,
                 faceToFace = faceToFace,
                 onFaceToFace = { faceToFace = it },
-                onOpenSettings = { showSettings = true },
+                onOpenSettings = { settingsVisit++; showSettings = true },
             )
         }
     }
@@ -236,6 +240,7 @@ private fun ConversationScreen(
                             onRetry = { vm.onRetry(card.id) },
                             turn = Turn.Clockwise,
                             retryEnabled = !busy,
+                            onEdit = { vm.editSource(card.id, it) },
                             modifier = modifier,
                         )
                     },
@@ -279,6 +284,8 @@ private fun ConversationScreen(
                             onDelete = { vm.delete(card.id) },
                             onRetry = {},
                             turn = Turn.CounterClockwise,
+                            retryEnabled = !busy,
+                            onEdit = { vm.editSource(card.id, it) },
                             modifier = modifier,
                         )
                     },

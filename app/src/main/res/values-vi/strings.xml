@@ -130,4 +130,16 @@
     <plurals name="settings_licenses_count">
         <item quantity="other">%1$d thư viện</item>
     </plurals>
+
+    <!-- Configuration file and About -->
+    <string name="settings_privacy_title">Quyền riêng tư</string>
+    <string name="settings_config">Tệp cấu hình</string>
+    <string name="settings_config_body">Xuất cài đặt dịch vụ đã lưu ra tệp, hoặc nhập tệp để điền vào trang này. Tệp chứa khóa của bạn ở dạng văn bản thuần; hãy giữ an toàn.</string>
+    <string name="settings_config_export">Xuất</string>
+    <string name="settings_config_import">Nhập</string>
+    <string name="settings_config_exported">Đã xuất cấu hình</string>
+    <string name="settings_config_imported">Đã nhập cấu hình. Lưu để áp dụng.</string>
+    <string name="settings_config_invalid">Tệp này không phải cấu hình Parley.</string>
+    <string name="settings_config_too_new">Tệp này đến từ phiên bản Parley mới hơn. Hãy cập nhật ứng dụng để nhập.</string>
+    <string name="settings_config_failed">Không thể đọc hoặc ghi tệp.</string>
 </resources>

@@ -131,4 +131,16 @@
         <item quantity="one">%1$d libreria</item>
         <item quantity="other">%1$d librerie</item>
     </plurals>
+
+    <!-- Configuration file and About -->
+    <string name="settings_privacy_title">Privacy</string>
+    <string name="settings_config">File di configurazione</string>
+    <string name="settings_config_body">Esporta le impostazioni salvate in un file oppure importane uno per compilare questa pagina. Il file contiene le chiavi in chiaro: conservalo al sicuro.</string>
+    <string name="settings_config_export">Esporta</string>
+    <string name="settings_config_import">Importa</string>
+    <string name="settings_config_exported">Configurazione esportata</string>
+    <string name="settings_config_imported">Configurazione importata. Salva per applicarla.</string>
+    <string name="settings_config_invalid">Questo file non è una configurazione di Parley.</string>
+    <string name="settings_config_too_new">Questo file proviene da una versione più recente di Parley. Aggiorna l\'app per importarlo.</string>
+    <string name="settings_config_failed">Impossibile leggere o scrivere il file.</string>
 </resources>

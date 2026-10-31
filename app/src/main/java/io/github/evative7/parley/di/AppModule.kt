@@ -17,7 +17,7 @@ import io.github.evative7.parley.model.LanguageDetector
 import io.github.evative7.parley.model.OfflineLanguageDetector
 import io.github.evative7.parley.state.LangPairStore
 import io.github.evative7.parley.state.MonotonicClock
-import io.github.evative7.parley.translate.OpenAiCompatibleTranslator
+import io.github.evative7.parley.translate.RoutingTranslator
 import io.github.evative7.parley.translate.Translator
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
@@ -27,7 +27,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 abstract class AppModule {
     @Binds @Singleton abstract fun recognizer(impl: RoutingRecognizer): SpeechRecognizer
-    @Binds @Singleton abstract fun translator(impl: OpenAiCompatibleTranslator): Translator
+    @Binds @Singleton abstract fun translator(impl: RoutingTranslator): Translator
     @Binds @Singleton abstract fun settings(impl: SettingsRepository): ServiceSettingsSource
     @Binds @Singleton abstract fun detector(impl: OfflineLanguageDetector): LanguageDetector
     @Binds @Singleton abstract fun languages(impl: LanguageRepository): LangPairStore

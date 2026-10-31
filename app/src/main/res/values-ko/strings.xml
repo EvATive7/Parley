@@ -132,4 +132,16 @@
         <item quantity="one">라이브러리 %1$d개</item>
         <item quantity="other">라이브러리 %1$d개</item>
     </plurals>
+
+    <!-- Configuration file and About -->
+    <string name="settings_privacy_title">개인정보</string>
+    <string name="settings_config">설정 파일</string>
+    <string name="settings_config_body">저장된 서비스 설정을 파일로 내보내거나, 파일을 가져와 이 페이지를 채웁니다. 파일에는 키가 평문으로 들어 있으니 안전하게 보관하세요.</string>
+    <string name="settings_config_export">내보내기</string>
+    <string name="settings_config_import">가져오기</string>
+    <string name="settings_config_exported">설정을 내보냈습니다</string>
+    <string name="settings_config_imported">설정을 가져왔습니다. 저장하면 적용됩니다.</string>
+    <string name="settings_config_invalid">Parley 설정 파일이 아닙니다.</string>
+    <string name="settings_config_too_new">더 새로운 버전의 Parley에서 만든 파일입니다. 앱을 업데이트한 후 가져오세요.</string>
+    <string name="settings_config_failed">파일을 읽거나 쓸 수 없습니다.</string>
 </resources>

@@ -1,6 +1,17 @@
 package io.github.evative7.parley.asr
 
-enum class AsrProvider { DashScope, OpenAi, Volcengine }
+import io.github.evative7.parley.BuildConfig
+
+enum class AsrProvider {
+    DashScope, OpenAi, Volcengine,
+
+    /** Offline stand-in for trying the app without keys; debug builds only. */
+    Mock;
+
+    companion object {
+        val available: List<AsrProvider> = entries.filter { it != Mock || BuildConfig.DEBUG }
+    }
+}
 
 enum class AsrService(
     val id: String,
@@ -48,12 +59,17 @@ enum class AsrService(
         "doubao-seed-asr-2-0-non-stream-input-turbo",
         AsrProvider.Volcengine,
         streaming = false,
-    );
+    ),
+    MockStream("mock-stream", AsrProvider.Mock, streaming = true),
+    MockNonStream("mock-non-stream", AsrProvider.Mock, streaming = false);
 
     companion object {
         val Default = FunAsrRealtimeStream
 
-        fun fromId(id: String?): AsrService = entries.firstOrNull { it.id == id } ?: Default
+        /** What can be picked in this build. */
+        val available: List<AsrService> = entries.filter { it.provider in AsrProvider.available }
+
+        fun fromId(id: String?): AsrService = available.firstOrNull { it.id == id } ?: Default
     }
 }
 

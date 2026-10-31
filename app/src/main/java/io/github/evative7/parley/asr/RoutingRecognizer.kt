@@ -2,6 +2,7 @@ package io.github.evative7.parley.asr
 
 import io.github.evative7.parley.data.ServiceSettingsSource
 import io.github.evative7.parley.debug.DebugLog
+import io.github.evative7.parley.mock.MockRecognizer
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
 import javax.inject.Inject
@@ -19,6 +20,7 @@ class RoutingRecognizer internal constructor(
         openAiTranscription: OpenAiTranscriptionRecognizer,
         volcengineSauc: VolcengineSaucRecognizer,
         volcengineAuc: VolcengineAucRecognizer,
+        mock: MockRecognizer,
     ) : this(settings, { service ->
         when (service) {
             AsrService.FunAsrRealtimeStream,
@@ -29,6 +31,8 @@ class RoutingRecognizer internal constructor(
             AsrService.DoubaoSeedAsr20Stream -> volcengineSauc
             AsrService.DoubaoSeedAsr20NonStream,
             AsrService.DoubaoSeedAsr20NonStreamTurbo -> volcengineAuc
+            AsrService.MockStream,
+            AsrService.MockNonStream -> mock
         }
     })
 

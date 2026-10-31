@@ -135,4 +135,16 @@
         <item quantity="many">%1$d مكتبة</item>
         <item quantity="other">%1$d مكتبة</item>
     </plurals>
+
+    <!-- Configuration file and About -->
+    <string name="settings_privacy_title">الخصوصية</string>
+    <string name="settings_config">ملف الإعدادات</string>
+    <string name="settings_config_body">صدّر إعدادات الخدمات المحفوظة إلى ملف، أو استورد ملفًا لملء هذه الصفحة. يحتوي الملف على مفاتيحك كنص صريح، فاحفظه في مكان آمن.</string>
+    <string name="settings_config_export">تصدير</string>
+    <string name="settings_config_import">استيراد</string>
+    <string name="settings_config_exported">تم تصدير الإعدادات</string>
+    <string name="settings_config_imported">تم استيراد الإعدادات. احفظ لتطبيقها.</string>
+    <string name="settings_config_invalid">هذا الملف ليس ملف إعدادات Parley.</string>
+    <string name="settings_config_too_new">هذا الملف من إصدار أحدث من Parley. حدّث التطبيق لاستيراده.</string>
+    <string name="settings_config_failed">تعذّرت قراءة الملف أو كتابته.</string>
 </resources>

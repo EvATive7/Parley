@@ -133,4 +133,39 @@
         <item quantity="one">%1$d 個程式庫</item>
         <item quantity="other">%1$d 個程式庫</item>
     </plurals>
+
+    <!-- Configuration file and About -->
+    <string name="settings_privacy_title">隱私</string>
+    <string name="settings_config">設定檔</string>
+    <string name="settings_config_body">將已儲存的服務設定匯出為檔案，或匯入檔案填入本頁。檔案中的金鑰為明文，請妥善保管。</string>
+    <string name="settings_config_export">匯出</string>
+    <string name="settings_config_import">匯入</string>
+    <string name="settings_config_exported">設定已匯出</string>
+    <string name="settings_config_imported">設定已匯入，儲存後生效。</string>
+    <string name="settings_config_invalid">這不是 Parley 的設定檔。</string>
+    <string name="settings_config_too_new">此檔案來自較新版本的 Parley，請先更新應用程式再匯入。</string>
+    <string name="settings_config_failed">無法讀取或寫入檔案。</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">模擬（離線）</string>
+    <string name="settings_asr_mock_stream">模擬串流辨識</string>
+    <string name="settings_asr_mock_stream_desc">錄音過程中逐步回傳範例句子，於兩種對話語言之間交替。不連線至任何網路服務，無需憑證。用於開發與測試。</string>
+    <string name="settings_asr_mock_non_stream">模擬整段辨識</string>
+    <string name="settings_asr_mock_non_stream_desc">錄音結束後回傳完整的範例句子，於兩種對話語言之間交替。不連線至任何網路服務，無需憑證。用於開發與測試。</string>
+    <string name="settings_translation_type_real">真實服務</string>
+    <string name="settings_translation_type_mock">模擬服務</string>
+    <string name="settings_translation_mock_name">模擬 LLM</string>
+    <string name="settings_translation_mock_detail">模擬 · 離線 · 速度：%1$s</string>
+    <string name="settings_mock_speed">回應速度</string>
+    <string name="settings_mock_speed_fast">快</string>
+    <string name="settings_mock_speed_normal">正常</string>
+    <string name="settings_mock_speed_slow">慢</string>
+    <string name="settings_mock_fault">模擬故障</string>
+    <string name="mock_fault_none">無</string>
+    <string name="mock_fault_no_speech">沒聽清楚</string>
+    <string name="mock_fault_network_recording">錄音中途斷線</string>
+    <string name="mock_fault_network_midway">翻譯中途斷線</string>
+    <string name="mock_fault_authentication">驗證失敗</string>
+    <string name="mock_fault_rate_limit">達到速率上限</string>
+    <string name="mock_fault_timeout">逾時</string>
 </resources>

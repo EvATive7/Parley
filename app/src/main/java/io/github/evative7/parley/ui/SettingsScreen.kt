@@ -1,6 +1,8 @@
 package io.github.evative7.parley.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -49,6 +51,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecureTextField
@@ -72,6 +75,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -83,6 +87,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -94,14 +99,23 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.evative7.parley.BuildConfig
 import io.github.evative7.parley.R
 import io.github.evative7.parley.asr.AsrProvider
 import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.asr.DashScopeRegion
+import io.github.evative7.parley.data.ConfigFile
+import io.github.evative7.parley.data.ConfigFileException
 import io.github.evative7.parley.data.ServiceSettings
 import io.github.evative7.parley.data.SettingsError
 import io.github.evative7.parley.data.TranslationPreset
+import io.github.evative7.parley.mock.MockAsrFault
+import io.github.evative7.parley.mock.MockSpeed
+import io.github.evative7.parley.mock.MockTranslationFault
 import io.github.evative7.parley.state.SettingsViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** Service settings: one card per service; storage trouble surfaces as a snackbar. */
 @Composable
@@ -128,7 +142,9 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     var confirmDiscard by remember { mutableStateOf(false) }
     // Text fields only report edits outward; bumping this rebuilds them from the draft after Undo.
     var revision by remember(saved) { mutableIntStateOf(0) }
-    val dirty = draft != baseline
+    // Saved with the rest of the page, so Discard undoes it too.
+    var debugDraft by remember(saved, debugMode) { mutableStateOf(debugMode) }
+    val dirty = draft != baseline || debugDraft != debugMode
     val errors = draft.validationErrors()
     val shown = if (attempted) errors else emptyList()
     val leave = { if (dirty) confirmDiscard = true else onBack() }
@@ -142,6 +158,53 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     }
     LaunchedEffect(saveFailed) {
         if (saveFailed) snackbar.showSnackbar(saveError)
+    }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val configMessages = ConfigMessages(
+        exported = stringResource(R.string.settings_config_exported),
+        imported = stringResource(R.string.settings_config_imported),
+        invalid = stringResource(R.string.settings_config_invalid),
+        tooNew = stringResource(R.string.settings_config_too_new),
+        failed = stringResource(R.string.settings_config_failed),
+    )
+    // What is saved goes out; unsaved edits are not a configuration yet.
+    val exportConfig = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val text = ConfigFile.encode(baseline, BuildConfig.VERSION_NAME)
+        scope.launch {
+            val written = runCatching {
+                withContext(Dispatchers.IO) {
+                    context.contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray()) }
+                }
+            }.isSuccess
+            snackbar.showSnackbar(if (written) configMessages.exported else configMessages.failed)
+        }
+    }
+    // An import fills the page like typing would; nothing is stored until Save.
+    val importConfig = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            val result = runCatching {
+                val text = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)!!.use { it.readNBytes(MAX_CONFIG_BYTES) }.decodeToString()
+                }
+                ConfigFile.decode(text)
+            }
+            result.onSuccess {
+                draft = it
+                attempted = false
+                revision++
+            }
+            snackbar.showSnackbar(
+                when ((result.exceptionOrNull() as? ConfigFileException)?.reason) {
+                    null -> if (result.isSuccess) configMessages.imported else configMessages.failed
+                    ConfigFileException.Reason.NotAConfig -> configMessages.invalid
+                    ConfigFileException.Reason.TooNew -> configMessages.tooNew
+                },
+            )
+        }
     }
 
     val scroll = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -163,9 +226,9 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
             SaveBar(
                 visible = dirty,
                 saving = saving,
-                onRevert = { draft = baseline; attempted = false; revision++ },
+                onRevert = { draft = baseline; debugDraft = debugMode; attempted = false; revision++ },
                 onSave = {
-                    if (errors.isEmpty()) vm.save(draft, onBack) else attempted = true
+                    if (errors.isEmpty()) vm.save(draft, debugDraft, onBack) else attempted = true
                 },
             )
         },
@@ -210,6 +273,17 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                                 SettingsError.AsrKey.shownIn(shown),
                             ) { draft = draft.copy(volcAccessToken = it) }
                         }
+                        AsrProvider.Mock -> {
+                            MockSpeedField(draft.mockAsrSpeed, !saving) { draft = draft.copy(mockAsrSpeed = it) }
+                            ChoiceField(
+                                label = stringResource(R.string.settings_mock_fault),
+                                options = MockAsrFault.entries,
+                                selected = draft.mockAsrFault,
+                                optionLabel = { stringResource(it.label()) },
+                                enabled = !saving,
+                                warn = draft.mockAsrFault != MockAsrFault.None,
+                            ) { draft = draft.copy(mockAsrFault = it) }
+                        }
                     }
                 }
 
@@ -229,7 +303,13 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                 }
             }
 
-            DebugModeCard(debugMode, onChange = vm::setDebugMode)
+            DebugModeCard(debugDraft, onChange = { debugDraft = it })
+
+            ConfigCard(
+                enabled = !saving,
+                onExport = { exportConfig.launch("parley-config.json") },
+                onImport = { importConfig.launch(arrayOf("application/json", "text/*", "application/octet-stream")) },
+            )
 
             AboutCard()
         }
@@ -295,7 +375,7 @@ private fun AsrServiceField(selected: AsrService, enabled: Boolean, onPick: (Asr
                     )
                     Spacer(Modifier.size(12.dp))
                     LazyColumn(Modifier.heightIn(max = 520.dp)) {
-                        AsrProvider.entries.forEach { provider ->
+                        AsrProvider.available.forEach { provider ->
                             item(key = "provider-${provider.name}") {
                                 Text(
                                     provider.label(),
@@ -381,6 +461,7 @@ private fun AsrProvider.label(): String = stringResource(when (this) {
     AsrProvider.DashScope -> R.string.settings_provider_dashscope
     AsrProvider.OpenAi -> R.string.settings_provider_openai
     AsrProvider.Volcengine -> R.string.settings_provider_volcengine
+    AsrProvider.Mock -> R.string.settings_provider_mock
 })
 
 @StringRes
@@ -388,6 +469,7 @@ private fun AsrProvider.hintResource(): Int? = when (this) {
     AsrProvider.DashScope -> R.string.settings_dashscope_hint
     AsrProvider.OpenAi -> null
     AsrProvider.Volcengine -> R.string.settings_volcengine_hint
+    AsrProvider.Mock -> null
 }
 
 @Composable
@@ -400,6 +482,8 @@ private fun AsrService.label(): String = stringResource(when (this) {
     AsrService.DoubaoSeedAsr20Stream -> R.string.settings_asr_doubao_stream
     AsrService.DoubaoSeedAsr20NonStream -> R.string.settings_asr_doubao_non_stream
     AsrService.DoubaoSeedAsr20NonStreamTurbo -> R.string.settings_asr_doubao_turbo
+    AsrService.MockStream -> R.string.settings_asr_mock_stream
+    AsrService.MockNonStream -> R.string.settings_asr_mock_non_stream
 })
 
 @Composable
@@ -412,6 +496,8 @@ private fun AsrService.description(): String = stringResource(when (this) {
     AsrService.DoubaoSeedAsr20Stream -> R.string.settings_asr_doubao_stream_desc
     AsrService.DoubaoSeedAsr20NonStream -> R.string.settings_asr_doubao_non_stream_desc
     AsrService.DoubaoSeedAsr20NonStreamTurbo -> R.string.settings_asr_doubao_turbo_desc
+    AsrService.MockStream -> R.string.settings_asr_mock_stream_desc
+    AsrService.MockNonStream -> R.string.settings_asr_mock_non_stream_desc
 })
 
 @Composable
@@ -472,36 +558,43 @@ private fun TranslationServiceList(
             color = colors.onSurfaceVariant,
         )
     }
-    presets.forEach { preset ->
-        val selected = preset.id == draft.translationPresetId
-        Surface(
-            selected = selected,
-            onClick = { onSelect(preset) },
-            enabled = enabled,
-            shape = MaterialTheme.shapes.large,
-            color = if (selected) colors.secondaryContainer else colors.surfaceContainerHighest,
-            modifier = Modifier.fillMaxWidth().semantics { role = Role.RadioButton },
-        ) {
-            Row(Modifier.heightIn(min = FieldHeight), verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = selected, onClick = null, enabled = enabled, modifier = Modifier.padding(horizontal = 14.dp))
-                Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
-                    Text(
-                        preset.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = colors.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        "${preset.model} · ${preset.host}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                IconButton(onClick = { editing = preset }, enabled = enabled, modifier = Modifier.padding(end = 4.dp)) {
-                    Icon(painterResource(R.drawable.ic_edit), stringResource(R.string.settings_translation_edit))
+    // One connected group, like the rows of the About card.
+    Column(verticalArrangement = Arrangement.spacedBy(GroupGap)) {
+        presets.forEachIndexed { index, preset ->
+            val selected = preset.id == draft.translationPresetId
+            Surface(
+                selected = selected,
+                onClick = { onSelect(preset) },
+                enabled = enabled,
+                shape = GroupShapes.at(index, presets.size),
+                color = if (selected) colors.secondaryContainer else colors.surfaceContainerHighest,
+                modifier = Modifier.fillMaxWidth().semantics { role = Role.RadioButton },
+            ) {
+                Row(Modifier.heightIn(min = FieldHeight), verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = selected, onClick = null, enabled = enabled, modifier = Modifier.padding(horizontal = 14.dp))
+                    Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
+                        Text(
+                            preset.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = colors.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            if (preset.mock) {
+                                stringResource(R.string.settings_translation_mock_detail, stringResource(preset.mockSpeed.label()))
+                            } else {
+                                "${preset.model} · ${preset.host}"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    IconButton(onClick = { editing = preset }, enabled = enabled, modifier = Modifier.padding(end = 4.dp)) {
+                        Icon(painterResource(R.drawable.ic_edit), stringResource(R.string.settings_translation_edit))
+                    }
                 }
             }
         }
@@ -548,6 +641,8 @@ private fun TranslationServiceDialog(
 ) {
     var preset by remember(initial) { mutableStateOf(initial) }
     var attempted by remember(initial) { mutableStateOf(false) }
+    // The name field only reports edits outward; this rebuilds it when the type fills in a name.
+    var nameRevision by remember(initial) { mutableIntStateOf(0) }
     val errors = preset.validationErrors()
     // Missing fields wait for Done; a malformed URL is pointed out as soon as one is typed.
     val shown = if (attempted) errors else errors.filter { it == SettingsError.TranslationUrl && preset.url.isNotEmpty() }
@@ -559,10 +654,41 @@ private fun TranslationServiceDialog(
                 Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                SettingField(
-                    stringResource(R.string.settings_translation_name), preset.name, true,
-                    SettingsError.PresetName.shownIn(shown), keyboardType = KeyboardType.Text,
-                ) { preset = preset.copy(name = it) }
+                // Simulated services only exist in debug builds; one saved earlier can still be edited.
+                if (BuildConfig.DEBUG || preset.mock) {
+                    val mockName = stringResource(R.string.settings_translation_mock_name)
+                    ConnectedChoice(
+                        options = listOf(false, true),
+                        selected = preset.mock,
+                        optionLabel = {
+                            stringResource(if (it) R.string.settings_translation_type_mock else R.string.settings_translation_type_real)
+                        },
+                        enabled = true,
+                    ) { mock ->
+                        // A new simulated service needs no thought about its name.
+                        val name = if (mock && preset.name.isBlank()) mockName else preset.name
+                        preset = preset.copy(mock = mock, name = name)
+                        nameRevision++
+                    }
+                }
+                key(nameRevision) {
+                    SettingField(
+                        stringResource(R.string.settings_translation_name), preset.name, true,
+                        SettingsError.PresetName.shownIn(shown), keyboardType = KeyboardType.Text,
+                    ) { preset = preset.copy(name = it) }
+                }
+                if (preset.mock) {
+                    MockSpeedField(preset.mockSpeed, true) { preset = preset.copy(mockSpeed = it) }
+                    ChoiceField(
+                        label = stringResource(R.string.settings_mock_fault),
+                        options = MockTranslationFault.entries,
+                        selected = preset.mockFault,
+                        optionLabel = { stringResource(it.label()) },
+                        enabled = true,
+                        warn = preset.mockFault != MockTranslationFault.None,
+                    ) { preset = preset.copy(mockFault = it) }
+                    return@Column
+                }
                 SettingField(
                     stringResource(R.string.settings_base_url), preset.url, true,
                     SettingsError.TranslationUrl.shownIn(shown), placeholder = ServiceSettings().translationUrl,
@@ -593,6 +719,171 @@ private fun TranslationServiceDialog(
             }
         },
     )
+}
+
+@StringRes
+private fun MockSpeed.label(): Int = when (this) {
+    MockSpeed.Fast -> R.string.settings_mock_speed_fast
+    MockSpeed.Normal -> R.string.settings_mock_speed_normal
+    MockSpeed.Slow -> R.string.settings_mock_speed_slow
+}
+
+@StringRes
+private fun MockAsrFault.label(): Int = when (this) {
+    MockAsrFault.None -> R.string.mock_fault_none
+    MockAsrFault.NoSpeech -> R.string.mock_fault_no_speech
+    MockAsrFault.NetworkWhileRecording -> R.string.mock_fault_network_recording
+    MockAsrFault.Authentication -> R.string.mock_fault_authentication
+    MockAsrFault.Timeout -> R.string.mock_fault_timeout
+}
+
+@StringRes
+private fun MockTranslationFault.label(): Int = when (this) {
+    MockTranslationFault.None -> R.string.mock_fault_none
+    MockTranslationFault.NetworkMidway -> R.string.mock_fault_network_midway
+    MockTranslationFault.Authentication -> R.string.mock_fault_authentication
+    MockTranslationFault.RateLimit -> R.string.mock_fault_rate_limit
+    MockTranslationFault.Timeout -> R.string.mock_fault_timeout
+}
+
+@Composable
+private fun MockSpeedField(selected: MockSpeed, enabled: Boolean, onPick: (MockSpeed) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            stringResource(R.string.settings_mock_speed),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        ConnectedChoice(MockSpeed.entries, selected, { stringResource(it.label()) }, enabled, onPick)
+    }
+}
+
+/** One of a few options as filled connected buttons, matching the filled fields around them. */
+@Composable
+private fun <T> ConnectedChoice(
+    options: List<T>,
+    selected: T,
+    optionLabel: @Composable (T) -> String,
+    enabled: Boolean,
+    onPick: (T) -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+    ) {
+        options.forEachIndexed { index, option ->
+            ToggleButton(
+                checked = option == selected,
+                onCheckedChange = { onPick(option) },
+                enabled = enabled,
+                shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                },
+                colors = ToggleButtonDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                modifier = Modifier.weight(1f).heightIn(min = 48.dp).semantics { role = Role.RadioButton },
+            ) {
+                Text(optionLabel(option), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+
+/** Looks like a text field; picking happens in a dialog. [warn] tints it, for options that break things on purpose. */
+@Composable
+private fun <T> ChoiceField(
+    label: String,
+    options: List<T>,
+    selected: T,
+    optionLabel: @Composable (T) -> String,
+    enabled: Boolean,
+    warn: Boolean = false,
+    onPick: (T) -> Unit,
+) {
+    var open by remember { mutableStateOf(false) }
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        onClick = { open = true },
+        enabled = enabled,
+        shape = MaterialTheme.shapes.large,
+        color = if (warn) colors.errorContainer else colors.surfaceContainerHighest,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            Modifier.heightIn(min = FieldHeight).padding(start = 16.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(label, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                Text(optionLabel(selected), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+            }
+            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = colors.onSurfaceVariant)
+        }
+    }
+    if (open) {
+        BasicAlertDialog(onDismissRequest = { open = false }) {
+            Surface(shape = MaterialTheme.shapes.extraLarge, color = colors.surfaceContainerHigh) {
+                Column(Modifier.padding(vertical = 20.dp)) {
+                    Text(label, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(horizontal = 24.dp))
+                    Spacer(Modifier.size(12.dp))
+                    options.forEach { option ->
+                        val isSelected = option == selected
+                        Surface(
+                            onClick = { onPick(option); open = false },
+                            shape = MaterialTheme.shapes.large,
+                            color = if (isSelected) colors.secondaryContainer else Color.Transparent,
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp),
+                        ) {
+                            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Text(optionLabel(option), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                                if (isSelected) Icon(painterResource(R.drawable.ic_check), null)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private const val MAX_CONFIG_BYTES = 1 shl 20
+
+private class ConfigMessages(
+    val exported: String,
+    val imported: String,
+    val invalid: String,
+    val tooNew: String,
+    val failed: String,
+)
+
+/** Moves the service settings in and out as a file. */
+@Composable
+private fun ConfigCard(enabled: Boolean, onExport: () -> Unit, onImport: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Surface(shape = MaterialTheme.shapes.extraLarge, color = colors.surfaceContainerLow) {
+        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(40.dp).clip(CircleShape).background(colors.secondaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(R.drawable.ic_import_export), null, Modifier.size(22.dp), tint = colors.onSecondaryContainer)
+                }
+                Spacer(Modifier.width(12.dp))
+                Text(stringResource(R.string.settings_config), style = MaterialTheme.typography.titleMedium, color = colors.onSurface)
+            }
+            Text(stringResource(R.string.settings_config_body), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilledTonalButton(onClick = onExport, enabled = enabled, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.settings_config_export))
+                }
+                OutlinedButton(onClick = onImport, enabled = enabled, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.settings_config_import))
+                }
+            }
+        }
+    }
 }
 
 /** Takes effect at once, outside the service form's save/undo. */
@@ -661,29 +952,19 @@ private fun AboutCard() {
                 }
             }
 
-            // The privacy promise stands apart from the links below it.
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.large)
-                    .background(colors.secondaryContainer.copy(alpha = 0.5f))
-                    .padding(16.dp),
-            ) {
-                Icon(painterResource(R.drawable.ic_lock), null, Modifier.size(20.dp), tint = colors.onSecondaryContainer)
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    stringResource(R.string.settings_privacy),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSecondaryContainer,
+            Column(verticalArrangement = Arrangement.spacedBy(GroupGap)) {
+                AboutRow(
+                    icon = R.drawable.ic_lock,
+                    title = stringResource(R.string.settings_privacy_title),
+                    detail = stringResource(R.string.settings_privacy),
+                    shape = GroupShapes.first,
+                    detailMaxLines = Int.MAX_VALUE,
                 )
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 AboutRow(
                     icon = R.drawable.ic_code,
                     title = stringResource(R.string.settings_source_code),
                     detail = RepositoryUrl.removePrefix("https://"),
-                    shape = AboutRowShapes.first,
+                    shape = GroupShapes.middle,
                     onClick = { uriHandler.openUri(RepositoryUrl) },
                 ) {
                     Icon(painterResource(R.drawable.ic_open_in_new), null, Modifier.size(20.dp), tint = colors.onSurfaceVariant)
@@ -692,7 +973,7 @@ private fun AboutCard() {
                     icon = R.drawable.ic_person,
                     title = stringResource(R.string.settings_author),
                     detail = AuthorName,
-                    shape = AboutRowShapes.middle,
+                    shape = GroupShapes.middle,
                     onClick = { uriHandler.openUri(AuthorUrl) },
                 ) {
                     Icon(painterResource(R.drawable.ic_open_in_new), null, Modifier.size(20.dp), tint = colors.onSurfaceVariant)
@@ -704,7 +985,7 @@ private fun AboutCard() {
                     icon = R.drawable.ic_description,
                     title = stringResource(R.string.settings_licenses),
                     detail = pluralStringResource(R.plurals.settings_licenses_count, OpenSourceLibraries.size, OpenSourceLibraries.size),
-                    shape = if (licensesOpen) AboutRowShapes.middle else AboutRowShapes.last,
+                    shape = if (licensesOpen) GroupShapes.middle else GroupShapes.last,
                     onClick = { licensesOpen = !licensesOpen },
                 ) {
                     Icon(
@@ -720,7 +1001,7 @@ private fun AboutCard() {
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .clip(AboutRowShapes.last)
+                            .clip(GroupShapes.last)
                             .background(colors.surfaceContainerHigh)
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -743,11 +1024,21 @@ private fun AboutCard() {
     }
 }
 
+private val GroupGap = 3.dp
+
 /** Rows stacked into one group: round at the group's outer ends, tight where two rows meet. */
-private object AboutRowShapes {
+private object GroupShapes {
+    val single = RoundedCornerShape(20.dp)
     val first = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
     val middle = RoundedCornerShape(6.dp)
     val last = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 20.dp, bottomEnd = 20.dp)
+
+    fun at(index: Int, count: Int) = when {
+        count == 1 -> single
+        index == 0 -> first
+        index == count - 1 -> last
+        else -> middle
+    }
 }
 
 @Composable
@@ -756,11 +1047,12 @@ private fun AboutRow(
     title: String,
     detail: String,
     shape: Shape,
-    onClick: () -> Unit,
-    trailing: @Composable () -> Unit,
+    onClick: (() -> Unit)? = null,
+    detailMaxLines: Int = 1,
+    trailing: @Composable () -> Unit = {},
 ) {
     val colors = MaterialTheme.colorScheme
-    Surface(onClick = onClick, shape = shape, color = colors.surfaceContainerHigh, modifier = Modifier.fillMaxWidth()) {
+    val content = @Composable {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(painterResource(icon), null, Modifier.size(22.dp), tint = colors.primary)
             Spacer(Modifier.width(16.dp))
@@ -770,13 +1062,18 @@ private fun AboutRow(
                     detail,
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant,
-                    maxLines = 1,
+                    maxLines = detailMaxLines,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
             Spacer(Modifier.width(12.dp))
             trailing()
         }
+    }
+    if (onClick != null) {
+        Surface(onClick = onClick, shape = shape, color = colors.surfaceContainerHigh, modifier = Modifier.fillMaxWidth()) { content() }
+    } else {
+        Surface(shape = shape, color = colors.surfaceContainerHigh, modifier = Modifier.fillMaxWidth()) { content() }
     }
 }
 

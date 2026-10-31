@@ -25,18 +25,15 @@ class SettingsViewModel @Inject constructor(
     private val _saveFailed = MutableStateFlow(false)
     val saveFailed = _saveFailed.asStateFlow()
 
-    /** Applies at once; not part of the service form's save/undo. */
-    fun setDebugMode(enabled: Boolean) {
-        viewModelScope.launch { runCatching { debugModeStore.setEnabled(enabled) } }
-    }
-
-    fun save(value: ServiceSettings, onSaved: () -> Unit) {
+    /** Saves the services and the debug mode switch together, so discarding the page undoes both. */
+    fun save(value: ServiceSettings, debugMode: Boolean, onSaved: () -> Unit) {
         if (_saving.value || value.validationError() != null) return
         viewModelScope.launch {
             _saving.value = true
             _saveFailed.value = false
             try {
                 repository.save(value)
+                if (debugMode != DebugLog.enabled.value) debugModeStore.setEnabled(debugMode)
                 onSaved()
             } catch (e: CancellationException) {
                 throw e

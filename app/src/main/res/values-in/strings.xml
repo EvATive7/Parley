@@ -130,4 +130,16 @@
     <plurals name="settings_licenses_count">
         <item quantity="other">%1$d pustaka</item>
     </plurals>
+
+    <!-- Configuration file and About -->
+    <string name="settings_privacy_title">Privasi</string>
+    <string name="settings_config">File konfigurasi</string>
+    <string name="settings_config_body">Ekspor setelan layanan yang tersimpan ke file, atau impor file untuk mengisi halaman ini. File berisi kunci Anda dalam teks biasa; simpan dengan aman.</string>
+    <string name="settings_config_export">Ekspor</string>
+    <string name="settings_config_import">Impor</string>
+    <string name="settings_config_exported">Konfigurasi diekspor</string>
+    <string name="settings_config_imported">Konfigurasi diimpor. Simpan untuk menerapkan.</string>
+    <string name="settings_config_invalid">File ini bukan konfigurasi Parley.</string>
+    <string name="settings_config_too_new">File ini berasal dari versi Parley yang lebih baru. Perbarui aplikasi untuk mengimpornya.</string>
+    <string name="settings_config_failed">Tidak dapat membaca atau menulis file.</string>
 </resources>

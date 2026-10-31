@@ -133,4 +133,16 @@
         <item quantity="many">%1$d библиотек</item>
         <item quantity="other">%1$d библиотеки</item>
     </plurals>
+
+    <!-- Configuration file and About -->
+    <string name="settings_privacy_title">Конфиденциальность</string>
+    <string name="settings_config">Файл конфигурации</string>
+    <string name="settings_config_body">Экспортируйте сохранённые настройки сервисов в файл или импортируйте файл, чтобы заполнить эту страницу. Ключи в файле хранятся открытым текстом — держите его в надёжном месте.</string>
+    <string name="settings_config_export">Экспорт</string>
+    <string name="settings_config_import">Импорт</string>
+    <string name="settings_config_exported">Конфигурация экспортирована</string>
+    <string name="settings_config_imported">Конфигурация импортирована. Сохраните, чтобы применить.</string>
+    <string name="settings_config_invalid">Это не файл конфигурации Parley.</string>
+    <string name="settings_config_too_new">Файл создан более новой версией Parley. Обновите приложение, чтобы импортировать его.</string>
+    <string name="settings_config_failed">Не удалось прочитать или записать файл.</string>
 </resources>

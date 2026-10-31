@@ -136,4 +136,39 @@
         <item quantity="one">%1$d library</item>
         <item quantity="other">%1$d libraries</item>
     </plurals>
+
+    <!-- Configuration file and About -->
+    <string name="settings_privacy_title">Privacy</string>
+    <string name="settings_config">Configuration file</string>
+    <string name="settings_config_body">Export the saved service settings to a file, or import one to fill in this page. The file contains your keys in plain text; keep it private.</string>
+    <string name="settings_config_export">Export</string>
+    <string name="settings_config_import">Import</string>
+    <string name="settings_config_exported">Configuration exported</string>
+    <string name="settings_config_imported">Configuration imported. Save to apply.</string>
+    <string name="settings_config_invalid">This file isn\'t a Parley configuration.</string>
+    <string name="settings_config_too_new">This file comes from a newer version of Parley. Update the app to import it.</string>
+    <string name="settings_config_failed">Couldn\'t read or write the file.</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">Simulated (offline)</string>
+    <string name="settings_asr_mock_stream">Simulated streaming recognition</string>
+    <string name="settings_asr_mock_stream_desc">Returns sample sentences progressively while recording, alternating between the two conversation languages. Connects to no network service and requires no credentials. For development and testing.</string>
+    <string name="settings_asr_mock_non_stream">Simulated whole-recording recognition</string>
+    <string name="settings_asr_mock_non_stream_desc">Returns a complete sample sentence after recording ends, alternating between the two conversation languages. Connects to no network service and requires no credentials. For development and testing.</string>
+    <string name="settings_translation_type_real">Real service</string>
+    <string name="settings_translation_type_mock">Simulated</string>
+    <string name="settings_translation_mock_name">Simulated LLM</string>
+    <string name="settings_translation_mock_detail">Simulated · offline · speed: %1$s</string>
+    <string name="settings_mock_speed">Response speed</string>
+    <string name="settings_mock_speed_fast">Fast</string>
+    <string name="settings_mock_speed_normal">Normal</string>
+    <string name="settings_mock_speed_slow">Slow</string>
+    <string name="settings_mock_fault">Simulated failure</string>
+    <string name="mock_fault_none">None</string>
+    <string name="mock_fault_no_speech">Didn\'t catch that</string>
+    <string name="mock_fault_network_recording">Connection lost while recording</string>
+    <string name="mock_fault_network_midway">Connection lost while translating</string>
+    <string name="mock_fault_authentication">Authentication failed</string>
+    <string name="mock_fault_rate_limit">Rate limited</string>
+    <string name="mock_fault_timeout">Timeout</string>
 </resources>

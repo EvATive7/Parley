@@ -134,4 +134,39 @@
         <item quantity="one">%1$d 个库</item>
         <item quantity="other">%1$d 个库</item>
     </plurals>
+
+    <!-- Configuration file and About -->
+    <string name="settings_privacy_title">隐私</string>
+    <string name="settings_config">配置文件</string>
+    <string name="settings_config_body">将已保存的服务设置导出为文件，或导入文件填入本页。文件中的密钥为明文，请妥善保管。</string>
+    <string name="settings_config_export">导出</string>
+    <string name="settings_config_import">导入</string>
+    <string name="settings_config_exported">配置已导出</string>
+    <string name="settings_config_imported">配置已导入，保存后生效。</string>
+    <string name="settings_config_invalid">这不是 Parley 的配置文件。</string>
+    <string name="settings_config_too_new">该文件来自更新版本的 Parley，请先更新应用再导入。</string>
+    <string name="settings_config_failed">无法读取或写入文件。</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">模拟（离线）</string>
+    <string name="settings_asr_mock_stream">模拟流式识别</string>
+    <string name="settings_asr_mock_stream_desc">录音过程中逐步返回示例句子，在两种对话语言之间交替。不连接任何网络服务，无需凭据。用于开发与测试。</string>
+    <string name="settings_asr_mock_non_stream">模拟整段识别</string>
+    <string name="settings_asr_mock_non_stream_desc">录音结束后返回完整的示例句子，在两种对话语言之间交替。不连接任何网络服务，无需凭据。用于开发与测试。</string>
+    <string name="settings_translation_type_real">真实服务</string>
+    <string name="settings_translation_type_mock">模拟服务</string>
+    <string name="settings_translation_mock_name">模拟 LLM</string>
+    <string name="settings_translation_mock_detail">模拟 · 离线 · 速度：%1$s</string>
+    <string name="settings_mock_speed">响应速度</string>
+    <string name="settings_mock_speed_fast">快</string>
+    <string name="settings_mock_speed_normal">正常</string>
+    <string name="settings_mock_speed_slow">慢</string>
+    <string name="settings_mock_fault">模拟故障</string>
+    <string name="mock_fault_none">无</string>
+    <string name="mock_fault_no_speech">没听清</string>
+    <string name="mock_fault_network_recording">录音中途断网</string>
+    <string name="mock_fault_network_midway">翻译中途断网</string>
+    <string name="mock_fault_authentication">认证失败</string>
+    <string name="mock_fault_rate_limit">限流</string>
+    <string name="mock_fault_timeout">超时</string>
 </resources>

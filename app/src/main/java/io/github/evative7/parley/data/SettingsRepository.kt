@@ -7,6 +7,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.asr.DashScopeRegion
+import io.github.evative7.parley.mock.MockAsrFault
+import io.github.evative7.parley.mock.MockSpeed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,6 +32,8 @@ private object SettingsKeys {
     val openAiAsrKey = stringPreferencesKey("openai_asr_key_encrypted")
     val volcAppId = stringPreferencesKey("volc_app_id")
     val volcAccessToken = stringPreferencesKey("volc_access_token_encrypted")
+    val mockAsrSpeed = stringPreferencesKey("mock_asr_speed")
+    val mockAsrFault = stringPreferencesKey("mock_asr_fault")
     val llmUrl = stringPreferencesKey("llm_url")
     val llmModel = stringPreferencesKey("llm_model")
     val llmKey = stringPreferencesKey("llm_key_encrypted")
@@ -95,6 +99,8 @@ class SettingsRepository @Inject constructor(
             openAiAsrKey = decrypt(p[SettingsKeys.openAiAsrKey].orEmpty(), SettingsKeys.openAiAsrKey.name),
             volcAppId = p[SettingsKeys.volcAppId].orEmpty(),
             volcAccessToken = decrypt(p[SettingsKeys.volcAccessToken].orEmpty(), SettingsKeys.volcAccessToken.name),
+            mockAsrSpeed = MockSpeed.fromName(p[SettingsKeys.mockAsrSpeed]),
+            mockAsrFault = MockAsrFault.fromName(p[SettingsKeys.mockAsrFault]),
             translationUrl = translationUrl,
             translationModel = translationModel,
             translationKey = translationKey,
@@ -134,6 +140,8 @@ class SettingsRepository @Inject constructor(
             p[SettingsKeys.openAiAsrKey] = encryptedOpenAi
             p[SettingsKeys.volcAppId] = value.volcAppId
             p[SettingsKeys.volcAccessToken] = encryptedVolc
+            p[SettingsKeys.mockAsrSpeed] = value.mockAsrSpeed.name
+            p[SettingsKeys.mockAsrFault] = value.mockAsrFault.name
             p[SettingsKeys.llmUrl] = value.translationUrl.trimEnd('/')
             p[SettingsKeys.llmModel] = value.translationModel
             p[SettingsKeys.llmKey] = encryptedLlm
