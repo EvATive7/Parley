@@ -32,7 +32,7 @@ value class Lang(val tag: String) {
     companion object {
         /** Languages offered in the language bar. Any language the LLM can write works. */
         val targets: List<Lang> = listOf(
-            "zh-CN", "zh-TW", "en", "ja", "ko", "fr", "de", "es", "it", "pt", "ru", "ar", "th", "vi", "id",
+            "en", "zh-CN", "ja", "ko", "zh-TW", "fr", "de", "es", "it", "pt", "ru", "ar", "th", "vi", "id",
         ).map(::Lang)
 
         /** The device's own language, as the closest entry in [targets]. */
