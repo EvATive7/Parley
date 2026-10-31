@@ -39,13 +39,14 @@ Hold to speak and release to translate. The other person does the same, and each
 
 ## ✨ Features
 
-- **Automatic translation direction**: choose two languages once; speaking either language automatically translates into the other.
+- **Automatic translation direction**: choose two languages once; speaking either language translates into the other. Speech in any other language, or one that can't be identified, is translated into both.
 - **Streaming output**: translations appear word by word without waiting for the whole sentence.
 - **Face-to-face mode**: place the phone flat on a table. The screen splits in two, with each side facing one person and showing the other person’s language.
 - **Hold to talk**: hold to record, release to send, or slide up to cancel.
 - **Bilingual prompts**: button instructions appear in both languages so each person can understand them.
-- **Card actions**: tap a card to view the full text, copy it, or delete it; failed translations can be retried.
+- **Card actions**: tap or long-press a card to view the full text, copy the original or the translation, delete it, or correct the recognized text and translate it again; failed translations can be retried.
 - **Direct end-to-end connections**: there is no intermediary server. Audio and text go directly to the providers you configure, and API keys are encrypted with Android Keystore.
+- **Remembers your setup**: the language pair is kept between launches, and service settings can be exported to a file and imported on another device.
 
 ## 📦 Getting started
 
@@ -82,7 +83,7 @@ The languages that can actually be recognized depend on the selected speech reco
 <details>
 <summary><b>Why is the translation direction sometimes wrong?</b></summary>
 
-When the speech recognition service does not return language information, Parley identifies the language locally. Very short sentences or mixed Chinese and English can be misidentified. If the language cannot be determined, Parley translates into the second selected language.
+When the speech recognition service does not return language information, Parley identifies the language locally. Very short sentences or mixed Chinese and English can be misidentified. If the language cannot be determined, or is neither of the two, Parley translates into both.
 
 </details>
 

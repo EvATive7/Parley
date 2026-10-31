@@ -39,13 +39,14 @@ Maintenez le bouton pour parler, puis relâchez-le pour traduire. Votre interloc
 
 ## ✨ Fonctionnalités
 
-- **Direction de traduction automatique** : choisissez deux langues ; parler dans l’une traduit automatiquement vers l’autre, sans changement manuel.
+- **Direction de traduction automatique** : choisissez deux langues ; parler dans l’une traduit automatiquement vers l’autre, sans changement manuel. Toute autre langue, ou une langue non identifiée, est traduite vers les deux.
 - **Affichage en continu** : la traduction apparaît progressivement, sans attendre la fin de la phrase.
 - **Mode face à face** : posez le téléphone à plat sur une table. L’écran se divise en deux, chaque partie faisant face à une personne et affichant uniquement la langue de l’autre.
 - **Maintenir pour parler** : maintenez pour enregistrer, relâchez pour envoyer ou faites glisser vers le haut pour annuler.
 - **Instructions bilingues** : les indications du bouton apparaissent dans les deux langues afin que chacun puisse les comprendre.
-- **Actions sur les cartes** : touchez une carte pour afficher le texte complet, le copier ou le supprimer ; une traduction échouée peut être relancée.
+- **Actions sur les cartes** : touchez une carte ou appuyez longuement dessus pour afficher le texte complet, copier l’original ou la traduction, la supprimer, ou corriger le texte reconnu et le retraduire ; une traduction échouée peut être relancée.
 - **Connexion directe de bout en bout** : aucun serveur intermédiaire. L’audio et le texte sont envoyés directement aux services configurés, et les clés API sont chiffrées avec Android Keystore.
+- **Mémorise vos réglages** : la paire de langues est conservée d’un lancement à l’autre, et les réglages des services peuvent être exportés dans un fichier puis importés sur un autre appareil.
 
 ## 📦 Premiers pas
 
@@ -82,7 +83,7 @@ Les langues réellement reconnues dépendent du service de reconnaissance vocale
 <details>
 <summary><b>Pourquoi la direction de traduction est-elle parfois incorrecte ?</b></summary>
 
-Lorsque le service de reconnaissance vocale ne renvoie pas la langue, Parley l’identifie localement. Les phrases très courtes ou les contenus mélangeant chinois et anglais peuvent être mal identifiés. Si la langue ne peut pas être déterminée, Parley traduit vers la deuxième langue sélectionnée.
+Lorsque le service de reconnaissance vocale ne renvoie pas la langue, Parley l’identifie localement. Les phrases très courtes ou les contenus mélangeant chinois et anglais peuvent être mal identifiés. Si la langue ne peut pas être déterminée, ou n’est aucune des deux, Parley traduit vers les deux.
 
 </details>
 

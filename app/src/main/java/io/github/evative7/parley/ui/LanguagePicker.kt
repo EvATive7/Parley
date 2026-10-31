@@ -54,6 +54,7 @@ fun LanguagePickerDialog(
         // The platform width cap would become the turned dialog's height and leave room for only a few rows.
         properties = DialogProperties(usePlatformDefaultWidth = turn == Turn.None),
     ) {
+        TurnedDialogWindow(turn)
         Surface(
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -72,7 +73,7 @@ fun LanguagePickerDialog(
                 )
                 LazyColumn(
                     modifier = Modifier
-                        .heightIn(max = if (turn == Turn.None) 440.dp else 600.dp)
+                        .heightIn(max = if (turn == Turn.None) 440.dp else 450.dp)
                         .then(if (turn == Turn.None) Modifier else Modifier.turnedScroll(listState)),
                     state = listState,
                     userScrollEnabled = turn == Turn.None,

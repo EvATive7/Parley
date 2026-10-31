@@ -39,13 +39,14 @@ Mantén pulsado para hablar y suelta para traducir. La otra persona hace lo mism
 
 ## ✨ Funciones
 
-- **Dirección de traducción automática**: elige dos idiomas; al hablar cualquiera de ellos, se traduce automáticamente al otro sin cambiar nada manualmente.
+- **Dirección de traducción automática**: elige dos idiomas; al hablar cualquiera de ellos, se traduce automáticamente al otro sin cambiar nada manualmente. Cualquier otro idioma, o uno que no se pueda identificar, se traduce a ambos.
 - **Salida en streaming**: la traducción aparece de forma progresiva sin esperar a que termine toda la frase.
 - **Modo cara a cara**: coloca el teléfono sobre una mesa. La pantalla se divide en dos, cada lado mira hacia una persona y muestra únicamente el idioma de la otra.
 - **Mantener pulsado para hablar**: mantén pulsado para grabar, suelta para enviar o desliza hacia arriba para cancelar.
 - **Indicaciones bilingües**: las instrucciones del botón aparecen en ambos idiomas para que las dos personas puedan entenderlas.
-- **Acciones de las tarjetas**: toca una tarjeta para ver el texto completo, copiarlo o eliminarlo; las traducciones fallidas se pueden reintentar.
+- **Acciones de las tarjetas**: toca o mantén pulsada una tarjeta para ver el texto completo, copiar el original o la traducción, eliminarla o corregir el texto reconocido y volver a traducirlo; las traducciones fallidas se pueden reintentar.
 - **Conexiones directas de extremo a extremo**: no hay ningún servidor intermediario. El audio y el texto se envían directamente a los proveedores configurados, y las API Key se cifran con Android Keystore.
+- **Recuerda tu configuración**: el par de idiomas se conserva entre aperturas, y los ajustes de los servicios se pueden exportar a un archivo e importar en otro dispositivo.
 
 ## 📦 Primeros pasos
 
@@ -82,7 +83,7 @@ Los idiomas que se pueden reconocer realmente dependen del servicio de reconocim
 <details>
 <summary><b>¿Por qué a veces es incorrecta la dirección de la traducción?</b></summary>
 
-Cuando el servicio de reconocimiento de voz no devuelve información sobre el idioma, Parley lo identifica localmente. Las frases muy cortas o el contenido que mezcla chino e inglés pueden identificarse de forma incorrecta. Si no se puede determinar el idioma, Parley traduce al segundo idioma seleccionado.
+Cuando el servicio de reconocimiento de voz no devuelve información sobre el idioma, Parley lo identifica localmente. Las frases muy cortas o el contenido que mezcla chino e inglés pueden identificarse de forma incorrecta. Si no se puede determinar el idioma, o no es ninguno de los dos, Parley traduce a ambos.
 
 </details>
 

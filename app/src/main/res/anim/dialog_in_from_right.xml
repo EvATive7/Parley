@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Face to face: a dialog turned toward the reader at one end of the screen comes in from that end. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/decelerate_cubic"
+    android:shareInterpolator="true">
+    <translate
+        android:duration="250"
+        android:fromXDelta="12%"
+        android:toXDelta="0" />
+    <alpha
+        android:duration="250"
+        android:fromAlpha="0"
+        android:toAlpha="1" />
+</set>

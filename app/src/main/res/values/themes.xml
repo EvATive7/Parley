@@ -3,4 +3,15 @@
     <style name="Theme.Parley" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/window_background</item>
     </style>
+
+    <!-- Face to face: dialogs turned toward the reader at the left or right end slide in and out at that end. -->
+    <style name="DialogAnimationFromLeft">
+        <item name="android:windowEnterAnimation">@anim/dialog_in_from_left</item>
+        <item name="android:windowExitAnimation">@anim/dialog_out_to_left</item>
+    </style>
+
+    <style name="DialogAnimationFromRight">
+        <item name="android:windowEnterAnimation">@anim/dialog_in_from_right</item>
+        <item name="android:windowExitAnimation">@anim/dialog_out_to_right</item>
+    </style>
 </resources>

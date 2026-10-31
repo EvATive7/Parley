@@ -248,6 +248,7 @@ private fun CardDialog(
         // Turned, the platform width cap would become the dialog's height.
         properties = DialogProperties(usePlatformDefaultWidth = turn == Turn.None),
     ) {
+        TurnedDialogWindow(turn)
         Surface(
             modifier = if (turn == Turn.None) {
                 Modifier

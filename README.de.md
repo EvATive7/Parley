@@ -39,13 +39,14 @@ Halte die Taste gedrückt, sprich und lass sie zum Übersetzen los. Die andere P
 
 ## ✨ Funktionen
 
-- **Automatische Übersetzungsrichtung**: Wähle zwei Sprachen aus. Gesprochenes wird ohne manuelles Umschalten automatisch in die jeweils andere Sprache übersetzt.
+- **Automatische Übersetzungsrichtung**: Wähle zwei Sprachen aus. Gesprochenes wird ohne manuelles Umschalten automatisch in die jeweils andere Sprache übersetzt; jede andere oder nicht erkennbare Sprache wird in beide übersetzt.
 - **Streaming-Ausgabe**: Die Übersetzung erscheint fortlaufend, ohne dass du auf den vollständigen Satz warten musst.
 - **Gegenüber-Modus**: Lege das Smartphone flach auf einen Tisch. Der Bildschirm wird geteilt, jede Hälfte zeigt zu einer Person und stellt nur die Sprache des Gegenübers dar.
 - **Zum Sprechen gedrückt halten**: Halte zum Aufnehmen gedrückt, lass zum Senden los oder wische zum Abbrechen nach oben.
 - **Zweisprachige Hinweise**: Die Bedienhinweise werden in beiden Sprachen angezeigt, damit beide Personen sie verstehen.
-- **Kartenaktionen**: Tippe auf eine Karte, um den vollständigen Text anzuzeigen, zu kopieren oder zu löschen. Fehlgeschlagene Übersetzungen lassen sich wiederholen.
+- **Kartenaktionen**: Tippe auf eine Karte oder halte sie gedrückt, um den vollständigen Text anzuzeigen, Original oder Übersetzung zu kopieren, sie zu löschen oder den erkannten Text zu korrigieren und neu übersetzen zu lassen. Fehlgeschlagene Übersetzungen lassen sich wiederholen.
 - **Direkte Ende-zu-Ende-Verbindung**: Es gibt keinen Zwischenserver. Audio und Text werden direkt an die von dir konfigurierten Anbieter gesendet; API Keys werden mit Android Keystore verschlüsselt gespeichert.
+- **Merkt sich deine Einstellungen**: Das Sprachpaar bleibt beim nächsten Start erhalten, und die Diensteinstellungen lassen sich in eine Datei exportieren und auf einem anderen Gerät importieren.
 
 ## 📦 Erste Schritte
 
@@ -82,7 +83,7 @@ Welche Sprachen tatsächlich erkannt werden, hängt vom gewählten Spracherkennu
 <details>
 <summary><b>Warum ist die Übersetzungsrichtung manchmal falsch?</b></summary>
 
-Wenn der Spracherkennungsdienst keine Sprachinformation zurückgibt, bestimmt Parley die Sprache lokal. Sehr kurze Sätze oder gemischte chinesische und englische Inhalte können falsch erkannt werden. Wenn keine Sprache bestimmt werden kann, übersetzt Parley in die zweite ausgewählte Sprache.
+Wenn der Spracherkennungsdienst keine Sprachinformation zurückgibt, bestimmt Parley die Sprache lokal. Sehr kurze Sätze oder gemischte chinesische und englische Inhalte können falsch erkannt werden. Wenn keine Sprache bestimmt werden kann oder sie keine der beiden ist, übersetzt Parley in beide.
 
 </details>
 
