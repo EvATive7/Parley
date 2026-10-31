@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,6 +38,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -181,7 +183,12 @@ private fun ConversationScreen(
         SettingsButton(settings = settings, enabled = !busy, onClick = onOpenSettings)
     }
     val faceToFaceButton = @Composable {
-        IconButton(onClick = { onFaceToFace(!faceToFace) }, enabled = !busy) {
+        // Tonal like the language buttons, and sized to hold its own beside the talk button.
+        FilledTonalIconButton(
+            onClick = { onFaceToFace(!faceToFace) },
+            enabled = !busy,
+            modifier = Modifier.size(56.dp),
+        ) {
             Icon(
                 painterResource(R.drawable.ic_face_to_face),
                 stringResource(if (faceToFace) R.string.face_to_face_exit else R.string.face_to_face),
@@ -285,10 +292,7 @@ private fun ConversationScreen(
                     modifier = Modifier
                         .statusBarsPadding()
                         .padding(top = 12.dp),
-                    trailing = {
-                        faceToFaceButton()
-                        settingsButton()
-                    },
+                    trailing = settingsButton,
                 )
 
                 Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -304,18 +308,25 @@ private fun ConversationScreen(
                     }
                 }
 
+                // A little room between the list and the hint, taken from below the button so the bar keeps its height.
                 HintLine(
                     phase = state.phase,
                     hint = state.hint,
                     langs = listOf(state.langs.first, state.langs.second),
                     elapsedMs = { elapsed.value },
+                    modifier = Modifier.padding(top = 12.dp),
                 )
-                pttButton(
+                Row(
                     Modifier
-                        .align(Alignment.CenterHorizontally)
+                        .fillMaxWidth()
                         .navigationBarsPadding()
-                        .padding(bottom = 40.dp),
-                )
+                        .padding(bottom = 28.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Spacer(Modifier.weight(1f))
+                    pttButton(Modifier)
+                    Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { faceToFaceButton() }
+                }
             }
         }
     }
@@ -381,13 +392,15 @@ private fun CardList(
     val motion = MaterialTheme.motionScheme
     val rise = with(LocalDensity.current) { 48.dp.toPx() }
     val reverseLayout = !turned
+    // Tighter in portrait, where the whole conversation shares one list.
+    val gap = if (turned) 12.dp else 8.dp
     LazyColumn(
         modifier = Modifier.fillMaxSize().then(if (turned) Modifier.turnedScroll(listState) else Modifier),
         state = listState,
         userScrollEnabled = !turned,
         reverseLayout = reverseLayout,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp, if (reverseLayout) Alignment.Bottom else Alignment.Top),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = gap),
+        verticalArrangement = Arrangement.spacedBy(gap, if (reverseLayout) Alignment.Bottom else Alignment.Top),
     ) {
         items(cards, key = { it.id }) { card ->
             val enter = remember(card.id) { Animatable(if (card.id in entered) 1f else 0f) }

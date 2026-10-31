@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.evative7.parley.R
 import io.github.evative7.parley.state.CardCell
@@ -51,19 +53,8 @@ fun ResultCard(
         Column(
             Modifier
                 .animateContentSize(motion.defaultSpatialSpec())
-                .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 8.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
         ) {
-            Text(
-                text = card.target?.let { to ->
-                    card.sourceLang?.displayName()?.let { "$it → ${to.displayName()}" } ?: "→ ${to.displayName()}"
-                }
-                    // Until the speaker's language is known, either direction is possible.
-                    ?: "${card.langs.first.displayName()} ⇄ ${card.langs.second.displayName()}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.size(8.dp))
-
             val waitingForSource = card.source.isEmpty() &&
                 (card.stage == CardStage.Listening || card.stage == CardStage.Recognizing)
             if (waitingForSource) {
@@ -77,7 +68,7 @@ fun ResultCard(
             }
 
             if (card.translation.isNotEmpty()) {
-                Spacer(Modifier.size(12.dp))
+                Spacer(Modifier.size(8.dp))
                 StreamingText(
                     text = card.translation,
                     style = MaterialTheme.typography.headlineSmallEmphasized,
@@ -85,7 +76,14 @@ fun ResultCard(
                 )
             }
 
-            CardActions(card, onCopy, onDelete, onRetry, retryEnabled)
+            CardActions(
+                card, onCopy, onDelete, onRetry, retryEnabled,
+                direction = card.target?.let { to ->
+                    card.sourceLang?.displayName()?.let { "$it → ${to.displayName()}" } ?: "→ ${to.displayName()}"
+                }
+                    // Until the speaker's language is known, either direction is possible.
+                    ?: "${card.langs.first.displayName()} ⇄ ${card.langs.second.displayName()}",
+            )
         }
     }
 }
@@ -153,7 +151,10 @@ fun ResultCell(
     }
 }
 
-/** The error row while failed, copy and delete once done. */
+/**
+ * The error row while failed, copy and delete once done. A [direction] label shares the row with copy and
+ * delete, which keeps the row's height from the start so the card doesn't grow when they appear.
+ */
 @Composable
 private fun CardActions(
     card: CardState,
@@ -161,6 +162,7 @@ private fun CardActions(
     onDelete: () -> Unit,
     onRetry: () -> Unit,
     retryEnabled: Boolean,
+    direction: String? = null,
 ) {
     val motion = MaterialTheme.motionScheme
     if (card.stage == CardStage.Error) {
@@ -185,6 +187,39 @@ private fun CardActions(
         }
     }
 
+    if (direction != null) {
+        val failed = card.stage == CardStage.Error
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp)
+                // The error row above already has its own delete button.
+                .heightIn(min = if (failed) 0.dp else ActionRowHeight),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = direction,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            AnimatedVisibility(
+                visible = card.stage == CardStage.Done,
+                enter = fadeIn(motion.defaultEffectsSpec()),
+                exit = fadeOut(motion.fastEffectsSpec()),
+            ) {
+                Row {
+                    CopyButton(onCopy)
+                    DeleteButton(onDelete)
+                }
+            }
+        }
+        if (failed) Spacer(Modifier.size(8.dp))
+        return
+    }
+
     AnimatedVisibility(
         visible = card.stage == CardStage.Done,
         enter = fadeIn(motion.defaultEffectsSpec()) + expandVertically(motion.defaultSpatialSpec()),
@@ -194,16 +229,21 @@ private fun CardActions(
             Modifier.fillMaxWidth().padding(top = 4.dp),
             horizontalArrangement = Arrangement.End,
         ) {
-            IconButton(onClick = onCopy) {
-                Icon(
-                    painterResource(R.drawable.ic_copy), stringResource(R.string.action_copy),
-                    Modifier.size(ActionIconSize),
-                )
-            }
+            CopyButton(onCopy)
             DeleteButton(onDelete)
         }
     }
     if (card.stage != CardStage.Done) Spacer(Modifier.size(12.dp))
+}
+
+@Composable
+private fun CopyButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Icon(
+            painterResource(R.drawable.ic_copy), stringResource(R.string.action_copy),
+            Modifier.size(ActionIconSize),
+        )
+    }
 }
 
 @Composable
@@ -218,6 +258,9 @@ private fun DeleteButton(onClick: () -> Unit) {
 
 /** Smaller than the default 24 dp so the actions don't compete with the translation. */
 private val ActionIconSize = 20.dp
+
+/** An icon button's touch target, so the row is as tall before its buttons show as after. */
+private val ActionRowHeight = 48.dp
 
 private fun ErrorKind?.message(): Int = when (this) {
     ErrorKind.Microphone -> R.string.error_mic
