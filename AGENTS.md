@@ -1,5 +1,8 @@
 # Parley Agent Notes
 
+- Keep the skills synchronized across `.agents/skills` and `.claude/skills` whenever one changes.
+- To publish a release, use the `publish-a-release` skill.
+
 ## Build Variants
 
 | Configuration | Release Variant | Debug Variant |
