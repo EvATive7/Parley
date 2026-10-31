@@ -51,7 +51,7 @@ private val ButtonSize = 96.dp
 private const val RecordingScale = 1.08f
 // How much louder speech adds on top of [RecordingScale]. Range 0 (no pulse) to ~1; full volume
 // reaches RecordingScale + MaxPulse, plus spring overshoot.
-private const val MaxPulse = 1f
+private const val MaxPulse = 0.5f
 // Only a little room around the button, so the hint sits right above it. The pulse draws past this
 // and under the hint (see HintLine's zIndex) rather than pushing the hint away.
 private val ButtonArea = ButtonSize * 1.25f
