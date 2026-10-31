@@ -4,8 +4,11 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -28,6 +31,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -38,8 +42,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -51,8 +55,8 @@ import androidx.compose.material3.SecureTextField
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -69,14 +73,19 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -222,7 +231,7 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
 
             DebugModeCard(debugMode, onChange = vm::setDebugMode)
 
-            PrivacyNote()
+            AboutCard()
         }
     }
 
@@ -615,13 +624,159 @@ private fun DebugModeCard(enabled: Boolean, onChange: (Boolean) -> Unit) {
     }
 }
 
+private const val RepositoryUrl = "https://github.com/EvATive7/Parley"
+private const val AuthorName = "EvATive7"
+private const val AuthorUrl = "https://github.com/EvATive7"
+
+/** Libraries shipped in the app, with their licenses. */
+private val OpenSourceLibraries = listOf(
+    "Jetpack Compose · Material 3" to "Apache License 2.0",
+    "AndroidX Core · Activity · Lifecycle · DataStore" to "Apache License 2.0",
+    "AndroidX Graphics Shapes" to "Apache License 2.0",
+    "Kotlin · kotlinx.coroutines · kotlinx.serialization" to "Apache License 2.0",
+    "Dagger Hilt" to "Apache License 2.0",
+    "OkHttp" to "Apache License 2.0",
+    "ML Kit Language Identification" to "ML Kit Terms of Service",
+)
+
+/** Privacy, where the code lives, who wrote it, and what it's built on. */
 @Composable
-private fun PrivacyNote() {
+private fun AboutCard() {
     val colors = MaterialTheme.colorScheme
-    Row(Modifier.padding(horizontal = 4.dp)) {
-        Icon(painterResource(R.drawable.ic_lock), null, Modifier.size(18.dp), tint = colors.outline)
-        Spacer(Modifier.width(12.dp))
-        Text(stringResource(R.string.settings_privacy), style = MaterialTheme.typography.bodySmall, color = colors.outline)
+    val uriHandler = LocalUriHandler.current
+    var licensesOpen by rememberSaveable { mutableStateOf(false) }
+    Surface(shape = MaterialTheme.shapes.extraLarge, color = colors.surfaceContainerLow) {
+        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(40.dp).clip(CircleShape).background(colors.secondaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(R.drawable.ic_info), null, Modifier.size(22.dp), tint = colors.onSecondaryContainer)
+                }
+                Spacer(Modifier.width(12.dp))
+                Column {
+                    Text(stringResource(R.string.settings_about), style = MaterialTheme.typography.titleMedium, color = colors.onSurface)
+                    Text(stringResource(R.string.settings_about_subtitle), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                }
+            }
+
+            // The privacy promise stands apart from the links below it.
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.large)
+                    .background(colors.secondaryContainer.copy(alpha = 0.5f))
+                    .padding(16.dp),
+            ) {
+                Icon(painterResource(R.drawable.ic_lock), null, Modifier.size(20.dp), tint = colors.onSecondaryContainer)
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    stringResource(R.string.settings_privacy),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSecondaryContainer,
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                AboutRow(
+                    icon = R.drawable.ic_code,
+                    title = stringResource(R.string.settings_source_code),
+                    detail = RepositoryUrl.removePrefix("https://"),
+                    shape = AboutRowShapes.first,
+                    onClick = { uriHandler.openUri(RepositoryUrl) },
+                ) {
+                    Icon(painterResource(R.drawable.ic_open_in_new), null, Modifier.size(20.dp), tint = colors.onSurfaceVariant)
+                }
+                AboutRow(
+                    icon = R.drawable.ic_person,
+                    title = stringResource(R.string.settings_author),
+                    detail = AuthorName,
+                    shape = AboutRowShapes.middle,
+                    onClick = { uriHandler.openUri(AuthorUrl) },
+                ) {
+                    Icon(painterResource(R.drawable.ic_open_in_new), null, Modifier.size(20.dp), tint = colors.onSurfaceVariant)
+                }
+                val turn by animateFloatAsState(
+                    if (licensesOpen) 90f else 0f, MaterialTheme.motionScheme.fastSpatialSpec(), label = "chevron",
+                )
+                AboutRow(
+                    icon = R.drawable.ic_description,
+                    title = stringResource(R.string.settings_licenses),
+                    detail = pluralStringResource(R.plurals.settings_licenses_count, OpenSourceLibraries.size, OpenSourceLibraries.size),
+                    shape = if (licensesOpen) AboutRowShapes.middle else AboutRowShapes.last,
+                    onClick = { licensesOpen = !licensesOpen },
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_chevron_right), null,
+                        Modifier.size(20.dp).rotate(turn), tint = colors.onSurfaceVariant,
+                    )
+                }
+                AnimatedVisibility(
+                    visible = licensesOpen,
+                    enter = expandVertically(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeIn(),
+                    exit = shrinkVertically(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeOut(),
+                ) {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(AboutRowShapes.last)
+                            .background(colors.surfaceContainerHigh)
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Text(
+                            stringResource(R.string.settings_licenses_body),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant,
+                        )
+                        for ((name, license) in OpenSourceLibraries) {
+                            Column {
+                                Text(name, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface)
+                                Text(license, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Rows stacked into one group: round at the group's outer ends, tight where two rows meet. */
+private object AboutRowShapes {
+    val first = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
+    val middle = RoundedCornerShape(6.dp)
+    val last = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 20.dp, bottomEnd = 20.dp)
+}
+
+@Composable
+private fun AboutRow(
+    @DrawableRes icon: Int,
+    title: String,
+    detail: String,
+    shape: Shape,
+    onClick: () -> Unit,
+    trailing: @Composable () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+    Surface(onClick = onClick, shape = shape, color = colors.surfaceContainerHigh, modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(painterResource(icon), null, Modifier.size(22.dp), tint = colors.primary)
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall, color = colors.onSurface)
+                Text(
+                    detail,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            trailing()
+        }
     }
 }
 

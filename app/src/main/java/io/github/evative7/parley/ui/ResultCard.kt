@@ -1,35 +1,60 @@
 package io.github.evative7.parley.ui
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.github.evative7.parley.R
@@ -46,11 +71,13 @@ fun ResultCard(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
+    onEdit: ((String) -> Unit)? = null,
 ) {
     val motion = MaterialTheme.motionScheme
     TappableCard(
         card, source = card.source, translation = card.translation,
         onCopy = onCopy, onDelete = onDelete, modifier = modifier,
+        onEdit = onEdit, editEnabled = retryEnabled,
     ) {
         Column(
             Modifier
@@ -146,8 +173,9 @@ fun ResultCell(
 }
 
 /**
- * A card that opens in a dialog once it has settled, showing [source] and [translation] with copy and delete.
- * A card still being heard or translated can't be deleted yet, and has nothing final to copy.
+ * A card that opens in a dialog once it has settled, on a tap or a long press, showing [source] and
+ * [translation] with copy and delete, and a correction of the recognized text when [onEdit] is given.
+ * A card still being heard or translated can't be opened yet, and has nothing final to copy.
  */
 @Composable
 private fun TappableCard(
@@ -158,32 +186,41 @@ private fun TappableCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
     turn: Turn = Turn.None,
+    onEdit: ((String) -> Unit)? = null,
+    editEnabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
     val settled = card.stage == CardStage.Done || card.stage == CardStage.Error
-    val container = MaterialTheme.colorScheme.surfaceContainerHigh
-    val onContainer = MaterialTheme.colorScheme.onSurface
-    Card(
-        onClick = { open = true },
-        enabled = settled,
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        // Not tappable yet isn't disabled: it looks the same.
-        colors = CardDefaults.cardColors(
-            containerColor = container,
-            contentColor = onContainer,
-            disabledContainerColor = container,
-            disabledContentColor = onContainer,
-        ),
+    val haptics = LocalHapticFeedback.current
+    val shape = MaterialTheme.shapes.extraLarge
+    // Not tappable yet isn't disabled: it looks the same.
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .combinedClickable(
+                enabled = settled,
+                onClick = { open = true },
+                onLongClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    open = true
+                },
+            ),
+        shape = shape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         content()
     }
     if (open) {
+        val edit = onEdit?.takeIf { card.source.isNotEmpty() }
         CardDialog(
             card, source, translation,
             onCopy = { open = false; onCopy(it) },
             onDelete = { open = false; onDelete() },
+            onEdit = edit?.let { { text: String -> open = false; it(text) } },
+            editEnabled = editEnabled,
             onDismiss = { open = false },
             turn = turn,
         )
@@ -198,10 +235,13 @@ private fun CardDialog(
     translation: String,
     onCopy: (String) -> Unit,
     onDelete: () -> Unit,
+    onEdit: ((String) -> Unit)?,
+    editEnabled: Boolean,
     onDismiss: () -> Unit,
     turn: Turn,
 ) {
     val colors = MaterialTheme.colorScheme
+    var editing by rememberSaveable { mutableStateOf(false) }
     Dialog(
         onDismissRequest = onDismiss,
         // Turned, the platform width cap would become the dialog's height.
@@ -219,75 +259,229 @@ private fun CardDialog(
         ) {
             Column(Modifier.padding(top = 24.dp, bottom = 16.dp)) {
                 Text(
-                    card.direction(),
+                    if (editing) stringResource(R.string.edit_source_title) else card.direction(),
                     style = MaterialTheme.typography.labelLarge,
-                    color = colors.onSurfaceVariant,
+                    color = colors.primary,
                     modifier = Modifier.padding(horizontal = 24.dp),
                 )
                 Spacer(Modifier.size(16.dp))
 
-                // A long translation scrolls; the buttons stay in place.
-                val scroll = rememberScrollState()
-                Column(
-                    Modifier
-                        .weight(1f, fill = false)
-                        .then(if (turn == Turn.None) Modifier else Modifier.turnedScroll(scroll))
-                        .verticalScroll(scroll, enabled = turn == Turn.None)
-                        .padding(horizontal = 24.dp),
-                ) {
-                    if (source.isNotEmpty()) {
-                        Text(source, style = MaterialTheme.typography.bodyLarge, color = colors.onSurfaceVariant)
-                    }
-                    if (source.isNotEmpty() && translation.isNotEmpty()) Spacer(Modifier.size(12.dp))
-                    if (translation.isNotEmpty()) {
-                        Text(
-                            translation,
-                            style = MaterialTheme.typography.headlineSmallEmphasized,
-                            color = colors.onSurface,
-                        )
-                    }
-                    if (card.stage == CardStage.Error) {
-                        if (source.isNotEmpty() || translation.isNotEmpty()) Spacer(Modifier.size(16.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(painterResource(R.drawable.ic_error), null, Modifier.size(20.dp), tint = colors.error)
-                            Spacer(Modifier.width(8.dp))
+                if (editing && onEdit != null) {
+                    SourceEditor(card.source, enabled = editEnabled, onSubmit = onEdit, onCancel = { editing = false })
+                } else {
+                    // A long translation scrolls; the buttons stay in place.
+                    val scroll = rememberScrollState()
+                    Column(
+                        Modifier
+                            .weight(1f, fill = false)
+                            .then(if (turn == Turn.None) Modifier else Modifier.turnedScroll(scroll))
+                            .verticalScroll(scroll, enabled = turn == Turn.None)
+                            .padding(horizontal = 24.dp),
+                    ) {
+                        if (source.isNotEmpty()) {
+                            Text(source, style = MaterialTheme.typography.bodyLarge, color = colors.onSurfaceVariant)
+                        }
+                        if (source.isNotEmpty() && translation.isNotEmpty()) Spacer(Modifier.size(12.dp))
+                        if (translation.isNotEmpty()) {
                             Text(
-                                stringResource(card.error.message()),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = colors.error,
+                                translation,
+                                style = MaterialTheme.typography.headlineSmallEmphasized,
+                                color = colors.onSurface,
                             )
                         }
-                    }
-                }
-
-                Spacer(Modifier.size(24.dp))
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(
-                        onClick = onDelete,
-                        colors = ButtonDefaults.textButtonColors(contentColor = colors.error),
-                    ) {
-                        Icon(painterResource(R.drawable.ic_delete), null, Modifier.size(ButtonDefaults.IconSize))
-                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                        Text(stringResource(R.string.action_delete))
-                    }
-                    Spacer(Modifier.weight(1f))
-                    // The translation if there is one: it's what the other person needs.
-                    val copyText = translation.ifEmpty { source }
-                    if (copyText.isNotEmpty()) {
-                        FilledTonalButton(onClick = { onCopy(copyText) }) {
-                            Icon(painterResource(R.drawable.ic_copy), null, Modifier.size(ButtonDefaults.IconSize))
-                            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                            Text(stringResource(R.string.action_copy))
+                        if (card.stage == CardStage.Error) {
+                            if (source.isNotEmpty() || translation.isNotEmpty()) Spacer(Modifier.size(16.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(painterResource(R.drawable.ic_error), null, Modifier.size(20.dp), tint = colors.error)
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    stringResource(card.error.message()),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = colors.error,
+                                )
+                            }
                         }
+                    }
+
+                    Spacer(Modifier.size(24.dp))
+                    // The translation first: it's what the other person needs.
+                    val both = source.isNotEmpty() && translation.isNotEmpty()
+                    val actions = buildList {
+                        if (translation.isNotEmpty()) {
+                            add(Action(R.drawable.ic_copy, if (both) R.string.action_copy_translation else R.string.action_copy) { onCopy(translation) })
+                        }
+                        if (source.isNotEmpty()) {
+                            add(Action(R.drawable.ic_copy, if (both) R.string.action_copy_original else R.string.action_copy) { onCopy(source) })
+                        }
+                        if (onEdit != null) {
+                            add(Action(R.drawable.ic_edit, R.string.action_edit_source, enabled = editEnabled) { editing = true })
+                        }
+                    }
+                    Column(Modifier.padding(horizontal = 16.dp)) {
+                        ActionGroup(actions)
+                        if (actions.isNotEmpty()) Spacer(Modifier.size(12.dp))
+                        ActionBar(
+                            Action(R.drawable.ic_delete, R.string.action_delete, onClick = onDelete),
+                            shape = BarShapes.single,
+                            container = colors.errorContainer,
+                            content = colors.onErrorContainer,
+                            badge = colors.error,
+                            onBadge = colors.onError,
+                        )
                     }
                 }
             }
         }
+    }
+}
+
+/** The recognized text, open for correction before it is translated again. */
+@Composable
+private fun SourceEditor(source: String, enabled: Boolean, onSubmit: (String) -> Unit, onCancel: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    var text by rememberSaveable { mutableStateOf(source) }
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { focus.requestFocus() }
+    OutlinedTextField(
+        value = text,
+        onValueChange = { text = it },
+        textStyle = MaterialTheme.typography.bodyLarge,
+        minLines = 3,
+        maxLines = 8,
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .focusRequester(focus),
+    )
+    Spacer(Modifier.size(20.dp))
+    Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(BarGap)) {
+        ActionBar(
+            Action(
+                R.drawable.ic_translate, R.string.action_retranslate,
+                // Unchanged text would only translate the same thing again.
+                enabled = enabled && text.isNotBlank() && text.trim() != source,
+            ) { onSubmit(text) },
+            shape = BarShapes.first,
+            container = colors.primaryContainer,
+            content = colors.onPrimaryContainer,
+            badge = colors.primary,
+            onBadge = colors.onPrimary,
+        )
+        ActionBar(
+            Action(R.drawable.ic_arrow_back, R.string.action_cancel, onClick = onCancel),
+            shape = BarShapes.last,
+        )
+    }
+}
+
+private class Action(
+    @DrawableRes val icon: Int,
+    @StringRes val label: Int,
+    val enabled: Boolean = true,
+    val onClick: () -> Unit,
+)
+
+private val BarGap = 3.dp
+
+/** Bars stacked into one group: round at the group's outer ends, tight where two bars meet. */
+private object BarShapes {
+    private val outer = 20.dp
+    private val inner = 6.dp
+    val single = RoundedCornerShape(outer)
+    val first = RoundedCornerShape(topStart = outer, topEnd = outer, bottomStart = inner, bottomEnd = inner)
+    val middle = RoundedCornerShape(inner)
+    val last = RoundedCornerShape(topStart = inner, topEnd = inner, bottomStart = outer, bottomEnd = outer)
+
+    fun at(index: Int, count: Int) = when {
+        count == 1 -> single
+        index == 0 -> first
+        index == count - 1 -> last
+        else -> middle
+    }
+}
+
+@Composable
+private fun ActionGroup(actions: List<Action>) {
+    if (actions.isEmpty()) return
+    val colors = MaterialTheme.colorScheme
+    Column(verticalArrangement = Arrangement.spacedBy(BarGap)) {
+        actions.forEachIndexed { i, action ->
+            // The first action leads; the rest stay quiet.
+            ActionBar(
+                action,
+                shape = BarShapes.at(i, actions.size),
+                badge = if (i == 0) colors.primary else colors.secondaryContainer,
+                onBadge = if (i == 0) colors.onPrimary else colors.onSecondaryContainer,
+            )
+        }
+    }
+}
+
+/** A full-width action: an icon in a round badge, then its label. Pressed, its corners round out into a pill. */
+@Composable
+private fun ActionBar(
+    action: Action,
+    shape: RoundedCornerShape,
+    container: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
+    content: Color = MaterialTheme.colorScheme.onSurface,
+    badge: Color = MaterialTheme.colorScheme.secondaryContainer,
+    onBadge: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val morph by animateFloatAsState(
+        if (pressed) 1f else 0f, MaterialTheme.motionScheme.fastSpatialSpec(), label = "press",
+    )
+    Surface(
+        onClick = action.onClick,
+        enabled = action.enabled,
+        shape = if (morph == 0f) shape else MorphedShape(shape, PillShape, morph),
+        color = container,
+        contentColor = content,
+        interactionSource = interaction,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .alpha(if (action.enabled) 1f else 0.38f),
+    ) {
+        Row(
+            Modifier.padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                Modifier.size(36.dp).clip(CircleShape).background(badge),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(action.icon), null, Modifier.size(20.dp), tint = onBadge)
+            }
+            Spacer(Modifier.width(14.dp))
+            Text(
+                stringResource(action.label),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+private val PillShape = RoundedCornerShape(50)
+
+/** Each corner [fraction] of the way from [from] to [to]. */
+private class MorphedShape(
+    private val from: RoundedCornerShape,
+    private val to: RoundedCornerShape,
+    private val fraction: Float,
+) : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        fun corner(a: CornerSize, b: CornerSize): Float =
+            lerp(a.toPx(size, density), b.toPx(size, density), fraction)
+        return RoundedCornerShape(
+            topStart = corner(from.topStart, to.topStart),
+            topEnd = corner(from.topEnd, to.topEnd),
+            bottomEnd = corner(from.bottomEnd, to.bottomEnd),
+            bottomStart = corner(from.bottomStart, to.bottomStart),
+        ).createOutline(size, layoutDirection, density)
     }
 }
 

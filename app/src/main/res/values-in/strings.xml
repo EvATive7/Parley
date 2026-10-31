@@ -114,4 +114,20 @@
     <string name="settings_translation_incomplete">Konfigurasi layanan ini belum lengkap. Edit untuk memperbaikinya.</string>
     <string name="action_done">Selesai</string>
     <string name="action_cancel">Batal</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">Salin terjemahan</string>
+    <string name="action_copy_original">Salin teks asli</string>
+    <string name="action_edit_source">Edit teks asli dan terjemahkan ulang</string>
+    <string name="edit_source_title">Edit teks asli</string>
+    <string name="action_retranslate">Terjemahkan ulang</string>
+    <string name="settings_about">Tentang</string>
+    <string name="settings_about_subtitle">Privasi, kode sumber, dan lisensi</string>
+    <string name="settings_source_code">Kode sumber di GitHub</string>
+    <string name="settings_author">Pembuat</string>
+    <string name="settings_licenses">Lisensi sumber terbuka</string>
+    <string name="settings_licenses_body">Parley dibangun dengan proyek sumber terbuka berikut:</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="other">%1$d pustaka</item>
+    </plurals>
 </resources>

@@ -34,14 +34,22 @@ class TranslateViewModel @Inject constructor(
     private val translator: Translator,
     private val detector: LanguageDetector,
     private val clock: MonotonicClock,
+    private val langStore: LangPairStore,
 ) : ViewModel() {
+    private val _state = MutableStateFlow(UiState())
+    val state: StateFlow<UiState> = _state.asStateFlow()
+
+    /** Set once the user picks a language, so a slow load can't overwrite the pick. */
+    private var langsPicked = false
+
     init {
         // The bundled language model loads on first use; do that now rather than after the first sentence.
         viewModelScope.launch { runCatching { detector.detect("warm up") } }
+        viewModelScope.launch {
+            val saved = langStore.load() ?: return@launch
+            if (!langsPicked) _state.update { it.copy(langs = saved) }
+        }
     }
-
-    private val _state = MutableStateFlow(UiState())
-    val state: StateFlow<UiState> = _state.asStateFlow()
 
     // High-frequency values live outside UiState so only the button recomposes.
     private val _volume = MutableStateFlow(0f)
@@ -90,8 +98,52 @@ class TranslateViewModel @Inject constructor(
         dispatch(PttEvent.Retry)
     }
 
-    fun setLang(slot: Int, lang: Lang) = _state.update { it.copy(langs = it.langs.with(slot, lang)) }
-    fun swapLangs() = _state.update { it.copy(langs = it.langs.swapped()) }
+    fun setLang(slot: Int, lang: Lang) = pickLangs { it.with(slot, lang) }
+    fun swapLangs() = pickLangs { it.swapped() }
+
+    private fun pickLangs(f: (LangPair) -> LangPair) {
+        langsPicked = true
+        val langs = f(_state.value.langs)
+        _state.update { it.copy(langs = langs) }
+        viewModelScope.launch { langStore.save(langs) }
+    }
+
+    /**
+     * Replaces a settled card's recognized text with [text] and translates it again, as a retry would.
+     * The language is detected anew: the edit may have changed it.
+     */
+    fun editSource(id: Long, text: String) {
+        val edited = text.trim()
+        if (edited.isEmpty() || _state.value.phase in BUSY_PHASES) return
+        val card = _state.value.cards.firstOrNull { it.id == id } ?: return
+        if (card.stage != CardStage.Done && card.stage != CardStage.Error) return
+        DebugLog.log(TAG) { "#$id source edited (${edited.length} chars)" }
+        viewModelScope.launch {
+            val sourceLang = withTimeoutOrNull(1_500) {
+                try {
+                    detector.detect(edited)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    null
+                }
+            } ?: card.sourceLang
+            // A new recording may have started while detecting; it owns the pipeline now.
+            if (_state.value.phase in BUSY_PHASES) return@launch
+            if (_state.value.cards.none { it.id == id }) return@launch
+            updateCard(id) {
+                copy(
+                    source = edited,
+                    sourceLang = sourceLang,
+                    target = langs.targetFor(sourceLang),
+                    stage = CardStage.Error,
+                    canRetry = true,
+                )
+            }
+            activeId = id
+            dispatch(PttEvent.Retry)
+        }
+    }
 
     fun delete(id: Long) {
         if (id == activeId && _state.value.phase in BUSY_PHASES) return

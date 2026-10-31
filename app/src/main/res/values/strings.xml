@@ -119,4 +119,21 @@
     <string name="settings_translation_incomplete">This service is incomplete. Edit it to fix.</string>
     <string name="action_done">Done</string>
     <string name="action_cancel">Cancel</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">Copy translation</string>
+    <string name="action_copy_original">Copy original</string>
+    <string name="action_edit_source">Edit original and retranslate</string>
+    <string name="edit_source_title">Edit original</string>
+    <string name="action_retranslate">Retranslate</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_subtitle">Privacy, source code and licenses</string>
+    <string name="settings_source_code">Source code on GitHub</string>
+    <string name="settings_author">Author</string>
+    <string name="settings_licenses">Open source licenses</string>
+    <string name="settings_licenses_body">Parley is built on these open source projects:</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="one">%1$d library</item>
+        <item quantity="other">%1$d libraries</item>
+    </plurals>
 </resources>

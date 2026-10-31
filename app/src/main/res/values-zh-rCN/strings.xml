@@ -117,4 +117,21 @@
     <string name="settings_translation_incomplete">所选服务的配置不完整，请编辑。</string>
     <string name="action_done">完成</string>
     <string name="action_cancel">取消</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">复制译文</string>
+    <string name="action_copy_original">复制原文</string>
+    <string name="action_edit_source">编辑原文并重新翻译</string>
+    <string name="edit_source_title">编辑原文</string>
+    <string name="action_retranslate">重新翻译</string>
+    <string name="settings_about">关于</string>
+    <string name="settings_about_subtitle">隐私、源代码与开源许可</string>
+    <string name="settings_source_code">GitHub 上的源代码</string>
+    <string name="settings_author">作者</string>
+    <string name="settings_licenses">开源许可</string>
+    <string name="settings_licenses_body">Parley 基于以下开源项目构建：</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="one">%1$d 个库</item>
+        <item quantity="other">%1$d 个库</item>
+    </plurals>
 </resources>

@@ -114,4 +114,25 @@
     <string name="settings_translation_incomplete">إعداد هذه الخدمة غير مكتمل. عدّله لإصلاحه.</string>
     <string name="action_done">تم</string>
     <string name="action_cancel">إلغاء</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">نسخ الترجمة</string>
+    <string name="action_copy_original">نسخ النص الأصلي</string>
+    <string name="action_edit_source">تعديل النص الأصلي وإعادة الترجمة</string>
+    <string name="edit_source_title">تعديل النص الأصلي</string>
+    <string name="action_retranslate">إعادة الترجمة</string>
+    <string name="settings_about">حول</string>
+    <string name="settings_about_subtitle">الخصوصية والشيفرة المصدرية والتراخيص</string>
+    <string name="settings_source_code">الشيفرة المصدرية على GitHub</string>
+    <string name="settings_author">المطوّر</string>
+    <string name="settings_licenses">تراخيص المصادر المفتوحة</string>
+    <string name="settings_licenses_body">بُني Parley على مشاريع المصادر المفتوحة التالية:</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="zero">%1$d مكتبة</item>
+        <item quantity="one">مكتبة واحدة</item>
+        <item quantity="two">مكتبتان</item>
+        <item quantity="few">%1$d مكتبات</item>
+        <item quantity="many">%1$d مكتبة</item>
+        <item quantity="other">%1$d مكتبة</item>
+    </plurals>
 </resources>

@@ -305,6 +305,7 @@ private fun ConversationScreen(
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
                             retryEnabled = !busy,
+                            onEdit = { vm.editSource(card.id, it) },
                             modifier = modifier,
                         )
                     }

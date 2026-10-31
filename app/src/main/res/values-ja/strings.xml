@@ -115,4 +115,21 @@
     <string name="settings_translation_incomplete">このサービスの設定が不完全です。編集してください。</string>
     <string name="action_done">完了</string>
     <string name="action_cancel">キャンセル</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">翻訳をコピー</string>
+    <string name="action_copy_original">原文をコピー</string>
+    <string name="action_edit_source">原文を編集して再翻訳</string>
+    <string name="edit_source_title">原文を編集</string>
+    <string name="action_retranslate">再翻訳</string>
+    <string name="settings_about">このアプリについて</string>
+    <string name="settings_about_subtitle">プライバシー、ソースコード、ライセンス</string>
+    <string name="settings_source_code">GitHub のソースコード</string>
+    <string name="settings_author">作者</string>
+    <string name="settings_licenses">オープンソースライセンス</string>
+    <string name="settings_licenses_body">Parley は次のオープンソースプロジェクトを使用しています：</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="one">%1$d 個のライブラリ</item>
+        <item quantity="other">%1$d 個のライブラリ</item>
+    </plurals>
 </resources>

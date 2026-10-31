@@ -114,4 +114,21 @@
     <string name="settings_translation_incomplete">Questo servizio è incompleto. Modificalo per correggerlo.</string>
     <string name="action_done">Fine</string>
     <string name="action_cancel">Annulla</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">Copia traduzione</string>
+    <string name="action_copy_original">Copia originale</string>
+    <string name="action_edit_source">Modifica originale e ritraduci</string>
+    <string name="edit_source_title">Modifica originale</string>
+    <string name="action_retranslate">Ritraduci</string>
+    <string name="settings_about">Informazioni</string>
+    <string name="settings_about_subtitle">Privacy, codice sorgente e licenze</string>
+    <string name="settings_source_code">Codice sorgente su GitHub</string>
+    <string name="settings_author">Autore</string>
+    <string name="settings_licenses">Licenze open source</string>
+    <string name="settings_licenses_body">Parley si basa su questi progetti open source:</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="one">%1$d libreria</item>
+        <item quantity="other">%1$d librerie</item>
+    </plurals>
 </resources>

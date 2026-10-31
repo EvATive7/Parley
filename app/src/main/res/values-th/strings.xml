@@ -114,4 +114,20 @@
     <string name="settings_translation_incomplete">การตั้งค่าบริการนี้ไม่สมบูรณ์ โปรดแก้ไข</string>
     <string name="action_done">เสร็จสิ้น</string>
     <string name="action_cancel">ยกเลิก</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">คัดลอกคำแปล</string>
+    <string name="action_copy_original">คัดลอกต้นฉบับ</string>
+    <string name="action_edit_source">แก้ไขต้นฉบับและแปลใหม่</string>
+    <string name="edit_source_title">แก้ไขต้นฉบับ</string>
+    <string name="action_retranslate">แปลใหม่</string>
+    <string name="settings_about">เกี่ยวกับ</string>
+    <string name="settings_about_subtitle">ความเป็นส่วนตัว ซอร์สโค้ด และสัญญาอนุญาต</string>
+    <string name="settings_source_code">ซอร์สโค้ดบน GitHub</string>
+    <string name="settings_author">ผู้พัฒนา</string>
+    <string name="settings_licenses">สัญญาอนุญาตโอเพนซอร์ส</string>
+    <string name="settings_licenses_body">Parley สร้างขึ้นจากโครงการโอเพนซอร์สเหล่านี้:</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="other">%1$d ไลบรารี</item>
+    </plurals>
 </resources>

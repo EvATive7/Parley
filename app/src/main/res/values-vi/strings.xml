@@ -114,4 +114,20 @@
     <string name="settings_translation_incomplete">Dịch vụ này chưa được cấu hình đầy đủ. Hãy chỉnh sửa để khắc phục.</string>
     <string name="action_done">Xong</string>
     <string name="action_cancel">Hủy</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">Sao chép bản dịch</string>
+    <string name="action_copy_original">Sao chép bản gốc</string>
+    <string name="action_edit_source">Sửa bản gốc và dịch lại</string>
+    <string name="edit_source_title">Sửa bản gốc</string>
+    <string name="action_retranslate">Dịch lại</string>
+    <string name="settings_about">Giới thiệu</string>
+    <string name="settings_about_subtitle">Quyền riêng tư, mã nguồn và giấy phép</string>
+    <string name="settings_source_code">Mã nguồn trên GitHub</string>
+    <string name="settings_author">Tác giả</string>
+    <string name="settings_licenses">Giấy phép mã nguồn mở</string>
+    <string name="settings_licenses_body">Parley được xây dựng trên các dự án mã nguồn mở sau:</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="other">%1$d thư viện</item>
+    </plurals>
 </resources>

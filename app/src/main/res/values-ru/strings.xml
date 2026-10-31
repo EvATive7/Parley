@@ -114,4 +114,23 @@
     <string name="settings_translation_incomplete">Настройка сервиса не завершена. Измените её.</string>
     <string name="action_done">Готово</string>
     <string name="action_cancel">Отмена</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">Копировать перевод</string>
+    <string name="action_copy_original">Копировать оригинал</string>
+    <string name="action_edit_source">Изменить оригинал и перевести заново</string>
+    <string name="edit_source_title">Изменить оригинал</string>
+    <string name="action_retranslate">Перевести заново</string>
+    <string name="settings_about">О приложении</string>
+    <string name="settings_about_subtitle">Конфиденциальность, исходный код и лицензии</string>
+    <string name="settings_source_code">Исходный код на GitHub</string>
+    <string name="settings_author">Автор</string>
+    <string name="settings_licenses">Лицензии open source</string>
+    <string name="settings_licenses_body">Parley создан на основе этих проектов с открытым кодом:</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="one">%1$d библиотека</item>
+        <item quantity="few">%1$d библиотеки</item>
+        <item quantity="many">%1$d библиотек</item>
+        <item quantity="other">%1$d библиотеки</item>
+    </plurals>
 </resources>

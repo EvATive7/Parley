@@ -116,4 +116,21 @@
     <string name="action_cancel">取消</string>
     <string name="face_to_face">面對面模式</string>
     <string name="face_to_face_exit">退出面對面模式</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">複製譯文</string>
+    <string name="action_copy_original">複製原文</string>
+    <string name="action_edit_source">編輯原文並重新翻譯</string>
+    <string name="edit_source_title">編輯原文</string>
+    <string name="action_retranslate">重新翻譯</string>
+    <string name="settings_about">關於</string>
+    <string name="settings_about_subtitle">隱私、原始碼與開源授權</string>
+    <string name="settings_source_code">GitHub 上的原始碼</string>
+    <string name="settings_author">作者</string>
+    <string name="settings_licenses">開源授權</string>
+    <string name="settings_licenses_body">Parley 以下列開源專案為基礎：</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="one">%1$d 個程式庫</item>
+        <item quantity="other">%1$d 個程式庫</item>
+    </plurals>
 </resources>

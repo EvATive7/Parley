@@ -115,4 +115,21 @@
     <string name="settings_translation_incomplete">이 서비스의 설정이 완전하지 않습니다. 편집해서 고치세요.</string>
     <string name="action_done">완료</string>
     <string name="action_cancel">취소</string>
+
+    <!-- Card details and About -->
+    <string name="action_copy_translation">번역 복사</string>
+    <string name="action_copy_original">원문 복사</string>
+    <string name="action_edit_source">원문 편집 후 다시 번역</string>
+    <string name="edit_source_title">원문 편집</string>
+    <string name="action_retranslate">다시 번역</string>
+    <string name="settings_about">정보</string>
+    <string name="settings_about_subtitle">개인정보, 소스 코드 및 라이선스</string>
+    <string name="settings_source_code">GitHub 소스 코드</string>
+    <string name="settings_author">만든 사람</string>
+    <string name="settings_licenses">오픈소스 라이선스</string>
+    <string name="settings_licenses_body">Parley는 다음 오픈소스 프로젝트로 만들어졌습니다:</string>
+    <plurals name="settings_licenses_count">
+        <item quantity="one">라이브러리 %1$d개</item>
+        <item quantity="other">라이브러리 %1$d개</item>
+    </plurals>
 </resources>

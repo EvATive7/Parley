@@ -91,7 +91,11 @@ class TranslateViewModelTest {
                 return translation(text)
             }
         }
-        return TranslateViewModel(recorder, recognizer, translator, LanguageDetector { detected }, MonotonicClock { now })
+        return TranslateViewModel(recorder, recognizer, translator, LanguageDetector { detected }, MonotonicClock { now },
+            object : LangPairStore {
+                override suspend fun load(): LangPair? = null
+                override suspend fun save(langs: LangPair) {}
+            })
             .also { store.put("vm", it) }
     }
 
