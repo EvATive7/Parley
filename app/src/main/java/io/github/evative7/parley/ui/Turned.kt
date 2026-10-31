@@ -36,18 +36,20 @@ fun Modifier.turned(turn: Turn): Modifier = if (turn == Turn.None) this else lay
 }
 
 /**
- * Drag and fling for a top-down list inside [turned] content; give the list `userScrollEnabled = false`.
+ * Drag and fling for a list inside [turned] content; give the list `userScrollEnabled = false`. A
+ * [reversed] list (`reverseLayout = true`) scrolls the other way for the same drag, as Compose's own does.
  * Compose's own scrolling measures fling speed wrong under a quarter turn, so a quick swipe stops dead and
  * bounces. Speed here comes only from the per-event positions, which are mapped through the turn correctly.
  */
 @Composable
-fun Modifier.turnedScroll(state: ScrollableState): Modifier {
+fun Modifier.turnedScroll(state: ScrollableState, reversed: Boolean = false): Modifier {
     val fling = ScrollableDefaults.flingBehavior()
     val scope = rememberCoroutineScope()
-    return pointerInput(state, fling) {
+    val sign = if (reversed) 1f else -1f
+    return pointerInput(state, fling, reversed) {
         val tracker = VelocityTracker()
         val flingAway = {
-            val velocity = -tracker.calculateVelocity().y
+            val velocity = sign * tracker.calculateVelocity().y
             scope.launch { state.scroll { with(fling) { performFling(velocity) } } }
         }
         detectVerticalDragGestures(
@@ -61,7 +63,7 @@ fun Modifier.turnedScroll(state: ScrollableState): Modifier {
         ) { change, dragAmount ->
             tracker.addPosition(change.uptimeMillis, change.position)
             change.consume()
-            state.dispatchRawDelta(-dragAmount)
+            state.dispatchRawDelta(sign * dragAmount)
         }
     }
 }

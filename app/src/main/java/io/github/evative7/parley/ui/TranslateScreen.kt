@@ -374,7 +374,8 @@ private val FaceRailWidth = 136.dp
 
 /**
  * One person's half of the face-to-face view, laid out from their side before it is turned toward them:
- * the newest card next to the button, their language picker at the edge nearest them.
+ * the conversation reads top to bottom like a chat, newest last, just above their language picker at the
+ * edge nearest them.
  */
 @Composable
 private fun FacingHalf(
@@ -399,9 +400,9 @@ private fun FacingHalf(
 }
 
 /**
- * Newest card next to the button, each coming out of it once: rising from below, or dropping from above in
- * a [turned] face-to-face half, whose button sits at its top. [entered] holds cards that already played their
- * entrance; scrolling back must not replay it.
+ * Newest card at the bottom, each rising into place once. [entered] holds cards that already played their
+ * entrance; scrolling back must not replay it. A [turned] face-to-face half scrolls by its own drag handling.
+ * Each new card scrolls the list to the bottom (see the caller), and the newest card grows upward from there.
  *
  * The whole conversation is one connected group: round at its two ends, tight where two cards meet.
  * A card's corners ease into place when a new card or a deletion moves it to or from an end.
@@ -416,25 +417,25 @@ private fun CardList(
 ) {
     val motion = MaterialTheme.motionScheme
     val rise = with(LocalDensity.current) { 48.dp.toPx() }
-    val reverseLayout = !turned
     // Tighter in portrait, where the whole conversation shares one list.
     val edge = if (turned) 12.dp else 8.dp
     LazyColumn(
-        modifier = Modifier.fillMaxSize().then(if (turned) Modifier.turnedScroll(listState) else Modifier),
+        modifier = Modifier.fillMaxSize().then(if (turned) Modifier.turnedScroll(listState, reversed = true) else Modifier),
         state = listState,
         userScrollEnabled = !turned,
-        reverseLayout = reverseLayout,
+        // Newest first in the list, so index 0 sits at the bottom.
+        reverseLayout = true,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = edge),
-        verticalArrangement = Arrangement.spacedBy(CardGap, if (reverseLayout) Alignment.Bottom else Alignment.Top),
+        verticalArrangement = Arrangement.spacedBy(CardGap, Alignment.Bottom),
     ) {
         itemsIndexed(cards, key = { _, card -> card.id }) { index, card ->
-            // Newest first: index 0 is next to the button, at the bottom in portrait and the top when turned.
-            val newest = index == 0
-            val oldest = index == cards.lastIndex
-            val roundTop = if (turned) newest else oldest
-            val roundBottom = if (turned) oldest else newest
-            val top by animateDpAsState(if (roundTop) CardOuterCorner else CardInnerCorner, motion.defaultSpatialSpec(), label = "top")
-            val bottom by animateDpAsState(if (roundBottom) CardOuterCorner else CardInnerCorner, motion.defaultSpatialSpec(), label = "bottom")
+            // The newest card closes the group at the bottom, the oldest opens it at the top.
+            val top by animateDpAsState(
+                if (index == cards.lastIndex) CardOuterCorner else CardInnerCorner, motion.defaultSpatialSpec(), label = "top",
+            )
+            val bottom by animateDpAsState(
+                if (index == 0) CardOuterCorner else CardInnerCorner, motion.defaultSpatialSpec(), label = "bottom",
+            )
             val shape = RoundedCornerShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom)
             val enter = remember(card.id) { Animatable(if (card.id in entered) 1f else 0f) }
             LaunchedEffect(card.id) {
@@ -451,8 +452,8 @@ private fun CardList(
                     )
                     .graphicsLayer {
                         val p = enter.value
-                        transformOrigin = TransformOrigin(0.5f, if (reverseLayout) 1f else 0f)
-                        translationY = (1f - p) * if (reverseLayout) rise else -rise
+                        transformOrigin = TransformOrigin(0.5f, 1f)
+                        translationY = (1f - p) * rise
                         scaleX = 0.85f + 0.15f * p
                         scaleY = 0.85f + 0.15f * p
                         alpha = p.coerceIn(0f, 1f)
