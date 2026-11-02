@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <lint>
-    <!-- Conversation hints have 15 locales; the rest of the UI intentionally falls back to
-         English outside English/Simplified Chinese/Traditional Chinese in M2.
-         Keep the report visible, but do not block builds on this planned localization work. -->
-    <issue id="MissingTranslation" severity="warning" />
+    <!-- Every UI string now exists in all 15 locales: values (English), values-ar, values-de,
+         values-es, values-fr, values-in, values-it, values-ja, values-ko, values-pt, values-ru,
+         values-th, values-vi, values-zh-rCN and values-zh-rTW. values-night only holds colors.
+         A missing translation is therefore a real regression, not planned work: fail the build. -->
+    <issue id="MissingTranslation" severity="error" />
 </lint>

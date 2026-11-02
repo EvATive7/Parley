@@ -12,6 +12,7 @@ import io.github.evative7.parley.model.LanguageDetector
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
 import io.github.evative7.parley.translate.Translator
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
@@ -53,8 +54,12 @@ class TranslateViewModelTest {
     private val targets = mutableListOf<Lang>()
     private var detected: Lang? = Lang("en")
     private var microphoneFails = false
+    private lateinit var conversationStore: FakeConversationStore
 
-    @Before fun setup() { Dispatchers.setMain(dispatcher) }
+    @Before fun setup() {
+        Dispatchers.setMain(dispatcher)
+        conversationStore = FakeConversationStore()
+    }
     @After fun teardown() {
         store.clear()
         frames.close()
@@ -100,7 +105,7 @@ class TranslateViewModelTest {
             object : LangPairStore {
                 override suspend fun load(): LangPair? = null
                 override suspend fun save(langs: LangPair) {}
-            })
+            }, conversationStore)
             .also { store.put("vm", it) }
     }
 
@@ -397,5 +402,83 @@ class TranslateViewModelTest {
         runCurrent()
         assertEquals(listOf("你好", "尼好"), vm.state.value.cards.single().alternatives.map { it.text })
         assertEquals(1, references.size)
+    }
+
+    @Test fun `saved cards are restored after cards made while loading and receive fresh ids`() = runTest {
+        val gate = CompletableDeferred<List<CardState>?>()
+        conversationStore.loadBlock = { gate.await() }
+        val saved = CardState(
+            id = 999,
+            langs = LangPair(Lang("zh-CN"), Lang("en")),
+            stage = CardStage.Done,
+            source = "saved",
+        )
+        val vm = vm()
+        runCurrent()
+
+        vm.submitText("new")
+        runCurrent()
+        gate.complete(listOf(saved))
+        runCurrent()
+
+        assertEquals(listOf("new", "saved"), vm.state.value.cards.map { it.source })
+        assertEquals(2, vm.state.value.cards.map { it.id }.distinct().size)
+        assertFalse(vm.state.value.cards.any { it.id == 999L })
+    }
+
+    @Test fun `only settled cards are saved after the conversation load`() = runTest {
+        val vm = vm()
+        runCurrent()
+        vm.submitText("settled")
+        runCurrent()
+        advanceTimeBy(501)
+        runCurrent()
+
+        assertEquals(listOf("settled"), conversationStore.saved.single().map { it.source })
+
+        vm.onPress()
+        runCurrent()
+        advanceTimeBy(501)
+        runCurrent()
+        assertEquals(1, conversationStore.saved.size)
+        assertEquals(CardStage.Listening, vm.state.value.cards.first().stage)
+        vm.onAbort()
+        runCurrent()
+    }
+
+    @Test fun `clear conversation empties and saves immediately but is refused while busy`() = runTest {
+        conversationStore.cards = listOf(
+            CardState(7, LangPair(Lang("zh-CN"), Lang("en")), CardStage.Done, source = "saved"),
+        )
+        val vm = vm()
+        runCurrent()
+
+        vm.clearConversation()
+        runCurrent()
+        assertTrue(vm.state.value.cards.isEmpty())
+        assertEquals(emptyList<CardState>(), conversationStore.saved.last())
+
+        vm.onPress()
+        runCurrent()
+        val liveCards = vm.state.value.cards
+        val saves = conversationStore.saved.size
+        vm.clearConversation()
+        runCurrent()
+        assertEquals(liveCards, vm.state.value.cards)
+        assertEquals(saves, conversationStore.saved.size)
+        vm.onAbort()
+        runCurrent()
+    }
+
+    private class FakeConversationStore : ConversationStore {
+        var cards: List<CardState>? = null
+        var loadBlock: (suspend () -> List<CardState>?)? = null
+        val saved = mutableListOf<List<CardState>>()
+
+        override suspend fun load(): List<CardState>? = loadBlock?.invoke() ?: cards
+
+        override suspend fun save(cards: List<CardState>) {
+            saved += cards
+        }
     }
 }

@@ -143,9 +143,43 @@
     <string name="settings_config_invalid">ไฟล์นี้ไม่ใช่ไฟล์การตั้งค่าของ Parley</string>
     <string name="settings_config_too_new">ไฟล์นี้มาจาก Parley เวอร์ชันที่ใหม่กว่า โปรดอัปเดตแอปก่อนนำเข้า</string>
     <string name="settings_config_failed">ไม่สามารถอ่านหรือเขียนไฟล์ได้</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">จำลอง (ออฟไลน์)</string>
+    <string name="settings_asr_mock_stream">การรู้จำแบบสตรีมจำลอง</string>
+    <string name="settings_asr_mock_stream_desc">ส่งคืนประโยคตัวอย่างทีละส่วนระหว่างการบันทึก สลับระหว่างสองภาษาของบทสนทนา ไม่เชื่อมต่อกับบริการเครือข่ายและไม่ต้องใช้ข้อมูลรับรอง สำหรับการพัฒนาและทดสอบ</string>
+    <string name="settings_asr_mock_non_stream">การรู้จำทั้งการบันทึกแบบจำลอง</string>
+    <string name="settings_asr_mock_non_stream_desc">ส่งคืนประโยคตัวอย่างที่สมบูรณ์หลังการบันทึกสิ้นสุดลง สลับระหว่างสองภาษาของบทสนทนา ไม่เชื่อมต่อกับบริการเครือข่ายและไม่ต้องใช้ข้อมูลรับรอง สำหรับการพัฒนาและทดสอบ</string>
+    <string name="settings_translation_type_real">บริการจริง</string>
+    <string name="settings_translation_type_mock">จำลอง</string>
+    <string name="settings_translation_mock_name">LLM จำลอง</string>
+    <string name="settings_translation_mock_detail">จำลอง · ออฟไลน์ · ความเร็ว: %1$s</string>
+    <string name="settings_mock_speed">ความเร็วในการตอบสนอง</string>
+    <string name="settings_mock_speed_fast">เร็ว</string>
+    <string name="settings_mock_speed_normal">ปกติ</string>
+    <string name="settings_mock_speed_slow">ช้า</string>
+    <string name="settings_mock_fault">ความล้มเหลวจำลอง</string>
+    <string name="mock_fault_none">ไม่มี</string>
+    <string name="mock_fault_no_speech">ฟังไม่ชัด</string>
+    <string name="mock_fault_network_recording">การเชื่อมต่อขาดหายระหว่างบันทึก</string>
+    <string name="mock_fault_network_midway">การเชื่อมต่อขาดหายระหว่างแปล</string>
+    <string name="mock_fault_authentication">การยืนยันตัวตนล้มเหลว</string>
+    <string name="mock_fault_rate_limit">ถึงขีดจำกัดคำขอ</string>
+    <string name="mock_fault_timeout">หมดเวลา</string>
     <string name="manual_input">พิมพ์ข้อความ</string>
     <string name="manual_input_hint">พิมพ์สิ่งที่คุณต้องการพูด</string>
     <string name="action_translate">แปล</string>
     <string name="asr_which_service">บริการที่รู้จำข้อความนี้</string>
     <string name="more_actions">เพิ่มเติม</string>
+    <string name="settings_missing_asr_service">เลือกบริการรู้จำอย่างน้อยหนึ่งบริการ</string>
+    <string name="settings_asr_services_hint">เลือกหนึ่งบริการหรือมากกว่า ทุกบริการฟังพร้อมกัน: ระบบจะแสดงผลลัพธ์ที่เร็วที่สุด และบริการอื่นช่วยในการแปล</string>
+    <string name="settings_asr_grace">เวลารอผลลัพธ์ตัวเลือก</string>
+    <string name="settings_asr_grace_value">%1$.1f วินาที</string>
+    <string name="settings_asr_grace_hint">ระยะเวลาที่จะรับผลลัพธ์จากบริการรู้จำอื่นต่อไปหลังจากผลลัพธ์แรกมาถึง ผลลัพธ์ที่ได้รับภายในช่วงเวลานี้จะถูกส่งไปยังโมเดลแปลเพื่อใช้อ้างอิง ผลลัพธ์ที่มาช้ากว่าจะแสดงเฉพาะในรายละเอียดการ์ดและไม่ถูกใช้ในการแปลครั้งนี้ ช่วงเวลาที่ยาวขึ้นทำให้โมเดลมีข้อมูลเปรียบเทียบมากขึ้น แต่แลกกับความหน่วงในการแปลที่สูงขึ้น</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">ล้างบทสนทนา</string>
+    <string name="clear_conversation_title">ล้างบทสนทนาหรือไม่</string>
+    <string name="clear_conversation_body">การ์ดทั้งหมดในบทสนทนานี้จะถูกลบออกจากอุปกรณ์นี้ ไม่สามารถย้อนกลับได้</string>
+    <string name="action_clear">ล้าง</string>
 </resources>

@@ -8,6 +8,8 @@
 
     <string name="pick_language">選擇語言</string>
     <string name="swap_languages">互換語言</string>
+    <string name="face_to_face">面對面模式</string>
+    <string name="face_to_face_exit">退出面對面模式</string>
     <string name="lang_in_other_slot">互換</string>
 
     <string name="ptt_hold_to_talk">按住說話</string>
@@ -114,8 +116,6 @@
     <string name="settings_translation_incomplete">所選服務的設定不完整，請編輯。</string>
     <string name="action_done">完成</string>
     <string name="action_cancel">取消</string>
-    <string name="face_to_face">面對面模式</string>
-    <string name="face_to_face_exit">退出面對面模式</string>
 
     <!-- Card details and About -->
     <string name="action_copy_translation">複製譯文</string>
@@ -179,4 +179,10 @@
     <string name="settings_asr_grace">候選結果等待時長</string>
     <string name="settings_asr_grace_value">%1$.1f 秒</string>
     <string name="settings_asr_grace_hint">首個辨識結果返回後，繼續接收其他辨識服務結果的時長。在此時長內返回的結果將作為參考提供給翻譯模型；逾時返回的結果僅在卡片詳情中顯示，不參與本次翻譯。時長越長，可供參考的結果越充分，翻譯延遲也相應增加。</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">清除對話</string>
+    <string name="clear_conversation_title">要清除對話嗎？</string>
+    <string name="clear_conversation_body">這段對話中的所有卡片都會從本機刪除，且無法復原。</string>
+    <string name="action_clear">清除</string>
 </resources>

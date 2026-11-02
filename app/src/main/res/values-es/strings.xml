@@ -145,9 +145,43 @@
     <string name="settings_config_invalid">Este archivo no es una configuración de Parley.</string>
     <string name="settings_config_too_new">Este archivo es de una versión más reciente de Parley. Actualiza la app para importarlo.</string>
     <string name="settings_config_failed">No se pudo leer ni escribir el archivo.</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">Simulado (sin conexión)</string>
+    <string name="settings_asr_mock_stream">Reconocimiento en streaming simulado</string>
+    <string name="settings_asr_mock_stream_desc">Devuelve frases de ejemplo de forma progresiva durante la grabación, alternando entre los dos idiomas de la conversación. No se conecta a ningún servicio de red ni requiere credenciales. Para desarrollo y pruebas.</string>
+    <string name="settings_asr_mock_non_stream">Reconocimiento simulado de toda la grabación</string>
+    <string name="settings_asr_mock_non_stream_desc">Devuelve una frase de ejemplo completa al terminar la grabación, alternando entre los dos idiomas de la conversación. No se conecta a ningún servicio de red ni requiere credenciales. Para desarrollo y pruebas.</string>
+    <string name="settings_translation_type_real">Servicio real</string>
+    <string name="settings_translation_type_mock">Simulado</string>
+    <string name="settings_translation_mock_name">LLM simulado</string>
+    <string name="settings_translation_mock_detail">Simulado · sin conexión · velocidad: %1$s</string>
+    <string name="settings_mock_speed">Velocidad de respuesta</string>
+    <string name="settings_mock_speed_fast">Rápida</string>
+    <string name="settings_mock_speed_normal">Normal</string>
+    <string name="settings_mock_speed_slow">Lenta</string>
+    <string name="settings_mock_fault">Fallo simulado</string>
+    <string name="mock_fault_none">Ninguno</string>
+    <string name="mock_fault_no_speech">No se ha entendido</string>
+    <string name="mock_fault_network_recording">Conexión perdida durante la grabación</string>
+    <string name="mock_fault_network_midway">Conexión perdida durante la traducción</string>
+    <string name="mock_fault_authentication">Error de autenticación</string>
+    <string name="mock_fault_rate_limit">Límite de solicitudes alcanzado</string>
+    <string name="mock_fault_timeout">Tiempo de espera agotado</string>
     <string name="manual_input">Escribir</string>
     <string name="manual_input_hint">Escribe lo que quieres decir</string>
     <string name="action_translate">Traducir</string>
     <string name="asr_which_service">Qué servicio lo reconoció</string>
     <string name="more_actions">Más</string>
+    <string name="settings_missing_asr_service">Elige al menos un servicio de reconocimiento.</string>
+    <string name="settings_asr_services_hint">Elige uno o varios. Todos escuchan a la vez: se muestra el resultado más rápido y los demás ayudan a la traducción.</string>
+    <string name="settings_asr_grace">Tiempo de espera de candidatos</string>
+    <string name="settings_asr_grace_value">%1$.1f s</string>
+    <string name="settings_asr_grace_hint">Cuánto tiempo se siguen aceptando resultados de otros servicios de reconocimiento después de recibir el primero. Los resultados recibidos en este intervalo se pasan al modelo de traducción como referencias; los posteriores solo aparecen en los detalles de la tarjeta y no se usan para la traducción actual. Un intervalo más largo da al modelo más material para comparar, a costa de una mayor latencia de traducción.</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">Borrar conversación</string>
+    <string name="clear_conversation_title">¿Borrar la conversación?</string>
+    <string name="clear_conversation_body">Todas las tarjetas de esta conversación se eliminarán de este dispositivo. No se puede deshacer.</string>
+    <string name="action_clear">Borrar</string>
 </resources>

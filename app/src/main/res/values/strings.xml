@@ -182,4 +182,10 @@
     <string name="settings_asr_grace">Candidate wait time</string>
     <string name="settings_asr_grace_value">%1$.1f s</string>
     <string name="settings_asr_grace_hint">How long to keep accepting results from other recognition services after the first one arrives. Results received within this window are passed to the translation model as references; later results appear only in the card details and are not used for the current translation. A longer window gives the model more to compare, at the cost of higher translation latency.</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">Clear conversation</string>
+    <string name="clear_conversation_title">Clear conversation?</string>
+    <string name="clear_conversation_body">Every card in this conversation will be removed from this device. This can\'t be undone.</string>
+    <string name="action_clear">Clear</string>
 </resources>

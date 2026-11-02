@@ -53,6 +53,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.FilledTonalButton
@@ -62,6 +63,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -189,6 +191,7 @@ private fun ConversationScreen(
     // The menu that opens under the talk button, and the typing dialog it opens.
     var menuOpen by rememberSaveable { mutableStateOf(false) }
     var typing by rememberSaveable { mutableStateOf(false) }
+    var confirmClear by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val entered = remember { mutableSetOf<Long>() }
     // Face to face, each person has a list of their own.
@@ -353,8 +356,10 @@ private fun ConversationScreen(
                             langs = state.langs,
                             enabled = !busy,
                             needsSetup = needsSetup,
+                            clearEnabled = state.cards.isNotEmpty(),
                             onFaceToFace = { menuOpen = false; onFaceToFace(true) },
                             onType = { menuOpen = false; typing = true },
+                            onClear = { menuOpen = false; confirmClear = true },
                             onOpenSettings = { menuOpen = false; onOpenSettings() },
                         )
                     },
@@ -367,6 +372,24 @@ private fun ConversationScreen(
         ManualInputDialog(
             onSubmit = { typing = false; vm.submitText(it) },
             onDismiss = { typing = false },
+        )
+    }
+
+    if (confirmClear) {
+        AlertDialog(
+            onDismissRequest = { confirmClear = false },
+            title = { Text(stringResource(R.string.clear_conversation_title)) },
+            text = { Text(stringResource(R.string.clear_conversation_body)) },
+            confirmButton = {
+                TextButton(onClick = { confirmClear = false; vm.clearConversation() }) {
+                    Text(stringResource(R.string.action_clear), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmClear = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
         )
     }
 
@@ -463,7 +486,7 @@ private fun MenuToggle(open: Boolean, badge: Boolean, enabled: Boolean, onClick:
 }
 
 /**
- * Face to face, typing instead of speaking, and the service settings: three rows joined into one group,
+ * Face to face, typing instead of speaking, clearing the conversation, and service settings: four rows joined into one group,
  * each labeled in both languages of the conversation so either party can pick.
  */
 @Composable
@@ -471,13 +494,19 @@ private fun MenuGroup(
     langs: LangPair,
     enabled: Boolean,
     needsSetup: Boolean,
+    clearEnabled: Boolean,
     onFaceToFace: () -> Unit,
     onType: () -> Unit,
+    onClear: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(RowGap)) {
         MenuRow(R.drawable.ic_face_to_face, R.string.face_to_face, langs, enabled, RowShapes.first, onClick = onFaceToFace)
         MenuRow(R.drawable.ic_add, R.string.manual_input, langs, enabled, RowShapes.middle, onClick = onType)
+        MenuRow(
+            R.drawable.ic_delete, R.string.clear_conversation, langs, enabled && clearEnabled, RowShapes.middle,
+            onClick = onClear,
+        )
         MenuRow(
             R.drawable.ic_settings, R.string.settings_title, langs, enabled, RowShapes.last,
             badge = needsSetup, onClick = onOpenSettings,

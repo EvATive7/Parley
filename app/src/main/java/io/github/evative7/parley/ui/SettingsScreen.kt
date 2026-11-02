@@ -118,6 +118,7 @@ import io.github.evative7.parley.state.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.InputStream
 
 /** Service settings: one card per service; storage trouble surfaces as a snackbar. */
 @Composable
@@ -190,7 +191,7 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
         scope.launch {
             val result = runCatching {
                 val text = withContext(Dispatchers.IO) {
-                    context.contentResolver.openInputStream(uri)!!.use { it.readNBytes(MAX_CONFIG_BYTES) }.decodeToString()
+                    context.contentResolver.openInputStream(uri)!!.use { it.readUpTo(MAX_CONFIG_BYTES) }.decodeToString()
                 }
                 ConfigFile.decode(text)
             }
@@ -946,6 +947,24 @@ private fun <T> ChoiceField(
 }
 
 private const val MAX_CONFIG_BYTES = 1 shl 20
+
+/** Android-compatible equivalent of InputStream.readNBytes(limit), which requires API 33. */
+private fun InputStream.readUpTo(limit: Int): ByteArray {
+    val result = ByteArray(limit)
+    var size = 0
+    while (size < limit) {
+        val read = read(result, size, limit - size)
+        if (read < 0) break
+        if (read == 0) {
+            val byte = read()
+            if (byte < 0) break
+            result[size++] = byte.toByte()
+        } else {
+            size += read
+        }
+    }
+    return result.copyOf(size)
+}
 
 private class ConfigMessages(
     val exported: String,

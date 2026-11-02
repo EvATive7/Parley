@@ -46,7 +46,7 @@ Hold to speak and release to translate. The other person does the same, and each
 - **Bilingual prompts**: button instructions appear in both languages so each person can understand them.
 - **Card actions**: tap or long-press a card to view the full text, copy the original or the translation, delete it, or correct the recognized text and translate it again; failed translations can be retried.
 - **Direct end-to-end connections**: there is no intermediary server. Audio and text go directly to the providers you configure, and API keys are encrypted with Android Keystore.
-- **Remembers your setup**: the language pair is kept between launches, and service settings can be exported to a file and imported on another device.
+- **Remembers your conversation and setup**: settled cards and the language pair are kept between launches; the whole conversation can be cleared from the menu, and service settings can be exported to a file and imported on another device.
 
 ## 📦 Getting started
 
@@ -75,7 +75,7 @@ The languages that can actually be recognized depend on the selected speech reco
 ## 🔒 Privacy
 
 - Audio and text are sent only to the providers you configure and never pass through an intermediary server.
-- Recordings are processed only in memory. Conversations are not persisted and are lost when the app closes.
+- Recordings are processed only in memory and are never saved. The original and translated text in settled cards is encrypted on this device and kept between launches until you delete a card or choose **Clear conversation**.
 - API keys are encrypted with Android Keystore, excluded from logs, and not included in backups.
 
 ## ❓ FAQ

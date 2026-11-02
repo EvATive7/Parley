@@ -146,9 +146,43 @@
     <string name="settings_config_invalid">Это не файл конфигурации Parley.</string>
     <string name="settings_config_too_new">Файл создан более новой версией Parley. Обновите приложение, чтобы импортировать его.</string>
     <string name="settings_config_failed">Не удалось прочитать или записать файл.</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">Имитация (офлайн)</string>
+    <string name="settings_asr_mock_stream">Имитация потокового распознавания</string>
+    <string name="settings_asr_mock_stream_desc">Постепенно возвращает примеры фраз во время записи, чередуя два языка разговора. Не подключается к сетевым сервисам и не требует учётных данных. Для разработки и тестирования.</string>
+    <string name="settings_asr_mock_non_stream">Имитация распознавания всей записи</string>
+    <string name="settings_asr_mock_non_stream_desc">Возвращает полную примерную фразу после окончания записи, чередуя два языка разговора. Не подключается к сетевым сервисам и не требует учётных данных. Для разработки и тестирования.</string>
+    <string name="settings_translation_type_real">Настоящий сервис</string>
+    <string name="settings_translation_type_mock">Имитация</string>
+    <string name="settings_translation_mock_name">Имитация LLM</string>
+    <string name="settings_translation_mock_detail">Имитация · офлайн · скорость: %1$s</string>
+    <string name="settings_mock_speed">Скорость ответа</string>
+    <string name="settings_mock_speed_fast">Быстро</string>
+    <string name="settings_mock_speed_normal">Обычно</string>
+    <string name="settings_mock_speed_slow">Медленно</string>
+    <string name="settings_mock_fault">Имитация ошибки</string>
+    <string name="mock_fault_none">Нет</string>
+    <string name="mock_fault_no_speech">Не удалось разобрать речь</string>
+    <string name="mock_fault_network_recording">Соединение потеряно во время записи</string>
+    <string name="mock_fault_network_midway">Соединение потеряно во время перевода</string>
+    <string name="mock_fault_authentication">Ошибка аутентификации</string>
+    <string name="mock_fault_rate_limit">Достигнут лимит запросов</string>
+    <string name="mock_fault_timeout">Тайм-аут</string>
     <string name="manual_input">Ввести текст</string>
     <string name="manual_input_hint">Введите, что хотите сказать</string>
     <string name="action_translate">Перевести</string>
     <string name="asr_which_service">Какой сервис это распознал</string>
     <string name="more_actions">Ещё</string>
+    <string name="settings_missing_asr_service">Выберите хотя бы один сервис распознавания.</string>
+    <string name="settings_asr_services_hint">Выберите один или несколько. Они слушают одновременно: показывается самый быстрый результат, а остальные помогают переводу.</string>
+    <string name="settings_asr_grace">Время ожидания кандидатов</string>
+    <string name="settings_asr_grace_value">%1$.1f с</string>
+    <string name="settings_asr_grace_hint">Как долго продолжать принимать результаты от других сервисов распознавания после прихода первого. Результаты, полученные за это время, передаются модели перевода как справочные; более поздние результаты появляются только в подробностях карточки и не используются в текущем переводе. Более длительное окно даёт модели больше материала для сравнения, но увеличивает задержку перевода.</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">Очистить разговор</string>
+    <string name="clear_conversation_title">Очистить разговор?</string>
+    <string name="clear_conversation_body">Все карточки этого разговора будут удалены с этого устройства. Отменить это нельзя.</string>
+    <string name="action_clear">Очистить</string>
 </resources>

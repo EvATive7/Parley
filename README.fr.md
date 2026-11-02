@@ -46,7 +46,7 @@ Maintenez le bouton pour parler, puis relâchez-le pour traduire. Votre interloc
 - **Instructions bilingues** : les indications du bouton apparaissent dans les deux langues afin que chacun puisse les comprendre.
 - **Actions sur les cartes** : touchez une carte ou appuyez longuement dessus pour afficher le texte complet, copier l’original ou la traduction, la supprimer, ou corriger le texte reconnu et le retraduire ; une traduction échouée peut être relancée.
 - **Connexion directe de bout en bout** : aucun serveur intermédiaire. L’audio et le texte sont envoyés directement aux services configurés, et les clés API sont chiffrées avec Android Keystore.
-- **Mémorise vos réglages** : la paire de langues est conservée d’un lancement à l’autre, et les réglages des services peuvent être exportés dans un fichier puis importés sur un autre appareil.
+- **Mémorise la conversation et vos réglages** : les cartes terminées et la paire de langues sont conservées d’un lancement à l’autre ; toute la conversation peut être effacée depuis le menu, et les réglages des services peuvent être exportés puis importés sur un autre appareil.
 
 ## 📦 Premiers pas
 
@@ -75,7 +75,7 @@ Les langues réellement reconnues dépendent du service de reconnaissance vocale
 ## 🔒 Confidentialité
 
 - L’audio et le texte sont envoyés uniquement aux fournisseurs configurés et ne passent par aucun serveur intermédiaire.
-- Les enregistrements sont traités uniquement en mémoire. Les conversations ne sont pas conservées et disparaissent à la fermeture de l’application.
+- Les enregistrements sont traités uniquement en mémoire et ne sont jamais sauvegardés. L’original et la traduction des cartes terminées sont chiffrés avec Android Keystore sur cet appareil et conservés jusqu’à la suppression de la carte ou l’utilisation de **Effacer la conversation**.
 - Les clés API sont chiffrées avec Android Keystore, ne sont pas écrites dans les journaux et ne sont pas incluses dans les sauvegardes.
 
 ## ❓ Questions fréquentes

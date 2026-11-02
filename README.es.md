@@ -46,7 +46,7 @@ Mantén pulsado para hablar y suelta para traducir. La otra persona hace lo mism
 - **Indicaciones bilingües**: las instrucciones del botón aparecen en ambos idiomas para que las dos personas puedan entenderlas.
 - **Acciones de las tarjetas**: toca o mantén pulsada una tarjeta para ver el texto completo, copiar el original o la traducción, eliminarla o corregir el texto reconocido y volver a traducirlo; las traducciones fallidas se pueden reintentar.
 - **Conexiones directas de extremo a extremo**: no hay ningún servidor intermediario. El audio y el texto se envían directamente a los proveedores configurados, y las API Key se cifran con Android Keystore.
-- **Recuerda tu configuración**: el par de idiomas se conserva entre aperturas, y los ajustes de los servicios se pueden exportar a un archivo e importar en otro dispositivo.
+- **Recuerda la conversación y la configuración**: las tarjetas terminadas y el par de idiomas se conservan entre aperturas; la conversación completa se puede borrar desde el menú, y los ajustes de los servicios se pueden exportar e importar en otro dispositivo.
 
 ## 📦 Primeros pasos
 
@@ -75,7 +75,7 @@ Los idiomas que se pueden reconocer realmente dependen del servicio de reconocim
 ## 🔒 Privacidad
 
 - El audio y el texto solo se envían a los proveedores configurados y nunca pasan por un servidor intermediario.
-- Las grabaciones solo se procesan en memoria. Las conversaciones no se guardan y se pierden al cerrar la aplicación.
+- Las grabaciones solo se procesan en memoria y nunca se guardan. El original y la traducción de las tarjetas terminadas se cifran con Android Keystore en este dispositivo y se conservan hasta que elimines la tarjeta o elijas **Borrar conversación**.
 - Las API Key se cifran con Android Keystore, no se escriben en los registros y no se incluyen en las copias de seguridad.
 
 ## ❓ Preguntas frecuentes

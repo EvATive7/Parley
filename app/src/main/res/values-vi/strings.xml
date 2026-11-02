@@ -143,9 +143,43 @@
     <string name="settings_config_invalid">Tệp này không phải cấu hình Parley.</string>
     <string name="settings_config_too_new">Tệp này đến từ phiên bản Parley mới hơn. Hãy cập nhật ứng dụng để nhập.</string>
     <string name="settings_config_failed">Không thể đọc hoặc ghi tệp.</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">Mô phỏng (ngoại tuyến)</string>
+    <string name="settings_asr_mock_stream">Nhận dạng truyền trực tiếp mô phỏng</string>
+    <string name="settings_asr_mock_stream_desc">Trả về dần các câu mẫu trong khi ghi âm, luân phiên giữa hai ngôn ngữ hội thoại. Không kết nối với dịch vụ mạng nào và không cần thông tin xác thực. Dành cho phát triển và kiểm thử.</string>
+    <string name="settings_asr_mock_non_stream">Nhận dạng toàn bộ bản ghi mô phỏng</string>
+    <string name="settings_asr_mock_non_stream_desc">Trả về một câu mẫu đầy đủ sau khi ghi âm kết thúc, luân phiên giữa hai ngôn ngữ hội thoại. Không kết nối với dịch vụ mạng nào và không cần thông tin xác thực. Dành cho phát triển và kiểm thử.</string>
+    <string name="settings_translation_type_real">Dịch vụ thật</string>
+    <string name="settings_translation_type_mock">Mô phỏng</string>
+    <string name="settings_translation_mock_name">LLM mô phỏng</string>
+    <string name="settings_translation_mock_detail">Mô phỏng · ngoại tuyến · tốc độ: %1$s</string>
+    <string name="settings_mock_speed">Tốc độ phản hồi</string>
+    <string name="settings_mock_speed_fast">Nhanh</string>
+    <string name="settings_mock_speed_normal">Bình thường</string>
+    <string name="settings_mock_speed_slow">Chậm</string>
+    <string name="settings_mock_fault">Lỗi mô phỏng</string>
+    <string name="mock_fault_none">Không</string>
+    <string name="mock_fault_no_speech">Không nghe rõ</string>
+    <string name="mock_fault_network_recording">Mất kết nối khi ghi âm</string>
+    <string name="mock_fault_network_midway">Mất kết nối khi dịch</string>
+    <string name="mock_fault_authentication">Xác thực không thành công</string>
+    <string name="mock_fault_rate_limit">Đã đạt giới hạn yêu cầu</string>
+    <string name="mock_fault_timeout">Hết thời gian chờ</string>
     <string name="manual_input">Nhập văn bản</string>
     <string name="manual_input_hint">Nhập điều bạn muốn nói</string>
     <string name="action_translate">Dịch</string>
     <string name="asr_which_service">Dịch vụ đã nhận dạng</string>
     <string name="more_actions">Thêm</string>
+    <string name="settings_missing_asr_service">Chọn ít nhất một dịch vụ nhận dạng.</string>
+    <string name="settings_asr_services_hint">Chọn một hoặc nhiều dịch vụ. Tất cả cùng lắng nghe: kết quả nhanh nhất được hiển thị, các kết quả còn lại hỗ trợ bản dịch.</string>
+    <string name="settings_asr_grace">Thời gian chờ kết quả ứng viên</string>
+    <string name="settings_asr_grace_value">%1$.1f giây</string>
+    <string name="settings_asr_grace_hint">Thời gian tiếp tục nhận kết quả từ các dịch vụ nhận dạng khác sau khi kết quả đầu tiên đến. Kết quả nhận được trong khoảng này được chuyển cho mô hình dịch làm tài liệu tham khảo; kết quả đến muộn hơn chỉ hiển thị trong chi tiết thẻ và không được dùng cho bản dịch hiện tại. Khoảng thời gian dài hơn giúp mô hình có thêm dữ liệu để so sánh, nhưng làm tăng độ trễ dịch.</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">Xóa hội thoại</string>
+    <string name="clear_conversation_title">Xóa hội thoại?</string>
+    <string name="clear_conversation_body">Tất cả thẻ trong hội thoại này sẽ bị xóa khỏi thiết bị này. Không thể hoàn tác.</string>
+    <string name="action_clear">Xóa</string>
 </resources>

@@ -143,9 +143,43 @@
     <string name="settings_config_invalid">File ini bukan konfigurasi Parley.</string>
     <string name="settings_config_too_new">File ini berasal dari versi Parley yang lebih baru. Perbarui aplikasi untuk mengimpornya.</string>
     <string name="settings_config_failed">Tidak dapat membaca atau menulis file.</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">Simulasi (offline)</string>
+    <string name="settings_asr_mock_stream">Pengenalan streaming simulasi</string>
+    <string name="settings_asr_mock_stream_desc">Mengembalikan kalimat contoh secara bertahap selama perekaman, bergantian antara dua bahasa percakapan. Tidak terhubung ke layanan jaringan dan tidak memerlukan kredensial. Untuk pengembangan dan pengujian.</string>
+    <string name="settings_asr_mock_non_stream">Pengenalan seluruh rekaman simulasi</string>
+    <string name="settings_asr_mock_non_stream_desc">Mengembalikan kalimat contoh lengkap setelah perekaman selesai, bergantian antara dua bahasa percakapan. Tidak terhubung ke layanan jaringan dan tidak memerlukan kredensial. Untuk pengembangan dan pengujian.</string>
+    <string name="settings_translation_type_real">Layanan nyata</string>
+    <string name="settings_translation_type_mock">Simulasi</string>
+    <string name="settings_translation_mock_name">LLM simulasi</string>
+    <string name="settings_translation_mock_detail">Simulasi · offline · kecepatan: %1$s</string>
+    <string name="settings_mock_speed">Kecepatan respons</string>
+    <string name="settings_mock_speed_fast">Cepat</string>
+    <string name="settings_mock_speed_normal">Normal</string>
+    <string name="settings_mock_speed_slow">Lambat</string>
+    <string name="settings_mock_fault">Kegagalan simulasi</string>
+    <string name="mock_fault_none">Tidak ada</string>
+    <string name="mock_fault_no_speech">Tidak terdengar jelas</string>
+    <string name="mock_fault_network_recording">Koneksi terputus saat merekam</string>
+    <string name="mock_fault_network_midway">Koneksi terputus saat menerjemahkan</string>
+    <string name="mock_fault_authentication">Autentikasi gagal</string>
+    <string name="mock_fault_rate_limit">Batas permintaan tercapai</string>
+    <string name="mock_fault_timeout">Batas waktu</string>
     <string name="manual_input">Ketik</string>
     <string name="manual_input_hint">Ketik yang ingin Anda katakan</string>
     <string name="action_translate">Terjemahkan</string>
     <string name="asr_which_service">Layanan yang mengenali ini</string>
     <string name="more_actions">Lainnya</string>
+    <string name="settings_missing_asr_service">Pilih setidaknya satu layanan pengenalan.</string>
+    <string name="settings_asr_services_hint">Pilih satu atau lebih. Semuanya mendengarkan sekaligus: hasil tercepat ditampilkan, dan sisanya membantu terjemahan.</string>
+    <string name="settings_asr_grace">Waktu tunggu kandidat</string>
+    <string name="settings_asr_grace_value">%1$.1f dtk</string>
+    <string name="settings_asr_grace_hint">Berapa lama terus menerima hasil dari layanan pengenalan lain setelah hasil pertama tiba. Hasil yang diterima dalam jendela ini diteruskan ke model terjemahan sebagai referensi; hasil yang lebih lambat hanya muncul di detail kartu dan tidak digunakan untuk terjemahan saat ini. Jendela yang lebih lama memberi model lebih banyak bahan perbandingan, dengan konsekuensi latensi terjemahan yang lebih tinggi.</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">Hapus percakapan</string>
+    <string name="clear_conversation_title">Hapus percakapan?</string>
+    <string name="clear_conversation_body">Semua kartu dalam percakapan ini akan dihapus dari perangkat ini. Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="action_clear">Hapus</string>
 </resources>

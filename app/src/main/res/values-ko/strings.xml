@@ -145,9 +145,43 @@
     <string name="settings_config_invalid">Parley 설정 파일이 아닙니다.</string>
     <string name="settings_config_too_new">더 새로운 버전의 Parley에서 만든 파일입니다. 앱을 업데이트한 후 가져오세요.</string>
     <string name="settings_config_failed">파일을 읽거나 쓸 수 없습니다.</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">시뮬레이션(오프라인)</string>
+    <string name="settings_asr_mock_stream">시뮬레이션 스트리밍 인식</string>
+    <string name="settings_asr_mock_stream_desc">녹음하는 동안 샘플 문장을 순차적으로 반환하며 두 대화 언어를 번갈아 사용합니다. 네트워크 서비스에 연결하지 않고 자격 증명도 필요하지 않습니다. 개발 및 테스트용입니다.</string>
+    <string name="settings_asr_mock_non_stream">시뮬레이션 전체 녹음 인식</string>
+    <string name="settings_asr_mock_non_stream_desc">녹음이 끝난 뒤 완전한 샘플 문장을 반환하며 두 대화 언어를 번갈아 사용합니다. 네트워크 서비스에 연결하지 않고 자격 증명도 필요하지 않습니다. 개발 및 테스트용입니다.</string>
+    <string name="settings_translation_type_real">실제 서비스</string>
+    <string name="settings_translation_type_mock">시뮬레이션</string>
+    <string name="settings_translation_mock_name">시뮬레이션 LLM</string>
+    <string name="settings_translation_mock_detail">시뮬레이션 · 오프라인 · 속도: %1$s</string>
+    <string name="settings_mock_speed">응답 속도</string>
+    <string name="settings_mock_speed_fast">빠르게</string>
+    <string name="settings_mock_speed_normal">보통</string>
+    <string name="settings_mock_speed_slow">느리게</string>
+    <string name="settings_mock_fault">시뮬레이션 오류</string>
+    <string name="mock_fault_none">없음</string>
+    <string name="mock_fault_no_speech">음성을 인식하지 못했습니다</string>
+    <string name="mock_fault_network_recording">녹음 중 연결이 끊겼습니다</string>
+    <string name="mock_fault_network_midway">번역 중 연결이 끊겼습니다</string>
+    <string name="mock_fault_authentication">인증에 실패했습니다</string>
+    <string name="mock_fault_rate_limit">요청 한도에 도달했습니다</string>
+    <string name="mock_fault_timeout">시간 초과</string>
     <string name="manual_input">직접 입력</string>
     <string name="manual_input_hint">하고 싶은 말을 입력하세요</string>
     <string name="action_translate">번역</string>
     <string name="asr_which_service">인식한 서비스</string>
     <string name="more_actions">더보기</string>
+    <string name="settings_missing_asr_service">인식 서비스를 하나 이상 선택하세요.</string>
+    <string name="settings_asr_services_hint">하나 이상 선택하세요. 모두 동시에 듣고 가장 빠른 결과가 표시되며 나머지는 번역에 도움이 됩니다.</string>
+    <string name="settings_asr_grace">후보 대기 시간</string>
+    <string name="settings_asr_grace_value">%1$.1f초</string>
+    <string name="settings_asr_grace_hint">첫 결과가 도착한 뒤 다른 인식 서비스의 결과를 계속 받아들이는 시간입니다. 이 시간 안에 받은 결과는 참고 자료로 번역 모델에 전달됩니다. 그 이후의 결과는 카드 상세에만 표시되며 현재 번역에는 사용되지 않습니다. 시간을 길게 하면 모델이 비교할 자료가 늘어나지만 번역 지연도 커집니다.</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">대화 지우기</string>
+    <string name="clear_conversation_title">대화를 지울까요?</string>
+    <string name="clear_conversation_body">이 대화의 카드가 모두 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.</string>
+    <string name="action_clear">지우기</string>
 </resources>

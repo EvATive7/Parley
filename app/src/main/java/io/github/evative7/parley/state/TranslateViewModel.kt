@@ -19,16 +19,24 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class TranslateViewModel @Inject constructor(
     private val recorder: AudioSource,
@@ -37,21 +45,13 @@ class TranslateViewModel @Inject constructor(
     private val detector: LanguageDetector,
     private val clock: MonotonicClock,
     private val langStore: LangPairStore,
+    private val conversationStore: ConversationStore,
 ) : ViewModel() {
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state.asStateFlow()
 
     /** Set once the user picks a language, so a slow load can't overwrite the pick. */
     private var langsPicked = false
-
-    init {
-        // The bundled language model loads on first use; do that now rather than after the first sentence.
-        viewModelScope.launch { runCatching { detector.detect("warm up") } }
-        viewModelScope.launch {
-            val saved = langStore.load() ?: return@launch
-            if (!langsPicked) _state.update { it.copy(langs = saved) }
-        }
-    }
 
     // High-frequency values live outside UiState so only the button recomposes.
     private val _volume = MutableStateFlow(0f)
@@ -70,6 +70,28 @@ class TranslateViewModel @Inject constructor(
     // Debug-mode timings for the current press.
     private var releasedAt = 0L
     private var frameCount = 0
+    private val conversationSaveMutex = Mutex()
+
+    init {
+        // The bundled language model loads on first use; do that now rather than after the first sentence.
+        viewModelScope.launch { runCatching { detector.detect("warm up") } }
+        viewModelScope.launch {
+            val saved = langStore.load() ?: return@launch
+            if (!langsPicked) _state.update { it.copy(langs = saved) }
+        }
+        viewModelScope.launch {
+            val restored = conversationStore.load().orEmpty().map { it.copy(id = nextId++) }
+            if (restored.isNotEmpty()) {
+                // Cards made while disk/keystore I/O was in progress are newer, so they stay first.
+                _state.update { it.copy(cards = it.cards + restored) }
+            }
+            state.map { value -> value.cards.filter { it.isPersistable() } }
+                .distinctUntilChanged()
+                .drop(1)
+                .debounce(500)
+                .collect { cards -> conversationSaveMutex.withLock { conversationStore.save(cards) } }
+        }
+    }
 
     fun onPress() = dispatch(PttEvent.Press)
     fun onDrag(armed: Boolean) = dispatch(PttEvent.Drag(armed))
@@ -191,6 +213,15 @@ class TranslateViewModel @Inject constructor(
         if (id == activeId && _state.value.phase in BUSY_PHASES) return
         if (id == activeId) activeId = -1
         _state.update { s -> s.copy(cards = s.cards.filterNot { it.id == id }) }
+    }
+
+    fun clearConversation() {
+        if (_state.value.phase in BUSY_PHASES) return
+        activeId = -1
+        _state.update { it.copy(cards = emptyList()) }
+        viewModelScope.launch {
+            conversationSaveMutex.withLock { conversationStore.save(emptyList()) }
+        }
     }
 
     fun showHint(hint: Hint) {
@@ -468,6 +499,12 @@ class TranslateViewModel @Inject constructor(
 
     private fun sincePress() = clock.nowMs() - pressedAt
     private fun sinceRelease() = clock.nowMs() - releasedAt
+
+    private fun CardState.isPersistable(): Boolean = when (stage) {
+        CardStage.Done -> true
+        CardStage.Error -> source.isNotEmpty() || translations.isNotEmpty()
+        else -> false
+    }
 
     private companion object {
         const val TAG = "Flow"

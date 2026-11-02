@@ -10,11 +10,13 @@ import io.github.evative7.parley.asr.RoutingRecognizer
 import io.github.evative7.parley.asr.SpeechRecognizer
 import io.github.evative7.parley.audio.AudioRecorder
 import io.github.evative7.parley.audio.AudioSource
+import io.github.evative7.parley.data.ConversationRepository
 import io.github.evative7.parley.data.LanguageRepository
 import io.github.evative7.parley.data.ServiceSettingsSource
 import io.github.evative7.parley.data.SettingsRepository
 import io.github.evative7.parley.model.LanguageDetector
 import io.github.evative7.parley.model.OfflineLanguageDetector
+import io.github.evative7.parley.state.ConversationStore
 import io.github.evative7.parley.state.LangPairStore
 import io.github.evative7.parley.state.MonotonicClock
 import io.github.evative7.parley.translate.RoutingTranslator
@@ -31,6 +33,7 @@ abstract class AppModule {
     @Binds @Singleton abstract fun settings(impl: SettingsRepository): ServiceSettingsSource
     @Binds @Singleton abstract fun detector(impl: OfflineLanguageDetector): LanguageDetector
     @Binds @Singleton abstract fun languages(impl: LanguageRepository): LangPairStore
+    @Binds @Singleton abstract fun conversation(impl: ConversationRepository): ConversationStore
     @Binds abstract fun recorder(impl: AudioRecorder): AudioSource
 }
 

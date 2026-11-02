@@ -46,7 +46,7 @@ Halte die Taste gedrückt, sprich und lass sie zum Übersetzen los. Die andere P
 - **Zweisprachige Hinweise**: Die Bedienhinweise werden in beiden Sprachen angezeigt, damit beide Personen sie verstehen.
 - **Kartenaktionen**: Tippe auf eine Karte oder halte sie gedrückt, um den vollständigen Text anzuzeigen, Original oder Übersetzung zu kopieren, sie zu löschen oder den erkannten Text zu korrigieren und neu übersetzen zu lassen. Fehlgeschlagene Übersetzungen lassen sich wiederholen.
 - **Direkte Ende-zu-Ende-Verbindung**: Es gibt keinen Zwischenserver. Audio und Text werden direkt an die von dir konfigurierten Anbieter gesendet; API Keys werden mit Android Keystore verschlüsselt gespeichert.
-- **Merkt sich deine Einstellungen**: Das Sprachpaar bleibt beim nächsten Start erhalten, und die Diensteinstellungen lassen sich in eine Datei exportieren und auf einem anderen Gerät importieren.
+- **Merkt sich Gespräch und Einstellungen**: Abgeschlossene Karten und das Sprachpaar bleiben beim nächsten Start erhalten. Das gesamte Gespräch lässt sich über das Menü leeren; Diensteinstellungen können exportiert und auf einem anderen Gerät importiert werden.
 
 ## 📦 Erste Schritte
 
@@ -75,7 +75,7 @@ Welche Sprachen tatsächlich erkannt werden, hängt vom gewählten Spracherkennu
 ## 🔒 Datenschutz
 
 - Audio und Text werden nur an die von dir konfigurierten Anbieter gesendet und durchlaufen keinen Zwischenserver.
-- Aufnahmen werden ausschließlich im Arbeitsspeicher verarbeitet. Unterhaltungen werden nicht dauerhaft gespeichert und gehen beim Schließen der App verloren.
+- Aufnahmen werden ausschließlich im Arbeitsspeicher verarbeitet und nie gespeichert. Original und Übersetzung abgeschlossener Karten werden mit Android Keystore verschlüsselt auf diesem Gerät gespeichert, bis du die Karte löschst oder **Gespräch leeren** auswählst.
 - API Keys werden mit Android Keystore verschlüsselt, nicht in Protokolle geschrieben und nicht in Sicherungen aufgenommen.
 
 ## ❓ Häufig gestellte Fragen

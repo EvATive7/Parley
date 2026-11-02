@@ -180,4 +180,10 @@
     <string name="settings_asr_grace">候选结果等待时长</string>
     <string name="settings_asr_grace_value">%1$.1f 秒</string>
     <string name="settings_asr_grace_hint">首个识别结果返回后，继续接收其他识别服务结果的时长。在此时长内返回的结果将作为参考提供给翻译模型；超时返回的结果仅在卡片详情中展示，不参与本次翻译。时长越长，可供参考的结果越充分，翻译延迟也相应增加。</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">清空对话</string>
+    <string name="clear_conversation_title">清空对话？</string>
+    <string name="clear_conversation_body">这段对话中的所有卡片都会从本机删除，且无法恢复。</string>
+    <string name="action_clear">清空</string>
 </resources>

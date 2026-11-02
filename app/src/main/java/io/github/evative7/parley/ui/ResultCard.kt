@@ -7,15 +7,20 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,6 +53,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -247,6 +254,7 @@ private fun CardDialog(
     turn: Turn,
 ) {
     val colors = MaterialTheme.colorScheme
+    val configuration = LocalConfiguration.current
     var editing by rememberSaveable { mutableStateOf(false) }
     // Face to face, the editor turns back upright: the keyboard follows the device, not either reader.
     val turn = if (editing) Turn.None else turn
@@ -258,10 +266,14 @@ private fun CardDialog(
         TurnedDialogWindow(turn)
         Surface(
             modifier = if (turn == Turn.None) {
-                Modifier
+                Modifier.heightIn(max = configuration.screenHeightDp.dp * 0.7f)
             } else {
-                // About as wide as the portrait dialog.
-                Modifier.padding(vertical = 24.dp).turned(turn).widthIn(max = 360.dp)
+                // About as wide as the portrait dialog. After turning, content height follows screen width.
+                Modifier
+                    .padding(vertical = 24.dp)
+                    .turned(turn)
+                    .widthIn(max = 360.dp)
+                    .heightIn(max = configuration.screenWidthDp.dp * 0.7f)
             },
             shape = MaterialTheme.shapes.extraLarge,
             color = colors.surfaceContainerHigh,
@@ -283,27 +295,32 @@ private fun CardDialog(
                 } else {
                     // A long translation scrolls; the buttons stay in place.
                     val scroll = rememberScrollState()
-                    Column(
-                        Modifier
-                            .weight(1f, fill = false)
-                            .then(if (turn == Turn.None) Modifier else Modifier.turnedScroll(scroll))
-                            .verticalScroll(scroll, enabled = turn == Turn.None)
-                            .padding(horizontal = 24.dp),
-                    ) {
-                        if (source.isNotEmpty()) Transcripts(source, card)
-                        Translations(translations, streaming = false, spaced = source.isNotEmpty())
-                        if (card.stage == CardStage.Error) {
-                            if (source.isNotEmpty() || translations.isNotEmpty()) Spacer(Modifier.size(16.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(painterResource(R.drawable.ic_error), null, Modifier.size(20.dp), tint = colors.error)
-                                Spacer(Modifier.width(8.dp))
-                                Text(
-                                    stringResource(card.error.message()),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = colors.error,
-                                )
+                    Box(Modifier.weight(1f, fill = false)) {
+                        Column(
+                            Modifier
+                                .then(if (turn == Turn.None) Modifier else Modifier.turnedScroll(scroll))
+                                .verticalScroll(scroll, enabled = turn == Turn.None)
+                                .padding(horizontal = 24.dp),
+                        ) {
+                            if (source.isNotEmpty()) Transcripts(source, card)
+                            Translations(translations, streaming = false, spaced = source.isNotEmpty())
+                            if (card.stage == CardStage.Error) {
+                                if (source.isNotEmpty() || translations.isNotEmpty()) Spacer(Modifier.size(16.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(painterResource(R.drawable.ic_error), null, Modifier.size(20.dp), tint = colors.error)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        stringResource(card.error.message()),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = colors.error,
+                                    )
+                                }
                             }
                         }
+                        PersistentScrollbar(
+                            scroll,
+                            Modifier.align(Alignment.CenterEnd).fillMaxHeight().padding(end = 8.dp, top = 2.dp, bottom = 2.dp),
+                        )
                     }
 
                     Spacer(Modifier.size(24.dp))
@@ -347,6 +364,32 @@ private fun CardDialog(
                 }
             }
         }
+    }
+}
+
+/** A slim scrollbar that remains visible whenever the transcript section overflows. */
+@Composable
+private fun PersistentScrollbar(scroll: ScrollState, modifier: Modifier = Modifier) {
+    if (scroll.viewportSize <= 0 || scroll.maxValue <= 0) return
+    val density = LocalDensity.current
+    val colors = MaterialTheme.colorScheme
+    BoxWithConstraints(
+        modifier.width(3.dp).clip(CircleShape).background(colors.onSurface.copy(alpha = 0.08f)),
+    ) {
+        val trackPx = with(density) { maxHeight.toPx() }
+        val viewportPx = scroll.viewportSize.toFloat()
+        val contentPx = viewportPx + scroll.maxValue
+        val minThumbPx = with(density) { 24.dp.toPx() }
+        val thumbPx = (trackPx * viewportPx / contentPx).coerceIn(minThumbPx, trackPx)
+        val offsetPx = (trackPx - thumbPx) * scroll.value / scroll.maxValue
+        Box(
+            Modifier
+                .offset(y = with(density) { offsetPx.toDp() })
+                .fillMaxWidth()
+                .height(with(density) { thumbPx.toDp() })
+                .clip(CircleShape)
+                .background(colors.onSurfaceVariant.copy(alpha = 0.55f)),
+        )
     }
 }
 

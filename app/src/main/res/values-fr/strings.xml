@@ -145,9 +145,43 @@
     <string name="settings_config_invalid">Ce fichier n\'est pas une configuration Parley.</string>
     <string name="settings_config_too_new">Ce fichier provient d\'une version plus récente de Parley. Mettez l\'application à jour pour l\'importer.</string>
     <string name="settings_config_failed">Impossible de lire ou d\'écrire le fichier.</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">Simulé (hors ligne)</string>
+    <string name="settings_asr_mock_stream">Reconnaissance en streaming simulée</string>
+    <string name="settings_asr_mock_stream_desc">Renvoie des phrases d’exemple progressivement pendant l’enregistrement, en alternant entre les deux langues de la conversation. Ne se connecte à aucun service réseau et ne nécessite aucun identifiant. Pour le développement et les tests.</string>
+    <string name="settings_asr_mock_non_stream">Reconnaissance simulée de l’enregistrement complet</string>
+    <string name="settings_asr_mock_non_stream_desc">Renvoie une phrase d’exemple complète à la fin de l’enregistrement, en alternant entre les deux langues de la conversation. Ne se connecte à aucun service réseau et ne nécessite aucun identifiant. Pour le développement et les tests.</string>
+    <string name="settings_translation_type_real">Service réel</string>
+    <string name="settings_translation_type_mock">Simulé</string>
+    <string name="settings_translation_mock_name">LLM simulé</string>
+    <string name="settings_translation_mock_detail">Simulé · hors ligne · vitesse : %1$s</string>
+    <string name="settings_mock_speed">Vitesse de réponse</string>
+    <string name="settings_mock_speed_fast">Rapide</string>
+    <string name="settings_mock_speed_normal">Normale</string>
+    <string name="settings_mock_speed_slow">Lente</string>
+    <string name="settings_mock_fault">Échec simulé</string>
+    <string name="mock_fault_none">Aucun</string>
+    <string name="mock_fault_no_speech">Aucune parole détectée</string>
+    <string name="mock_fault_network_recording">Connexion perdue pendant l’enregistrement</string>
+    <string name="mock_fault_network_midway">Connexion perdue pendant la traduction</string>
+    <string name="mock_fault_authentication">Échec de l’authentification</string>
+    <string name="mock_fault_rate_limit">Limite de requêtes atteinte</string>
+    <string name="mock_fault_timeout">Délai dépassé</string>
     <string name="manual_input">Saisir du texte</string>
     <string name="manual_input_hint">Tapez ce que vous voulez dire</string>
     <string name="action_translate">Traduire</string>
     <string name="asr_which_service">Service qui l\'a reconnu</string>
     <string name="more_actions">Plus</string>
+    <string name="settings_missing_asr_service">Choisissez au moins un service de reconnaissance.</string>
+    <string name="settings_asr_services_hint">Choisissez-en un ou plusieurs. Ils écoutent tous en même temps : le résultat le plus rapide est affiché et les autres aident à la traduction.</string>
+    <string name="settings_asr_grace">Temps d’attente des candidats</string>
+    <string name="settings_asr_grace_value">%1$.1f s</string>
+    <string name="settings_asr_grace_hint">Durée pendant laquelle les résultats des autres services de reconnaissance sont encore acceptés après l’arrivée du premier. Les résultats reçus pendant cette période sont transmis au modèle de traduction comme références ; les résultats plus tardifs n’apparaissent que dans les détails de la carte et ne servent pas à la traduction en cours. Une période plus longue donne au modèle davantage d’éléments à comparer, au prix d’une latence de traduction plus élevée.</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">Effacer la conversation</string>
+    <string name="clear_conversation_title">Effacer la conversation ?</string>
+    <string name="clear_conversation_body">Toutes les cartes de cette conversation seront supprimées de cet appareil. Cette action est irréversible.</string>
+    <string name="action_clear">Effacer</string>
 </resources>

@@ -145,9 +145,43 @@
     <string name="settings_config_invalid">Parley の設定ファイルではありません。</string>
     <string name="settings_config_too_new">新しいバージョンの Parley で作成されたファイルです。アプリを更新してから読み込んでください。</string>
     <string name="settings_config_failed">ファイルを読み書きできませんでした。</string>
+
+    <!-- Simulated services, debug builds only -->
+    <string name="settings_provider_mock">シミュレーション（オフライン）</string>
+    <string name="settings_asr_mock_stream">シミュレーションのストリーミング認識</string>
+    <string name="settings_asr_mock_stream_desc">録音中にサンプル文を順次返し、2 つの会話言語を交互に使用します。ネットワークサービスには接続せず、認証情報も不要です。開発・テスト用。</string>
+    <string name="settings_asr_mock_non_stream">シミュレーションの録音全体の認識</string>
+    <string name="settings_asr_mock_non_stream_desc">録音終了後にサンプル文を完全な形で返し、2 つの会話言語を交互に使用します。ネットワークサービスには接続せず、認証情報も不要です。開発・テスト用。</string>
+    <string name="settings_translation_type_real">実際のサービス</string>
+    <string name="settings_translation_type_mock">シミュレーション</string>
+    <string name="settings_translation_mock_name">シミュレーション LLM</string>
+    <string name="settings_translation_mock_detail">シミュレーション · オフライン · 速度: %1$s</string>
+    <string name="settings_mock_speed">応答速度</string>
+    <string name="settings_mock_speed_fast">速い</string>
+    <string name="settings_mock_speed_normal">標準</string>
+    <string name="settings_mock_speed_slow">遅い</string>
+    <string name="settings_mock_fault">シミュレーション障害</string>
+    <string name="mock_fault_none">なし</string>
+    <string name="mock_fault_no_speech">聞き取れませんでした</string>
+    <string name="mock_fault_network_recording">録音中に接続が切断されました</string>
+    <string name="mock_fault_network_midway">翻訳中に接続が切断されました</string>
+    <string name="mock_fault_authentication">認証に失敗しました</string>
+    <string name="mock_fault_rate_limit">レート制限に達しました</string>
+    <string name="mock_fault_timeout">タイムアウト</string>
     <string name="manual_input">手入力</string>
     <string name="manual_input_hint">話したい内容を入力</string>
     <string name="action_translate">翻訳</string>
     <string name="asr_which_service">認識したサービス</string>
     <string name="more_actions">その他</string>
+    <string name="settings_missing_asr_service">認識サービスを 1 つ以上選択してください。</string>
+    <string name="settings_asr_services_hint">1 つ以上選択してください。すべてが同時に聞き取り、最も速い結果が表示され、残りは翻訳に役立ちます。</string>
+    <string name="settings_asr_grace">候補の待ち時間</string>
+    <string name="settings_asr_grace_value">%1$.1f 秒</string>
+    <string name="settings_asr_grace_hint">最初の結果が届いた後、他の認識サービスの結果を受け付け続ける時間です。この時間内に届いた結果は参照情報として翻訳モデルに渡されます。それより後の結果はカードの詳細にのみ表示され、今回の翻訳には使われません。時間を長くするとモデルが比較できる材料が増えますが、翻訳の遅延も大きくなります。</string>
+
+    <!-- Clear conversation -->
+    <string name="clear_conversation">会話を消去</string>
+    <string name="clear_conversation_title">会話を消去しますか？</string>
+    <string name="clear_conversation_body">この会話のカードはすべてこの端末から削除されます。元に戻すことはできません。</string>
+    <string name="action_clear">消去</string>
 </resources>
