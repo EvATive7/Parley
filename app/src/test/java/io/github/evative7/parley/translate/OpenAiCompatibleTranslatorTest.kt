@@ -76,14 +76,16 @@ class OpenAiCompatibleTranslatorTest {
         assertEquals("你好", messages[1].jsonObject["content"]!!.jsonPrimitive.content)
     }
 
-    @Test fun `other transcripts are sent as references with a one-translation rule`() = runBlocking {
+    @Test fun `all transcripts are sent as equals with a one-translation rule`() = runBlocking {
         server.enqueue(response(delta("Hello") + "data: [DONE]\n\n"))
         withTimeout(5000) { translator.translate("你好", Lang("zh"), Lang("en"), listOf("你号", "尼好")).toList() }
         val messages = requestJson()["messages"]!!.jsonArray
         val system = messages[0].jsonObject["content"]!!.jsonPrimitive.content
         assertTrue(system.contains("exactly one translation"))
+        assertTrue(system.contains("They are equals"))
+        assertFalse(system.contains("primary", ignoreCase = true))
         assertEquals(
-            "Primary transcript:\n你好\n\nOther transcripts of the same audio:\n1. 你号\n2. 尼好",
+            "Transcripts of the same audio:\n1. 你好\n2. 你号\n3. 尼好",
             messages[1].jsonObject["content"]!!.jsonPrimitive.content,
         )
     }

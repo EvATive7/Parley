@@ -9,7 +9,8 @@ interface Translator {
 
     /**
      * Streams the translation of [text] as it is generated; each emission is a new fragment. [references] are
-     * other services' transcripts of the same speech, to help make out what was said; they are not translated.
+     * other services' transcripts of the same speech, weighed as equals of [text] to make out what was said; the
+     * utterance is translated once, not each transcript.
      */
     fun translate(text: String, from: Lang?, to: Lang, references: List<String> = emptyList()): Flow<String>
 }
