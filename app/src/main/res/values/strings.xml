@@ -172,4 +172,14 @@
     <string name="mock_fault_authentication">Authentication failed</string>
     <string name="mock_fault_rate_limit">Rate limited</string>
     <string name="mock_fault_timeout">Timeout</string>
+    <string name="manual_input">Type to translate</string>
+    <string name="manual_input_hint">Type what you want to say</string>
+    <string name="action_translate">Translate</string>
+    <string name="asr_which_service">Which service recognized this</string>
+    <string name="more_actions">More</string>
+    <string name="settings_missing_asr_service">Pick at least one recognition service.</string>
+    <string name="settings_asr_services_hint">Pick one or more. They all listen at once: the fastest result is shown, and the others help the translation.</string>
+    <string name="settings_asr_grace">Candidate wait time</string>
+    <string name="settings_asr_grace_value">%1$.1f s</string>
+    <string name="settings_asr_grace_hint">How long to keep accepting results from other recognition services after the first one arrives. Results received within this window are passed to the translation model as references; later results appear only in the card details and are not used for the current translation. A longer window gives the model more to compare, at the cost of higher translation latency.</string>
 </resources>

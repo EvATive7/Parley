@@ -169,4 +169,14 @@
     <string name="mock_fault_authentication">驗證失敗</string>
     <string name="mock_fault_rate_limit">達到速率上限</string>
     <string name="mock_fault_timeout">逾時</string>
+    <string name="manual_input">手動輸入</string>
+    <string name="manual_input_hint">輸入要說的話</string>
+    <string name="action_translate">翻譯</string>
+    <string name="asr_which_service">由哪個服務辨識</string>
+    <string name="more_actions">更多</string>
+    <string name="settings_missing_asr_service">請至少選擇一個辨識服務。</string>
+    <string name="settings_asr_services_hint">可複選。所選服務同時辨識：顯示最快的結果，其餘結果供翻譯參考。</string>
+    <string name="settings_asr_grace">候選結果等待時長</string>
+    <string name="settings_asr_grace_value">%1$.1f 秒</string>
+    <string name="settings_asr_grace_hint">首個辨識結果返回後，繼續接收其他辨識服務結果的時長。在此時長內返回的結果將作為參考提供給翻譯模型；逾時返回的結果僅在卡片詳情中顯示，不參與本次翻譯。時長越長，可供參考的結果越充分，翻譯延遲也相應增加。</string>
 </resources>

@@ -146,4 +146,9 @@
     <string name="settings_config_invalid">Это не файл конфигурации Parley.</string>
     <string name="settings_config_too_new">Файл создан более новой версией Parley. Обновите приложение, чтобы импортировать его.</string>
     <string name="settings_config_failed">Не удалось прочитать или записать файл.</string>
+    <string name="manual_input">Ввести текст</string>
+    <string name="manual_input_hint">Введите, что хотите сказать</string>
+    <string name="action_translate">Перевести</string>
+    <string name="asr_which_service">Какой сервис это распознал</string>
+    <string name="more_actions">Ещё</string>
 </resources>

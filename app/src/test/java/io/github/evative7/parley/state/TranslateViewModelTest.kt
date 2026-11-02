@@ -1,6 +1,8 @@
 package io.github.evative7.parley.state
 
 import androidx.lifecycle.ViewModelStore
+import io.github.evative7.parley.asr.AsrAlternative
+import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.asr.RecognitionSession
 import io.github.evative7.parley.asr.SpeechRecognizer
 import io.github.evative7.parley.asr.Transcript
@@ -15,6 +17,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -46,6 +49,7 @@ class TranslateViewModelTest {
     private var feedError: ServiceException? = null
     private var translation: (String) -> Flow<String> = { flowOf("Hello") }
     private val translatedSources = mutableListOf<String>()
+    private val references = mutableListOf<List<String>>()
     private val targets = mutableListOf<Lang>()
     private var detected: Lang? = Lang("en")
     private var microphoneFails = false
@@ -85,8 +89,9 @@ class TranslateViewModelTest {
             }
         }
         val translator = object : Translator {
-            override fun translate(text: String, from: Lang?, to: Lang): Flow<String> {
+            override fun translate(text: String, from: Lang?, to: Lang, references: List<String>): Flow<String> {
                 translatedSources += text
+                this@TranslateViewModelTest.references += references
                 targets += to
                 return translation(text)
             }
@@ -324,5 +329,73 @@ class TranslateViewModelTest {
         assertEquals(CardStage.Error, card.stage)
         assertEquals(ErrorKind.Network, card.error)
         assertTrue(card.canRetry)
+    }
+
+    @Test fun `other services' transcripts go on the card and to the translator`() = runTest {
+        val other = AsrAlternative(AsrService.MockNonStream, "你好呀")
+        nextTranscript = Transcript("你好", Lang("zh"), alternatives = listOf(other))
+        val vm = vm()
+        vm.onPress()
+        runCurrent()
+        release(vm)
+        runCurrent()
+        val card = vm.state.value.cards.single()
+        assertEquals(listOf(other), card.alternatives)
+        assertEquals(listOf(listOf("你好呀")), references)
+    }
+
+    @Test fun `an edit drops the other transcripts`() = runTest {
+        nextTranscript = Transcript("你好", Lang("zh"), alternatives = listOf(AsrAlternative(AsrService.MockNonStream, "你好呀")))
+        val vm = vm()
+        vm.onPress()
+        runCurrent()
+        release(vm)
+        runCurrent()
+        vm.editSource(vm.state.value.cards.single().id, "你好呀")
+        runCurrent()
+        val card = vm.state.value.cards.single()
+        assertEquals("你好呀", card.source)
+        assertTrue(card.alternatives.isEmpty())
+        assertEquals(emptyList<String>(), references.last())
+    }
+
+    @Test fun `typed text becomes a translated card without touching the microphone`() = runTest {
+        detected = Lang("en")
+        val vm = vm()
+        vm.submitText("  Good morning  ")
+        runCurrent()
+        val card = vm.state.value.cards.single()
+        assertEquals("Good morning", card.source)
+        assertEquals(Lang("en"), card.sourceLang)
+        assertEquals(CardStage.Done, card.stage)
+        assertEquals(listOf("Good morning"), translatedSources)
+        assertFalse(recorderOpened)
+        assertTrue(sessions.isEmpty())
+    }
+
+    @Test fun `blank typed text is ignored`() = runTest {
+        val vm = vm()
+        vm.submitText("   ")
+        runCurrent()
+        assertTrue(vm.state.value.cards.isEmpty())
+    }
+
+    @Test fun `late transcripts join the card without reaching the translator, and repeats aren't references`() = runTest {
+        val late = kotlinx.coroutines.flow.MutableSharedFlow<AsrAlternative>()
+        nextTranscript = Transcript(
+            "你好", Lang("zh"),
+            alternatives = listOf(AsrAlternative(AsrService.MockNonStream, "你好")),
+            late = kotlinx.coroutines.flow.flow { emit(late.first()) },
+        )
+        val vm = vm()
+        vm.onPress()
+        runCurrent()
+        release(vm)
+        runCurrent()
+        assertEquals(listOf(emptyList<String>()), references)
+        late.emit(AsrAlternative(AsrService.MockStream, "尼好"))
+        runCurrent()
+        assertEquals(listOf("你好", "尼好"), vm.state.value.cards.single().alternatives.map { it.text })
+        assertEquals(1, references.size)
     }
 }

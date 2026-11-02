@@ -11,12 +11,12 @@ class TranslationPresetTest {
         model = "qwen3.7-flash", key = "sk-secret",
     )
 
-    @Test fun `round trip keeps fields and binds each key to its preset id`() {
-        val fields = mutableListOf<String>()
-        val json = encodePresets(listOf(preset)) { value, field -> fields += field; "enc($value)" }
-        assertFalse("plaintext key must not be stored", "sk-secret\"" in json)
-        assertEquals(listOf("translation_preset_key:p1"), fields)
-        val decoded = decodePresets(json) { ciphertext, field ->
+    /** As versions before the single config document stored them. */
+    private val legacyJson = """[{"id":"p1","name":"Qwen","url":"https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "model":"qwen3.7-flash","key_encrypted":"enc(sk-secret)"}]"""
+
+    @Test fun `legacy presets are read with each key bound to its preset id`() {
+        val decoded = decodePresets(legacyJson) { ciphertext, field ->
             assertEquals("translation_preset_key:p1", field)
             ciphertext.removePrefix("enc(").removeSuffix(")")
         }
@@ -24,8 +24,7 @@ class TranslationPresetTest {
     }
 
     @Test fun `an undecryptable key leaves the rest of the preset`() {
-        val json = encodePresets(listOf(preset)) { _, _ -> "garbage" }
-        val decoded = decodePresets(json) { _, _ -> error("keystore reset") }
+        val decoded = decodePresets(legacyJson) { _, _ -> error("keystore reset") }
         assertEquals(preset.copy(key = ""), decoded.single())
     }
 

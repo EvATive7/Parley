@@ -1,5 +1,7 @@
 package io.github.evative7.parley.ui
 
+import kotlin.math.roundToLong
+import androidx.compose.material3.Slider
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -242,48 +244,35 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             key(saved, revision) {
+                val providers = draft.asrProviders
+                val providerNames = providers.map { it.label() }
+                val providerHints = providers.mapNotNull { it.hintResource() }.map { stringResource(it) }
                 ServiceCard(
                     icon = R.drawable.ic_mic,
                     title = stringResource(R.string.settings_asr),
-                    provider = draft.asrService.provider.label(),
-                    hint = draft.asrService.provider.hintResource()?.let { stringResource(it) },
+                    provider = providerNames.joinToString(" · "),
+                    hint = providerHints.joinToString("\n").ifEmpty { null },
                 ) {
-                    AsrServiceField(draft.asrService, !saving) { draft = draft.copy(asrService = it) }
-                    when (draft.asrService.provider) {
-                        AsrProvider.DashScope -> {
-                            DashScopeRegionField(draft.dashScopeRegion, !saving) {
-                                draft = draft.copy(dashScopeRegion = it)
-                            }
-                            SecretField(
-                                stringResource(R.string.settings_key), draft.dashScopeKey, !saving,
-                                SettingsError.AsrKey.shownIn(shown),
-                            ) { draft = draft.copy(dashScopeKey = it) }
+                    AsrServiceField(
+                        draft.asrServices, !saving, SettingsError.AsrNone.shownIn(shown),
+                    ) { draft = draft.copy(asrServices = it) }
+                    // Only several services have others to wait for.
+                    if (draft.asrServices.size > 1) {
+                        AsrGraceField(draft.asrGraceMs, !saving) { draft = draft.copy(asrGraceMs = it) }
+                    }
+                    // Each provider's errors are its own: a missing DashScope key doesn't mark the OpenAI one.
+                    for (provider in providers) {
+                        val providerShown = if (attempted) draft.asrErrors(provider) else emptyList()
+                        // With several, each provider's fields are headed by its name.
+                        if (providers.size > 1) {
+                            Text(
+                                provider.label(),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(start = 4.dp, top = 4.dp),
+                            )
                         }
-                        AsrProvider.OpenAi -> SecretField(
-                            stringResource(R.string.settings_key), draft.openAiAsrKey, !saving,
-                            SettingsError.AsrKey.shownIn(shown),
-                        ) { draft = draft.copy(openAiAsrKey = it) }
-                        AsrProvider.Volcengine -> {
-                            SettingField(
-                                stringResource(R.string.settings_app_id), draft.volcAppId, !saving,
-                                SettingsError.AsrAppId.shownIn(shown), keyboardType = KeyboardType.Text,
-                            ) { draft = draft.copy(volcAppId = it) }
-                            SecretField(
-                                stringResource(R.string.settings_access_token), draft.volcAccessToken, !saving,
-                                SettingsError.AsrKey.shownIn(shown),
-                            ) { draft = draft.copy(volcAccessToken = it) }
-                        }
-                        AsrProvider.Mock -> {
-                            MockSpeedField(draft.mockAsrSpeed, !saving) { draft = draft.copy(mockAsrSpeed = it) }
-                            ChoiceField(
-                                label = stringResource(R.string.settings_mock_fault),
-                                options = MockAsrFault.entries,
-                                selected = draft.mockAsrFault,
-                                optionLabel = { stringResource(it.label()) },
-                                enabled = !saving,
-                                warn = draft.mockAsrFault != MockAsrFault.None,
-                            ) { draft = draft.copy(mockAsrFault = it) }
-                        }
+                        AsrProviderFields(provider, draft, !saving, providerShown) { draft = it }
                     }
                 }
 
@@ -334,16 +323,105 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     }
 }
 
-/** Looks like the text fields around it; picking happens in a dialog. */
+/** How long to wait, after the first result, for the other services' results, in half seconds. */
 @Composable
-private fun AsrServiceField(selected: AsrService, enabled: Boolean, onPick: (AsrService) -> Unit) {
+private fun AsrGraceField(valueMs: Long, enabled: Boolean, onChange: (Long) -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val steps = (ServiceSettings.MAX_ASR_GRACE_MS / GRACE_STEP_MS).toInt()
+    Column(Modifier.padding(horizontal = 4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.settings_asr_grace),
+                style = MaterialTheme.typography.bodyLarge,
+                color = colors.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                stringResource(R.string.settings_asr_grace_value, valueMs / 1000f),
+                style = MaterialTheme.typography.labelLarge,
+                color = colors.primary,
+            )
+        }
+        Slider(
+            value = (valueMs / GRACE_STEP_MS).toFloat(),
+            onValueChange = { onChange(it.roundToLong() * GRACE_STEP_MS) },
+            valueRange = 0f..steps.toFloat(),
+            steps = steps - 1,
+            enabled = enabled,
+        )
+        Text(
+            stringResource(R.string.settings_asr_grace_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onSurfaceVariant,
+        )
+    }
+}
+
+private const val GRACE_STEP_MS = 500L
+
+/** The credential fields of one ASR [provider], marking the errors in [shown]. */
+@Composable
+private fun AsrProviderFields(
+    provider: AsrProvider,
+    draft: ServiceSettings,
+    enabled: Boolean,
+    shown: List<SettingsError>,
+    onChange: (ServiceSettings) -> Unit,
+) {
+    when (provider) {
+        AsrProvider.DashScope -> {
+            DashScopeRegionField(draft.dashScopeRegion, enabled) { onChange(draft.copy(dashScopeRegion = it)) }
+            SecretField(
+                stringResource(R.string.settings_key), draft.dashScopeKey, enabled,
+                SettingsError.AsrKey.shownIn(shown),
+            ) { onChange(draft.copy(dashScopeKey = it)) }
+        }
+        AsrProvider.OpenAi -> SecretField(
+            stringResource(R.string.settings_key), draft.openAiAsrKey, enabled,
+            SettingsError.AsrKey.shownIn(shown),
+        ) { onChange(draft.copy(openAiAsrKey = it)) }
+        AsrProvider.Volcengine -> {
+            SettingField(
+                stringResource(R.string.settings_app_id), draft.volcAppId, enabled,
+                SettingsError.AsrAppId.shownIn(shown), keyboardType = KeyboardType.Text,
+            ) { onChange(draft.copy(volcAppId = it)) }
+            SecretField(
+                stringResource(R.string.settings_access_token), draft.volcAccessToken, enabled,
+                SettingsError.AsrKey.shownIn(shown),
+            ) { onChange(draft.copy(volcAccessToken = it)) }
+        }
+        AsrProvider.Mock -> {
+            MockSpeedField(draft.mockAsrSpeed, enabled) { onChange(draft.copy(mockAsrSpeed = it)) }
+            ChoiceField(
+                label = stringResource(R.string.settings_mock_fault),
+                options = MockAsrFault.entries,
+                selected = draft.mockAsrFault,
+                optionLabel = { stringResource(it.label()) },
+                enabled = enabled,
+                warn = draft.mockAsrFault != MockAsrFault.None,
+            ) { onChange(draft.copy(mockAsrFault = it)) }
+        }
+    }
+}
+
+/**
+ * Looks like the text fields around it; picking happens in a dialog, where any number of services can be
+ * checked. They are kept in the order they were checked.
+ */
+@Composable
+private fun AsrServiceField(
+    selected: List<AsrService>,
+    enabled: Boolean,
+    error: SettingsError?,
+    onChange: (List<AsrService>) -> Unit,
+) {
     var open by remember { mutableStateOf(false) }
     val colors = MaterialTheme.colorScheme
     Surface(
         onClick = { open = true },
         enabled = enabled,
         shape = MaterialTheme.shapes.large,
-        color = colors.surfaceContainerHighest,
+        color = if (error != null) colors.errorContainer else colors.surfaceContainerHighest,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -356,10 +434,19 @@ private fun AsrServiceField(selected: AsrService, enabled: Boolean, onPick: (Asr
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant,
                 )
-                Text(selected.label(), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+                val names = selected.map { it.label() }
+                Text(names.joinToString(", "), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
             }
             Icon(painterResource(R.drawable.ic_chevron_right), null, tint = colors.onSurfaceVariant)
         }
+    }
+    if (error != null) {
+        Text(
+            error.message(),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.error,
+            modifier = Modifier.padding(start = 16.dp),
+        )
     }
     if (open) {
         BasicAlertDialog(onDismissRequest = { open = false }) {
@@ -373,8 +460,13 @@ private fun AsrServiceField(selected: AsrService, enabled: Boolean, onPick: (Asr
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(horizontal = 24.dp),
                     )
-                    Spacer(Modifier.size(12.dp))
-                    LazyColumn(Modifier.heightIn(max = 520.dp)) {
+                    Text(
+                        stringResource(R.string.settings_asr_services_hint),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                    )
+                    LazyColumn(Modifier.heightIn(max = 480.dp)) {
                         AsrProvider.available.forEach { provider ->
                             item(key = "provider-${provider.name}") {
                                 Text(
@@ -384,11 +476,11 @@ private fun AsrServiceField(selected: AsrService, enabled: Boolean, onPick: (Asr
                                     modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 4.dp),
                                 )
                             }
-                            items(AsrService.entries.filter { it.provider == provider }, key = { it.id }) { service ->
+                            items(AsrService.available.filter { it.provider == provider }, key = { it.id }) { service ->
                                 // A pill clips the corners of multi-line descriptions; a rounded rect does not.
-                                val isSelected = service == selected
+                                val isSelected = service in selected
                                 Surface(
-                                    onClick = { onPick(service); open = false },
+                                    onClick = { onChange(if (isSelected) selected - service else selected + service) },
                                     shape = MaterialTheme.shapes.large,
                                     color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp),
@@ -413,6 +505,12 @@ private fun AsrServiceField(selected: AsrService, enabled: Boolean, onPick: (Asr
                                 }
                             }
                         }
+                    }
+                    TextButton(
+                        onClick = { open = false },
+                        modifier = Modifier.align(Alignment.End).padding(end = 12.dp, top = 8.dp),
+                    ) {
+                        Text(stringResource(R.string.action_done))
                     }
                 }
             }
@@ -473,7 +571,7 @@ private fun AsrProvider.hintResource(): Int? = when (this) {
 }
 
 @Composable
-private fun AsrService.label(): String = stringResource(when (this) {
+internal fun AsrService.label(): String = stringResource(when (this) {
     AsrService.FunAsrRealtimeStream -> R.string.settings_asr_fun_stream
     AsrService.FunAsrRealtimeNonStream -> R.string.settings_asr_fun_non_stream
     AsrService.GptRealtimeWhisper -> R.string.settings_asr_gpt_realtime
@@ -1111,6 +1209,7 @@ private fun SettingsError.shownIn(shown: List<SettingsError>) = takeIf { it in s
 
 @Composable
 private fun SettingsError.message(): String = stringResource(when (this) {
+    SettingsError.AsrNone -> R.string.settings_missing_asr_service
     SettingsError.AsrKey -> R.string.settings_missing_asr_key
     SettingsError.AsrAppId -> R.string.settings_missing_asr_app_id
     SettingsError.TranslationUrl -> R.string.settings_invalid_translation_url

@@ -145,4 +145,9 @@
     <string name="settings_config_invalid">Parley 설정 파일이 아닙니다.</string>
     <string name="settings_config_too_new">더 새로운 버전의 Parley에서 만든 파일입니다. 앱을 업데이트한 후 가져오세요.</string>
     <string name="settings_config_failed">파일을 읽거나 쓸 수 없습니다.</string>
+    <string name="manual_input">직접 입력</string>
+    <string name="manual_input_hint">하고 싶은 말을 입력하세요</string>
+    <string name="action_translate">번역</string>
+    <string name="asr_which_service">인식한 서비스</string>
+    <string name="more_actions">더보기</string>
 </resources>

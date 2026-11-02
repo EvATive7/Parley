@@ -26,12 +26,10 @@ import javax.inject.Inject
 class VolcengineSaucRecognizer @Inject constructor(
     private val client: OkHttpClient,
     private val settings: ServiceSettingsSource,
-) : SpeechRecognizer {
-    override val isStreaming = true
-
-    override fun open(lang: String?): RecognitionSession {
+) : ServiceRecognizer {
+    override fun open(service: AsrService, lang: String?): RecognitionSession {
         val config = settings.current?.takeIf {
-            it.isReady && it.asrService == AsrService.DoubaoSeedAsr20Stream
+            it.isReady && service == AsrService.DoubaoSeedAsr20Stream
         } ?: throw ServiceException(ServiceFailure.Configuration)
         return VolcengineSaucSession(client, SAUC_URL, config.volcAppId, config.volcAccessToken, lang)
     }

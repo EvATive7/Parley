@@ -145,4 +145,9 @@
     <string name="settings_config_invalid">Este archivo no es una configuración de Parley.</string>
     <string name="settings_config_too_new">Este archivo es de una versión más reciente de Parley. Actualiza la app para importarlo.</string>
     <string name="settings_config_failed">No se pudo leer ni escribir el archivo.</string>
+    <string name="manual_input">Escribir</string>
+    <string name="manual_input_hint">Escribe lo que quieres decir</string>
+    <string name="action_translate">Traducir</string>
+    <string name="asr_which_service">Qué servicio lo reconoció</string>
+    <string name="more_actions">Más</string>
 </resources>

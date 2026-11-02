@@ -31,19 +31,16 @@ import javax.inject.Inject
 class DashScopeRecognizer @Inject constructor(
     private val client: OkHttpClient,
     private val settings: ServiceSettingsSource,
-) : SpeechRecognizer {
-    override val isStreaming: Boolean
-        get() = settings.current?.asrService == AsrService.FunAsrRealtimeStream
-
+) : ServiceRecognizer {
     // Guarded by `this`.
     private var spare: WarmSocket? = null
     private var foreground = false
 
-    override fun prepare(): Unit = synchronized(this) {
+    override fun prepare(service: AsrService): Unit = synchronized(this) {
         foreground = true
         // Both modes use the same socket: streaming adopts it on press, buffered on release.
         val saved = settings.current?.takeIf {
-            it.isReady && it.asrService.provider == AsrProvider.DashScope
+            it.isReady && service.provider == AsrProvider.DashScope
         } ?: return
         val config = dashScopeConfig(saved.dashScopeRegion.host, saved.dashScopeKey)
         if (spare?.isUsableFor(config) == true) return
@@ -58,11 +55,11 @@ class DashScopeRecognizer @Inject constructor(
         spare = null
     }
 
-    override fun open(lang: String?): RecognitionSession {
-        val saved = settings.current?.takeIf { it.isReady && it.asrService.provider == AsrProvider.DashScope }
+    override fun open(service: AsrService, lang: String?): RecognitionSession {
+        val saved = settings.current?.takeIf { it.isReady && service.provider == AsrProvider.DashScope }
             ?: throw ServiceException(ServiceFailure.Configuration)
         val config = dashScopeConfig(saved.dashScopeRegion.host, saved.dashScopeKey)
-        if (saved.asrService == AsrService.FunAsrRealtimeNonStream) {
+        if (service == AsrService.FunAsrRealtimeNonStream) {
             return DashScopeBufferedSession(client, config) { takeSpare(config) }
         }
         return DashScopeSession(client, config, takeSpare(config), DebugLog.sink(TAG))
@@ -82,7 +79,9 @@ class DashScopeRecognizer @Inject constructor(
         spare = null
         DebugLog.log(TAG) { "spare socket died after $ageMs ms" }
         // A socket rejected at once (bad key, no network) is not retried until the next press.
-        if (foreground && ageMs >= MIN_SPARE_LIFETIME_MS) prepare()
+        if (foreground && ageMs >= MIN_SPARE_LIFETIME_MS) {
+            settings.current?.asrServices?.firstOrNull { it.provider == AsrProvider.DashScope }?.let(::prepare)
+        }
     }
 
     private companion object {

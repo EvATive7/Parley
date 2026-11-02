@@ -71,7 +71,7 @@ class CloudPipelineTest {
         val settings = withTimeout(10_000) { repository.settings.filterNotNull().first() }
         val client = NetworkModule.client()
         val diedAt = AtomicLong(-1)
-        check(settings.asrService.provider == AsrProvider.DashScope)
+        check(AsrProvider.DashScope in settings.asrProviders)
         val config = DashScopeConfig(
             "wss://${settings.dashScopeRegion.host}/api-ws/v1/inference",
             settings.dashScopeKey,
@@ -103,7 +103,7 @@ class CloudPipelineTest {
         ).use { android.os.ParcelFileDescriptor.AutoCloseInputStream(it).readBytes() }
         val repository = SettingsRepository(instrumentation.targetContext, KeyVault())
         val settings = withTimeout(10_000) { repository.settings.filterNotNull().first() }
-        check(settings.isReady && settings.asrService.provider == AsrProvider.DashScope) {
+        check(settings.isReady && AsrProvider.DashScope in settings.asrProviders) {
             "Select and configure a DashScope service in Parley first"
         }
         val asrConfig = DashScopeConfig(

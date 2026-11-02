@@ -5,12 +5,9 @@ import io.github.evative7.parley.mock.MockSpeed
 import io.github.evative7.parley.mock.MockTranslationFault
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.buildJsonArray
-import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.util.UUID
 
@@ -43,27 +40,10 @@ data class TranslationPreset(
 /** Ciphertext is bound to the preset id, so keys cannot be swapped between presets on disk. */
 private fun keyField(id: String) = "translation_preset_key:$id"
 
-internal fun encodePresets(
-    presets: List<TranslationPreset>,
-    encrypt: (value: String, field: String) -> String,
-): String = buildJsonArray {
-    presets.forEach { preset ->
-        add(buildJsonObject {
-            put("id", preset.id)
-            put("name", preset.name)
-            put("url", preset.url)
-            put("model", preset.model)
-            put("key_encrypted", encrypt(preset.key, keyField(preset.id)))
-            if (preset.mock) {
-                put("mock", true)
-                put("mock_speed", preset.mockSpeed.name)
-                put("mock_fault", preset.mockFault.name)
-            }
-        })
-    }
-}.toString()
-
-/** A preset whose key cannot be decrypted (e.g. Keystore reset) keeps its other fields with an empty key. */
+/**
+ * Reads presets as stored before settings became one [ConfigFile] document, for the migration. A preset whose
+ * key cannot be decrypted (e.g. Keystore reset) keeps its other fields with an empty key.
+ */
 internal fun decodePresets(
     json: String,
     decrypt: (ciphertext: String, field: String) -> String,

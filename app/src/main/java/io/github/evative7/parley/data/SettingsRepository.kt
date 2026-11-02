@@ -1,10 +1,12 @@
 package io.github.evative7.parley.data
 
 import android.content.Context
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.evative7.parley.BuildConfig
 import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.asr.DashScopeRegion
 import io.github.evative7.parley.mock.MockAsrFault
@@ -25,7 +27,12 @@ import javax.inject.Singleton
 
 private val Context.serviceDataStore by preferencesDataStore("services")
 
-private object SettingsKeys {
+/** The settings as one encrypted [ConfigFile] document. */
+private val ConfigKey = stringPreferencesKey("config_encrypted")
+private const val CONFIG_FIELD = "config"
+
+/** Where settings lived before they were one [ConfigFile] document; read once to migrate, then removed. */
+private object LegacyKeys {
     val asrService = stringPreferencesKey("asr_service")
     val dashScopeRegion = stringPreferencesKey("dashscope_region")
     val dashScopeKey = stringPreferencesKey("dashscope_key_encrypted")
@@ -40,10 +47,15 @@ private object SettingsKeys {
     val translationPresets = stringPreferencesKey("translation_presets")
     val translationPresetId = stringPreferencesKey("translation_preset_id")
 
-    // M2 keys, removed after migration.
-    val legacyAsrUrl = stringPreferencesKey("asr_url")
-    val legacyAsrModel = stringPreferencesKey("asr_model")
-    val legacyAsrKey = stringPreferencesKey("asr_key_encrypted")
+    // M2 keys: a single DashScope endpoint, from before ASR services could be picked.
+    val m2AsrUrl = stringPreferencesKey("asr_url")
+    val m2AsrModel = stringPreferencesKey("asr_model")
+    val m2AsrKey = stringPreferencesKey("asr_key_encrypted")
+
+    val all = listOf(
+        asrService, dashScopeRegion, dashScopeKey, openAiAsrKey, volcAppId, volcAccessToken, mockAsrSpeed,
+        mockAsrFault, llmUrl, llmModel, llmKey, translationPresets, translationPresetId, m2AsrUrl, m2AsrModel, m2AsrKey,
+    )
 }
 
 @Singleton
@@ -66,7 +78,32 @@ class SettingsRepository @Inject constructor(
 
     override val current: ServiceSettings? get() = settings.value
 
-    private fun decode(p: androidx.datastore.preferences.core.Preferences): ServiceSettings {
+    private fun decode(p: Preferences): ServiceSettings {
+        val stored = p[ConfigKey]
+        return when {
+            stored != null -> try {
+                ConfigFile.decode(vault.decrypt(stored, CONFIG_FIELD))
+            } catch (_: Exception) {
+                ServiceSettings(storageError = true)
+            }
+            // Not migrated because a key couldn't be decrypted: shown as far as readable until the next save.
+            LegacyKeys.all.any { it in p } -> readLegacy(p)
+            else -> ServiceSettings()
+        }
+    }
+
+    /** Moves settings saved by earlier versions into one document, unless some key of theirs is unreadable. */
+    private suspend fun migrateLegacySettings() {
+        store.edit { p ->
+            if (ConfigKey in p || LegacyKeys.all.none { it in p }) return@edit
+            val legacy = readLegacy(p)
+            if (legacy.storageError) return@edit
+            p[ConfigKey] = vault.encrypt(ConfigFile.encode(legacy, BuildConfig.VERSION_NAME), CONFIG_FIELD)
+            LegacyKeys.all.forEach { p.remove(it) }
+        }
+    }
+
+    private fun readLegacy(p: Preferences): ServiceSettings {
         val defaults = ServiceSettings()
         var unreadable = false
         fun decrypt(value: String, field: String): String = try {
@@ -75,79 +112,51 @@ class SettingsRepository @Inject constructor(
             unreadable = true
             ""
         }
-        val translationUrl = p[SettingsKeys.llmUrl] ?: defaults.translationUrl
-        val translationModel = p[SettingsKeys.llmModel] ?: defaults.translationModel
-        val translationKey = decrypt(p[SettingsKeys.llmKey].orEmpty(), SettingsKeys.llmKey.name)
-        val storedPresets = p[SettingsKeys.translationPresets]
+        val translationUrl = p[LegacyKeys.llmUrl] ?: defaults.translationUrl
+        val translationModel = p[LegacyKeys.llmModel] ?: defaults.translationModel
+        val translationKey = decrypt(p[LegacyKeys.llmKey].orEmpty(), LegacyKeys.llmKey.name)
+        val storedPresets = p[LegacyKeys.translationPresets]
         val (presets, presetId) = when {
             storedPresets != null -> try {
-                decodePresets(storedPresets, ::decrypt) to p[SettingsKeys.translationPresetId]
+                decodePresets(storedPresets, ::decrypt) to p[LegacyKeys.translationPresetId]
             } catch (_: Exception) {
                 unreadable = true
                 emptyList<TranslationPreset>() to null
             }
             // Saved before presets existed: the one configured service becomes the first preset.
-            p[SettingsKeys.llmUrl] != null -> listOf(
+            p[LegacyKeys.llmUrl] != null -> listOf(
                 TranslationPreset(MIGRATED_PRESET_ID, translationModel, translationUrl, translationModel, translationKey),
             ) to MIGRATED_PRESET_ID
             else -> emptyList<TranslationPreset>() to null
         }
+        // Saved before ASR services could be picked: the one DashScope endpoint.
+        val m2 = if (p[LegacyKeys.asrService] == null) {
+            migrateLegacyAsr(p[LegacyKeys.m2AsrUrl].orEmpty(), p[LegacyKeys.m2AsrKey].orEmpty(), ::decrypt)
+        } else null
         return ServiceSettings(
-            asrService = AsrService.fromId(p[SettingsKeys.asrService]),
-            dashScopeRegion = DashScopeRegion.fromName(p[SettingsKeys.dashScopeRegion]),
-            dashScopeKey = decrypt(p[SettingsKeys.dashScopeKey].orEmpty(), SettingsKeys.dashScopeKey.name),
-            openAiAsrKey = decrypt(p[SettingsKeys.openAiAsrKey].orEmpty(), SettingsKeys.openAiAsrKey.name),
-            volcAppId = p[SettingsKeys.volcAppId].orEmpty(),
-            volcAccessToken = decrypt(p[SettingsKeys.volcAccessToken].orEmpty(), SettingsKeys.volcAccessToken.name),
-            mockAsrSpeed = MockSpeed.fromName(p[SettingsKeys.mockAsrSpeed]),
-            mockAsrFault = MockAsrFault.fromName(p[SettingsKeys.mockAsrFault]),
+            asrServices = listOf(AsrService.fromId(p[LegacyKeys.asrService])),
+            dashScopeRegion = m2?.region ?: DashScopeRegion.fromName(p[LegacyKeys.dashScopeRegion]),
+            dashScopeKey = m2?.key ?: decrypt(p[LegacyKeys.dashScopeKey].orEmpty(), LegacyKeys.dashScopeKey.name),
+            openAiAsrKey = decrypt(p[LegacyKeys.openAiAsrKey].orEmpty(), LegacyKeys.openAiAsrKey.name),
+            volcAppId = p[LegacyKeys.volcAppId].orEmpty(),
+            volcAccessToken = decrypt(p[LegacyKeys.volcAccessToken].orEmpty(), LegacyKeys.volcAccessToken.name),
+            mockAsrSpeed = MockSpeed.fromName(p[LegacyKeys.mockAsrSpeed]),
+            mockAsrFault = MockAsrFault.fromName(p[LegacyKeys.mockAsrFault]),
             translationUrl = translationUrl,
             translationModel = translationModel,
             translationKey = translationKey,
             translationPresets = presets,
             translationPresetId = presetId?.takeIf { id -> presets.any { it.id == id } },
             storageError = unreadable,
-        )
-    }
-
-    private suspend fun migrateLegacySettings() {
-        store.edit { p ->
-            if (p[SettingsKeys.asrService] != null) return@edit
-            val migrated = migrateLegacyAsr(
-                p[SettingsKeys.legacyAsrUrl].orEmpty(),
-                p[SettingsKeys.legacyAsrKey].orEmpty(),
-            ) { ciphertext, field -> vault.decrypt(ciphertext, field) }
-            p[SettingsKeys.asrService] = AsrService.Default.id
-            p[SettingsKeys.dashScopeRegion] = migrated.region.name
-            p[SettingsKeys.dashScopeKey] = vault.encrypt(migrated.key, SettingsKeys.dashScopeKey.name)
-            p.remove(SettingsKeys.legacyAsrUrl)
-            p.remove(SettingsKeys.legacyAsrModel)
-            p.remove(SettingsKeys.legacyAsrKey)
-        }
+        ).let { it.selectTranslation(it.selectedTranslation ?: presets.firstOrNull()) }
     }
 
     suspend fun save(value: ServiceSettings) = withContext(Dispatchers.IO) {
         require(value.validationError() == null)
-        val encryptedDashScope = vault.encrypt(value.dashScopeKey, SettingsKeys.dashScopeKey.name)
-        val encryptedOpenAi = vault.encrypt(value.openAiAsrKey, SettingsKeys.openAiAsrKey.name)
-        val encryptedVolc = vault.encrypt(value.volcAccessToken, SettingsKeys.volcAccessToken.name)
-        val encryptedLlm = vault.encrypt(value.translationKey, SettingsKeys.llmKey.name)
-        val encodedPresets = encodePresets(value.translationPresets, vault::encrypt)
+        val encrypted = vault.encrypt(ConfigFile.encode(value, BuildConfig.VERSION_NAME), CONFIG_FIELD)
         store.edit { p ->
-            p[SettingsKeys.asrService] = value.asrService.id
-            p[SettingsKeys.dashScopeRegion] = value.dashScopeRegion.name
-            p[SettingsKeys.dashScopeKey] = encryptedDashScope
-            p[SettingsKeys.openAiAsrKey] = encryptedOpenAi
-            p[SettingsKeys.volcAppId] = value.volcAppId
-            p[SettingsKeys.volcAccessToken] = encryptedVolc
-            p[SettingsKeys.mockAsrSpeed] = value.mockAsrSpeed.name
-            p[SettingsKeys.mockAsrFault] = value.mockAsrFault.name
-            p[SettingsKeys.llmUrl] = value.translationUrl.trimEnd('/')
-            p[SettingsKeys.llmModel] = value.translationModel
-            p[SettingsKeys.llmKey] = encryptedLlm
-            p[SettingsKeys.translationPresets] = encodedPresets
-            val presetId = value.translationPresetId
-            if (presetId != null) p[SettingsKeys.translationPresetId] = presetId else p.remove(SettingsKeys.translationPresetId)
+            p[ConfigKey] = encrypted
+            LegacyKeys.all.forEach { p.remove(it) }
         }
     }
 }

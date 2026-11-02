@@ -76,6 +76,18 @@ class OpenAiCompatibleTranslatorTest {
         assertEquals("你好", messages[1].jsonObject["content"]!!.jsonPrimitive.content)
     }
 
+    @Test fun `other transcripts are sent as references with a one-translation rule`() = runBlocking {
+        server.enqueue(response(delta("Hello") + "data: [DONE]\n\n"))
+        withTimeout(5000) { translator.translate("你好", Lang("zh"), Lang("en"), listOf("你号", "尼好")).toList() }
+        val messages = requestJson()["messages"]!!.jsonArray
+        val system = messages[0].jsonObject["content"]!!.jsonPrimitive.content
+        assertTrue(system.contains("exactly one translation"))
+        assertEquals(
+            "Primary transcript:\n你好\n\nOther transcripts of the same audio:\n1. 你号\n2. 尼好",
+            messages[1].jsonObject["content"]!!.jsonPrimitive.content,
+        )
+    }
+
     private fun requestJson() = Json.parseToJsonElement(server.takeRequest(2, TimeUnit.SECONDS)!!.body.readUtf8()).jsonObject
 
     @Test fun `asks every provider not to think and only Aliyun for enable_thinking`() = runBlocking {

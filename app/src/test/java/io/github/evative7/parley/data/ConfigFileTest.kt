@@ -6,6 +6,8 @@ import io.github.evative7.parley.mock.MockAsrFault
 import io.github.evative7.parley.mock.MockSpeed
 import io.github.evative7.parley.mock.MockTranslationFault
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
 import org.junit.Test
 
@@ -16,7 +18,8 @@ class ConfigFileTest {
         mockSpeed = MockSpeed.Slow, mockFault = MockTranslationFault.RateLimit,
     )
     private val settings = ServiceSettings(
-        asrService = AsrService.DoubaoSeedAsr20Stream,
+        asrServices = listOf(AsrService.DoubaoSeedAsr20Stream, AsrService.FunAsrRealtimeNonStream),
+        asrGraceMs = 2_500,
         dashScopeRegion = DashScopeRegion.Singapore,
         dashScopeKey = "ds",
         openAiAsrKey = "oa",
@@ -50,6 +53,42 @@ class ConfigFileTest {
         val decoded = ConfigFile.decode(text)
         assertEquals("x", decoded.translationPresetId)
         assertEquals("https://x.example/v1", decoded.translationUrl)
-        assertEquals(AsrService.Default, decoded.asrService)
+        assertEquals(listOf(AsrService.Default), decoded.asrServices)
+    }
+
+    @Test fun `a version 1 file's single service becomes the list`() {
+        val text = """{"format":"parley-config","version":1,"asr":{"service":"gpt-4o-transcribe-non-stream-input",
+            "openai":{"key":"oa"}}}"""
+        val decoded = ConfigFile.decode(text)
+        assertEquals(listOf(AsrService.Gpt4oTranscribeNonStream), decoded.asrServices)
+        assertEquals("oa", decoded.openAiAsrKey)
+    }
+
+    @Test fun `unknown and repeated services are dropped, and none left means the default`() {
+        val text = """{"format":"parley-config","version":2,"asr":{"services":
+            ["removed-service","doubao-seed-asr-2-0-stream-input","doubao-seed-asr-2-0-stream-input"]}}"""
+        assertEquals(listOf(AsrService.DoubaoSeedAsr20Stream), ConfigFile.decode(text).asrServices)
+        val none = """{"format":"parley-config","version":2,"asr":{"services":["removed-service"]}}"""
+        assertEquals(listOf(AsrService.Default), ConfigFile.decode(none).asrServices)
+    }
+
+    @Test fun `the grace period defaults when missing and is kept within bounds`() {
+        val missing = """{"format":"parley-config","version":2,"asr":{"services":["mock-stream"]}}"""
+        assertEquals(ServiceSettings.DEFAULT_ASR_GRACE_MS, ConfigFile.decode(missing).asrGraceMs)
+        val huge = """{"format":"parley-config","version":2,"asr":{"grace_ms":999999}}"""
+        assertEquals(ServiceSettings.MAX_ASR_GRACE_MS, ConfigFile.decode(huge).asrGraceMs)
+    }
+
+    @Test fun `a version 0 file is not a configuration`() {
+        val e = assertThrows(ConfigFileException::class.java) {
+            ConfigFile.decode("""{"format":"parley-config","version":0}""")
+        }
+        assertEquals(ConfigFileException.Reason.NotAConfig, e.reason)
+    }
+
+    @Test fun `version 2 writes the services as a list`() {
+        val text = ConfigFile.encode(settings, "1.0")
+        assertTrue(text.contains("\"services\""))
+        assertFalse(text.contains("\"service\""))
     }
 }

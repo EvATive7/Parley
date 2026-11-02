@@ -27,12 +27,10 @@ import javax.inject.Inject
 class OpenAiRealtimeRecognizer @Inject constructor(
     private val client: OkHttpClient,
     private val settings: ServiceSettingsSource,
-) : SpeechRecognizer {
-    override val isStreaming = true
-
-    override fun open(lang: String?): RecognitionSession {
+) : ServiceRecognizer {
+    override fun open(service: AsrService, lang: String?): RecognitionSession {
         val config = settings.current?.takeIf {
-            it.isReady && it.asrService == AsrService.GptRealtimeWhisper
+            it.isReady && service == AsrService.GptRealtimeWhisper
         } ?: throw ServiceException(ServiceFailure.Configuration)
         return OpenAiRealtimeSession(client, REALTIME_URL, config.openAiAsrKey, lang)
     }

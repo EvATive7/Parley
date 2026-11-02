@@ -7,14 +7,32 @@ import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -168,6 +186,9 @@ private fun ConversationScreen(
     val scope = rememberCoroutineScope()
     // Which language bar slot the picker dialog is open for.
     var picking by rememberSaveable { mutableStateOf<Int?>(null) }
+    // The menu that opens under the talk button, and the typing dialog it opens.
+    var menuOpen by rememberSaveable { mutableStateOf(false) }
+    var typing by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val entered = remember { mutableSetOf<Long>() }
     // Face to face, each person has a list of their own.
@@ -180,26 +201,14 @@ private fun ConversationScreen(
         if (faceToFace) faceLists.forEach { launch { it.animateScrollToItem(0) } } else listState.animateScrollToItem(0)
     }
     BackHandler(enabled = faceToFace) { onFaceToFace(false) }
+    BackHandler(enabled = menuOpen && !faceToFace) { menuOpen = false }
 
     PhaseHaptics(state.phase)
 
     val busy = state.phase in setOf(PttPhase.Recording, PttPhase.CancelArmed, PttPhase.Recognizing, PttPhase.Translating)
-    val settingsButton = @Composable {
-        SettingsButton(settings = settings, enabled = !busy, onClick = onOpenSettings)
-    }
-    val faceToFaceButton = @Composable {
-        // Tonal like the language buttons, and sized to hold its own beside the talk button.
-        FilledTonalIconButton(
-            onClick = { onFaceToFace(!faceToFace) },
-            enabled = !busy,
-            modifier = Modifier.size(56.dp),
-        ) {
-            Icon(
-                painterResource(R.drawable.ic_face_to_face),
-                stringResource(if (faceToFace) R.string.face_to_face_exit else R.string.face_to_face),
-            )
-        }
-    }
+    // Speaking needs the room: a press folds the menu away.
+    LaunchedEffect(busy) { if (busy) menuOpen = false }
+    val needsSetup = settings != null && !settings.isReady
     val onCopy = { text: String ->
         scope.launch {
             clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("translation", text)))
@@ -303,10 +312,15 @@ private fun ConversationScreen(
                     modifier = Modifier
                         .statusBarsPadding()
                         .padding(top = 12.dp),
-                    trailing = settingsButton,
                 )
 
-                Box(Modifier.weight(1f).fillMaxWidth()) {
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        // While the menu is open, a touch on the conversation folds it away first.
+                        .then(if (menuOpen) Modifier.foldOnTouch { menuOpen = false } else Modifier),
+                ) {
                     CardList(state.cards, listState, entered) { card, modifier ->
                         ResultCard(
                             card = card,
@@ -320,27 +334,40 @@ private fun ConversationScreen(
                     }
                 }
 
-                // A little room between the list and the hint, taken from below the button so the bar keeps its height.
-                HintLine(
-                    phase = state.phase,
-                    hint = state.hint,
-                    langs = listOf(state.langs.first, state.langs.second),
-                    elapsedMs = { elapsed.value },
-                    modifier = Modifier.padding(top = 12.dp),
+                BottomPanel(
+                    open = menuOpen,
+                    hint = {
+                        HintLine(
+                            phase = state.phase,
+                            hint = state.hint,
+                            langs = listOf(state.langs.first, state.langs.second),
+                            elapsedMs = { elapsed.value },
+                        )
+                    },
+                    talk = { pttButton(Modifier) },
+                    toggle = {
+                        MenuToggle(open = menuOpen, badge = needsSetup, enabled = !busy) { menuOpen = !menuOpen }
+                    },
+                    menu = {
+                        MenuGroup(
+                            langs = state.langs,
+                            enabled = !busy,
+                            needsSetup = needsSetup,
+                            onFaceToFace = { menuOpen = false; onFaceToFace(true) },
+                            onType = { menuOpen = false; typing = true },
+                            onOpenSettings = { menuOpen = false; onOpenSettings() },
+                        )
+                    },
                 )
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(bottom = 28.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Spacer(Modifier.weight(1f))
-                    pttButton(Modifier)
-                    Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { faceToFaceButton() }
-                }
             }
         }
+    }
+
+    if (typing) {
+        ManualInputDialog(
+            onSubmit = { typing = false; vm.submitText(it) },
+            onDismiss = { typing = false },
+        )
     }
 
     picking?.let { slot ->
@@ -356,6 +383,171 @@ private fun ConversationScreen(
                 else -> Turn.CounterClockwise
             },
         )
+    }
+}
+
+/**
+ * The hint and the talk button, and under them a menu. Opening it doesn't lay a sheet over the screen: the
+ * whole panel grows, so the button and its hint rise with the menu, on a surface of their own.
+ */
+@Composable
+private fun BottomPanel(
+    open: Boolean,
+    hint: @Composable () -> Unit,
+    talk: @Composable () -> Unit,
+    toggle: @Composable () -> Unit,
+    menu: @Composable () -> Unit,
+) {
+    val motion = MaterialTheme.motionScheme
+    val colors = MaterialTheme.colorScheme
+    val panel by animateColorAsState(
+        if (open) colors.surfaceContainer else colors.surface, motion.defaultEffectsSpec(), label = "panel",
+    )
+    // Below the button: the usual margin closed; open, the menu takes over the room.
+    val below by animateDpAsState(if (open) 16.dp else 28.dp, motion.defaultSpatialSpec(), label = "below")
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp)
+            // Drawn, not clipped: the button's voice pulse may spread past the panel.
+            .background(panel, PanelShape)
+            .navigationBarsPadding(),
+    ) {
+        // A little room between the list and the hint, taken from below the button so the bar keeps its height.
+        Spacer(Modifier.height(8.dp))
+        hint()
+        Row(
+            Modifier.fillMaxWidth().padding(bottom = below),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Spacer(Modifier.weight(1f))
+            talk()
+            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { toggle() }
+        }
+        AnimatedVisibility(
+            visible = open,
+            enter = expandVertically(motion.defaultSpatialSpec(), expandFrom = Alignment.Top) +
+                fadeIn(motion.defaultEffectsSpec()),
+            exit = shrinkVertically(motion.defaultSpatialSpec(), shrinkTowards = Alignment.Top) +
+                fadeOut(motion.fastEffectsSpec()),
+        ) {
+            Box(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 24.dp)) { menu() }
+        }
+    }
+}
+
+private val PanelShape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+
+/** Beside the talk button: opens the menu, and turns over to close it. A dot says the services need setup. */
+@Composable
+private fun MenuToggle(open: Boolean, badge: Boolean, enabled: Boolean, onClick: () -> Unit) {
+    val motion = MaterialTheme.motionScheme
+    val turn by animateFloatAsState(if (open) 180f else 0f, motion.defaultSpatialSpec(), label = "toggle")
+    val status = if (badge) stringResource(R.string.settings_required) else null
+    // Tonal like the language buttons, and sized to hold its own beside the talk button.
+    FilledTonalIconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .size(56.dp)
+            .semantics { if (status != null) stateDescription = status },
+    ) {
+        BadgedBox(badge = { if (badge && !open) Badge() }) {
+            Icon(
+                painterResource(R.drawable.ic_expand_less),
+                stringResource(R.string.more_actions),
+                Modifier.graphicsLayer { rotationZ = turn },
+            )
+        }
+    }
+}
+
+/**
+ * Face to face, typing instead of speaking, and the service settings: three rows joined into one group,
+ * each labeled in both languages of the conversation so either party can pick.
+ */
+@Composable
+private fun MenuGroup(
+    langs: LangPair,
+    enabled: Boolean,
+    needsSetup: Boolean,
+    onFaceToFace: () -> Unit,
+    onType: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(RowGap)) {
+        MenuRow(R.drawable.ic_face_to_face, R.string.face_to_face, langs, enabled, RowShapes.first, onClick = onFaceToFace)
+        MenuRow(R.drawable.ic_add, R.string.manual_input, langs, enabled, RowShapes.middle, onClick = onType)
+        MenuRow(
+            R.drawable.ic_settings, R.string.settings_title, langs, enabled, RowShapes.last,
+            badge = needsSetup, onClick = onOpenSettings,
+        )
+    }
+}
+
+private val RowGap = 3.dp
+
+/** Rows joined into one group: round at the group's outer ends, tight where two rows meet. */
+private object RowShapes {
+    private val outer = 24.dp
+    private val inner = 6.dp
+    val first = RoundedCornerShape(topStart = outer, topEnd = outer, bottomStart = inner, bottomEnd = inner)
+    val middle = RoundedCornerShape(inner)
+    val last = RoundedCornerShape(topStart = inner, topEnd = inner, bottomStart = outer, bottomEnd = outer)
+}
+
+/** One option: its icon in a round badge, then its name in each language, one under the other. */
+@Composable
+private fun MenuRow(
+    @DrawableRes icon: Int,
+    @StringRes label: Int,
+    langs: LangPair,
+    enabled: Boolean,
+    shape: Shape,
+    badge: Boolean = false,
+    onClick: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+    // Both languages look the same, as in the hint: neither party is the main one.
+    val lines = listOf(rememberLangResources(langs.first), rememberLangResources(langs.second))
+        .map { it.getString(label) }
+        .distinct()
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        shape = shape,
+        color = colors.surfaceContainerHighest,
+        contentColor = colors.onSurface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 64.dp)
+            .alpha(if (enabled) 1f else 0.38f),
+    ) {
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            BadgedBox(badge = { if (badge) Badge() }) {
+                Box(
+                    Modifier.size(40.dp).clip(CircleShape).background(colors.secondaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(icon), null, Modifier.size(22.dp), tint = colors.onSecondaryContainer)
+                }
+            }
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                for (line in lines) {
+                    Text(line, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = colors.onSurfaceVariant)
+        }
+    }
+}
+
+/** Calls [onTouch] on any touch inside, before the content sees it; the touch still reaches the content. */
+private fun Modifier.foldOnTouch(onTouch: () -> Unit) = pointerInput(Unit) {
+    awaitEachGesture {
+        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+        onTouch()
     }
 }
 
@@ -452,10 +644,9 @@ private fun LanguageBar(
     onPick: (slot: Int) -> Unit,
     onSwap: () -> Unit,
     modifier: Modifier = Modifier,
-    trailing: @Composable () -> Unit = {},
 ) {
     Row(
-        modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp),
+        modifier.fillMaxWidth().padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LanguageButton(langs.first, onClick = { onPick(0) }, modifier = Modifier.weight(1f))
@@ -463,25 +654,6 @@ private fun LanguageBar(
             Icon(painterResource(R.drawable.ic_swap_horiz), stringResource(R.string.swap_languages))
         }
         LanguageButton(langs.second, onClick = { onPick(1) }, modifier = Modifier.weight(1f))
-        trailing()
-    }
-}
-
-/** Opens the service settings; a dot says they need attention. */
-@Composable
-private fun SettingsButton(settings: ServiceSettings?, enabled: Boolean, onClick: () -> Unit) {
-    val needsSetup = settings != null && !settings.isReady
-    val status = if (needsSetup) stringResource(R.string.settings_required) else null
-    IconButton(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier.semantics { if (status != null) stateDescription = status },
-    ) {
-        BadgedBox(
-            badge = { if (needsSetup) Badge() },
-        ) {
-            Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title))
-        }
     }
 }
 

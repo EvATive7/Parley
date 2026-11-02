@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.evative7.parley.asr.RecognitionSession
 import io.github.evative7.parley.asr.SpeechRecognizer
+import io.github.evative7.parley.asr.Transcript
 import io.github.evative7.parley.audio.AudioSource
 import io.github.evative7.parley.audio.VolumeMeter
 import io.github.evative7.parley.debug.DebugLog
@@ -111,7 +112,8 @@ class TranslateViewModel @Inject constructor(
 
     /**
      * Replaces a settled card's recognized text with [text] and translates it again, as a retry would.
-     * The language is detected anew: the edit may have changed it.
+     * The language is detected anew: the edit may have changed it. The edit is what was said, so the other
+     * services' transcripts no longer matter.
      */
     fun editSource(id: Long, text: String) {
         val edited = text.trim()
@@ -120,29 +122,68 @@ class TranslateViewModel @Inject constructor(
         if (card.stage != CardStage.Done && card.stage != CardStage.Error) return
         DebugLog.log(TAG) { "#$id source edited (${edited.length} chars)" }
         viewModelScope.launch {
-            val sourceLang = withTimeoutOrNull(1_500) {
-                try {
-                    detector.detect(edited)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    null
-                }
-            } ?: card.sourceLang
+            val sourceLang = detect(edited) ?: card.sourceLang
             // A new recording may have started while detecting; it owns the pipeline now.
             if (_state.value.phase in BUSY_PHASES) return@launch
             if (_state.value.cards.none { it.id == id }) return@launch
-            updateCard(id) {
-                copy(
-                    source = edited,
-                    sourceLang = sourceLang,
-                    translations = langs.targetsFor(sourceLang).map(::CardTranslation),
-                    stage = CardStage.Error,
-                    canRetry = true,
-                )
+            retranslate(id, edited, sourceLang)
+        }
+    }
+
+    /** Adds a card for typed [text] and translates it, as if it had been heard. */
+    fun submitText(text: String) {
+        val typed = text.trim()
+        if (typed.isEmpty() || _state.value.phase in BUSY_PHASES) return
+        val id = nextId++
+        DebugLog.log(TAG) { "#$id typed (${typed.length} chars)" }
+        _state.update { s ->
+            s.copy(hint = null, cards = listOf(CardState(id, s.langs, CardStage.Recognizing, source = typed)) + s.cards)
+        }
+        viewModelScope.launch {
+            val sourceLang = detect(typed)
+            if (_state.value.cards.none { it.id == id }) return@launch
+            if (_state.value.phase in BUSY_PHASES) {
+                // A recording started while detecting and owns the pipeline; the text waits for a retry.
+                updateCard(id) {
+                    copy(
+                        sourceLang = sourceLang,
+                        translations = langs.targetsFor(sourceLang).map(::CardTranslation),
+                        stage = CardStage.Error,
+                        error = ErrorKind.Unknown,
+                        canRetry = true,
+                    )
+                }
+                return@launch
             }
-            activeId = id
-            dispatch(PttEvent.Retry)
+            retranslate(id, typed, sourceLang)
+        }
+    }
+
+    /** Sets card [id]'s text and language and translates it as a retry would. Call when not busy. */
+    private fun retranslate(id: Long, text: String, sourceLang: Lang?) {
+        updateCard(id) {
+            copy(
+                source = text,
+                sourceLang = sourceLang,
+                sourceService = null,
+                alternatives = emptyList(),
+                translations = langs.targetsFor(sourceLang).map(::CardTranslation),
+                stage = CardStage.Error,
+                canRetry = true,
+            )
+        }
+        activeId = id
+        dispatch(PttEvent.Retry)
+    }
+
+    /** The language of [text], or null when it can't be told quickly. */
+    private suspend fun detect(text: String): Lang? = withTimeoutOrNull(1_500) {
+        try {
+            detector.detect(text)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            null // Short or ambiguous text may not have a reliable language ID.
         }
     }
 
@@ -269,12 +310,13 @@ class TranslateViewModel @Inject constructor(
         }
         updateCard(id) { copy(stage = CardStage.Recognizing) }
         pipelineJob = viewModelScope.launch {
+            var finished = false
             val transcript = try {
                 withTimeout(TIMEOUT_MS) {
                     // Wait for the last feed and AudioRecord release before committing the session.
                     stopped?.join()
                     currentSession.finish()
-                }
+                }.also { finished = true }
             } catch (e: CancellationException) {
                 if (e is TimeoutCancellationException) { fail(id, ErrorKind.Timeout, e); return@launch }
                 throw e
@@ -282,10 +324,12 @@ class TranslateViewModel @Inject constructor(
                 fail(id, e.errorKind(), e)
                 return@launch
             } finally {
-                currentSession.cancel()
+                // A finished session may still be hearing from slower services; collecting them ends it.
+                if (!finished) currentSession.cancel()
                 if (session === currentSession) session = null
                 recognizer.prepare()
             }
+            collectLate(id, transcript, currentSession)
             DebugLog.log(TAG) {
                 "#$id final transcript +${sinceRelease()} ms after release (${transcript.text.length} chars)"
             }
@@ -294,15 +338,7 @@ class TranslateViewModel @Inject constructor(
                 return@launch
             }
             val detectStart = clock.nowMs()
-            val sourceLang = transcript.lang ?: withTimeoutOrNull(1_500) {
-                try {
-                    detector.detect(transcript.text)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    null // Short or ambiguous text may not have a reliable language ID.
-                }
-            }
+            val sourceLang = transcript.lang ?: detect(transcript.text)
             DebugLog.log(TAG) {
                 if (transcript.lang != null) "#$id language ${transcript.lang.tag} from ASR"
                 else "#$id language detected: ${sourceLang?.tag ?: "unknown"} in ${clock.nowMs() - detectStart} ms"
@@ -311,6 +347,8 @@ class TranslateViewModel @Inject constructor(
                 copy(
                     source = transcript.text,
                     sourceLang = sourceLang,
+                    sourceService = transcript.service,
+                    alternatives = transcript.alternatives,
                     translations = langs.targetsFor(sourceLang).map(::CardTranslation),
                     stage = CardStage.Translating,
                     canRetry = true,
@@ -321,21 +359,42 @@ class TranslateViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Adds what slower services hear to card [id], for reading; the translation has started without them. Not
+     * after the text was edited: they would be alternatives to words nobody said. Ends [session] when done.
+     */
+    private fun collectLate(id: Long, transcript: Transcript, session: RecognitionSession) {
+        viewModelScope.launch {
+            try {
+                transcript.late.collect { alternative ->
+                    updateCard(id) {
+                        if (source == transcript.text) copy(alternatives = alternatives + alternative) else this
+                    }
+                }
+            } finally {
+                session.cancel()
+            }
+        }
+    }
+
     /** Translates into each of the card's targets at once; the first failure stops them all. */
     private suspend fun translate(id: Long, text: String, from: Lang?) {
         val card = _state.value.cards.firstOrNull { it.id == id } ?: return
         val targets = card.translations.map { it.to }.ifEmpty { card.langs.targetsFor(from) }
+        // The same words twice tell the translator nothing more.
+        val references = card.alternatives.map { it.text }.filter { it != text }.distinct()
         val start = clock.nowMs()
         var chunks = 0
         var chars = 0
         DebugLog.log(TAG) {
-            "#$id translate ${from?.tag ?: "auto"} → ${targets.joinToString { it.tag }} (${text.length} chars)"
+            "#$id translate ${from?.tag ?: "auto"} → ${targets.joinToString { it.tag }} (${text.length} chars, " +
+                "${references.size} reference(s))"
         }
         try {
             withTimeout(TIMEOUT_MS) {
                 coroutineScope {
                     for (to in targets) launch {
-                        translator.translate(text, from, to).collect { fragment ->
+                        translator.translate(text, from, to, references).collect { fragment ->
                             if (chunks++ == 0) DebugLog.log(TAG) { "#$id first translated text +${clock.nowMs() - start} ms" }
                             chars += fragment.length
                             updateCard(id) {

@@ -18,6 +18,8 @@ enum class AsrService(
     val provider: AsrProvider,
     val streaming: Boolean,
     val experimental: Boolean = false,
+    /** Switched off for now: not offered, and dropped from saved settings. */
+    val disabled: Boolean = false,
 ) {
     FunAsrRealtimeStream(
         "fun-asr-realtime-stream-input",
@@ -34,6 +36,8 @@ enum class AsrService(
         AsrProvider.OpenAi,
         streaming = true,
         experimental = true,
+        // Temporarily off.
+        disabled = true,
     ),
     Gpt4oTranscribeNonStream(
         "gpt-4o-transcribe-non-stream-input",
@@ -67,9 +71,12 @@ enum class AsrService(
         val Default = FunAsrRealtimeStream
 
         /** What can be picked in this build. */
-        val available: List<AsrService> = entries.filter { it.provider in AsrProvider.available }
+        val available: List<AsrService> = entries.filter { it.provider in AsrProvider.available && !it.disabled }
 
-        fun fromId(id: String?): AsrService = available.firstOrNull { it.id == id } ?: Default
+        fun fromId(id: String?): AsrService = find(id) ?: Default
+
+        /** The service with [id] if this build can run it. */
+        fun find(id: String?): AsrService? = available.firstOrNull { it.id == id }
     }
 }
 

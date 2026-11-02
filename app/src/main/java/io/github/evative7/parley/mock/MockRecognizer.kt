@@ -1,7 +1,8 @@
 package io.github.evative7.parley.mock
 
 import io.github.evative7.parley.asr.RecognitionSession
-import io.github.evative7.parley.asr.SpeechRecognizer
+import io.github.evative7.parley.asr.AsrService
+import io.github.evative7.parley.asr.ServiceRecognizer
 import io.github.evative7.parley.asr.Transcript
 import io.github.evative7.parley.data.LanguageRepository
 import io.github.evative7.parley.data.ServiceSettingsSource
@@ -21,29 +22,36 @@ import javax.inject.Singleton
 
 /**
  * Recognizes nothing: the microphone runs as usual, but each press "hears" the next sample sentence,
- * alternating between the two languages of the bar so both directions get translated.
+ * alternating between the two languages of the bar so both directions get translated. With both mock services
+ * selected, they hear the same sentence; the whole-file one a moment later and without its final punctuation,
+ * so there is a second transcript to compare.
  */
 @Singleton
 class MockRecognizer @Inject constructor(
     private val settings: ServiceSettingsSource,
     private val languages: LanguageRepository,
-) : SpeechRecognizer {
+) : ServiceRecognizer {
     private var turn = 0
+    // Sessions opened this close together belong to one press.
+    private var lastOpenNs = Long.MIN_VALUE
+    private var pressTurn = 0
 
     private val speed: MockSpeed get() = settings.current?.mockAsrSpeed ?: MockSpeed.Normal
     private val fault: MockAsrFault get() = settings.current?.mockAsrFault ?: MockAsrFault.None
 
-    override val isStreaming: Boolean
-        get() = settings.current?.asrService?.streaming ?: true
-
-    override fun open(lang: String?): RecognitionSession {
+    @Synchronized
+    override fun open(service: AsrService, lang: String?): RecognitionSession {
         val langs = languages.current.value ?: LangPair.default()
-        val n = turn++
+        val now = System.nanoTime()
+        if (lastOpenNs == Long.MIN_VALUE || now - lastOpenNs > SAME_PRESS_NS) pressTurn = turn++
+        lastOpenNs = now
+        val n = pressTurn
         // Each language gets its turn, and the sentences run through the list.
         val speaker = if (n % 2 == 0) langs.first else langs.second
-        val text = MockPhrases.get(n / 2, speaker)
-        DebugLog.log(TAG) { "open: will hear ${speaker.tag}, speed=$speed, fault=$fault" }
-        return Session(text, speaker, isStreaming)
+        val phrase = MockPhrases.get(n / 2, speaker)
+        val text = if (service.streaming) phrase else phrase.trimEnd { !it.isLetterOrDigit() }
+        DebugLog.log(TAG) { "open ${service.id}: will hear ${speaker.tag}, speed=$speed, fault=$fault" }
+        return Session(text, speaker, service.streaming)
     }
 
     private inner class Session(
@@ -66,7 +74,7 @@ class MockRecognizer @Inject constructor(
         }
 
         override suspend fun finish(): Transcript {
-            delay(speed.recognizeMs)
+            delay(speed.recognizeMs + if (streaming) 0 else WHOLE_FILE_EXTRA_MS)
             return when (fault) {
                 MockAsrFault.None -> Transcript(text, lang)
                 MockAsrFault.NoSpeech -> Transcript("", null)
@@ -93,5 +101,7 @@ class MockRecognizer @Inject constructor(
         const val TAG = "MockASR"
         const val SAMPLE_RATE = 16_000
         const val CHARS_PER_SECOND = 12
+        const val SAME_PRESS_NS = 500_000_000L
+        const val WHOLE_FILE_EXTRA_MS = 400L
     }
 }

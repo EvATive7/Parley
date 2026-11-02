@@ -19,11 +19,13 @@ import javax.inject.Singleton
  */
 @Singleton
 class MockTranslator @Inject constructor(private val settings: ServiceSettingsSource) : Translator {
-    override fun translate(text: String, from: Lang?, to: Lang): Flow<String> = flow {
+    override fun translate(text: String, from: Lang?, to: Lang, references: List<String>): Flow<String> = flow {
         val preset = settings.current?.selectedTranslation
         val speed = preset?.mockSpeed ?: MockSpeed.Normal
         val fault = preset?.mockFault ?: MockTranslationFault.None
-        DebugLog.log(TAG) { "translate ${from?.tag ?: "auto"} → ${to.tag}, speed=$speed, fault=$fault" }
+        DebugLog.log(TAG) {
+            "translate ${from?.tag ?: "auto"} → ${to.tag}, ${references.size} reference(s), speed=$speed, fault=$fault"
+        }
         delay(speed.firstTokenMs)
         when (fault) {
             MockTranslationFault.Authentication -> throw ServiceException(ServiceFailure.Authentication, 401)

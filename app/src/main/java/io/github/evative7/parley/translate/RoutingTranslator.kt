@@ -19,5 +19,6 @@ class RoutingTranslator @Inject constructor(
 
     override fun prepare() = active.prepare()
 
-    override fun translate(text: String, from: Lang?, to: Lang): Flow<String> = active.translate(text, from, to)
+    override fun translate(text: String, from: Lang?, to: Lang, references: List<String>): Flow<String> =
+        active.translate(text, from, to, references)
 }

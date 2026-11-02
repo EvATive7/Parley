@@ -1,5 +1,7 @@
 package io.github.evative7.parley.state
 
+import io.github.evative7.parley.asr.AsrAlternative
+import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.model.Lang
 
 data class UiState(
@@ -58,6 +60,10 @@ data class CardState(
     val stage: CardStage,
     val source: String = "",
     val sourceLang: Lang? = null,
+    /** Which service heard [source], when several ran. */
+    val sourceService: AsrService? = null,
+    /** What the other ASR services heard, when several ran; the translator weighs them against [source]. */
+    val alternatives: List<AsrAlternative> = emptyList(),
     /**
      * Empty until the speech has been recognized; then one per target language, in the pair's order:
      * one for either side's speech, two for anyone else's.

@@ -170,4 +170,14 @@
     <string name="mock_fault_authentication">认证失败</string>
     <string name="mock_fault_rate_limit">限流</string>
     <string name="mock_fault_timeout">超时</string>
+    <string name="manual_input">手动输入</string>
+    <string name="manual_input_hint">输入要说的话</string>
+    <string name="action_translate">翻译</string>
+    <string name="asr_which_service">由哪个服务识别</string>
+    <string name="more_actions">更多</string>
+    <string name="settings_missing_asr_service">请至少选择一个识别服务。</string>
+    <string name="settings_asr_services_hint">可多选。所选服务同时识别：显示最快的结果，其余结果供翻译参考。</string>
+    <string name="settings_asr_grace">候选结果等待时长</string>
+    <string name="settings_asr_grace_value">%1$.1f 秒</string>
+    <string name="settings_asr_grace_hint">首个识别结果返回后，继续接收其他识别服务结果的时长。在此时长内返回的结果将作为参考提供给翻译模型；超时返回的结果仅在卡片详情中展示，不参与本次翻译。时长越长，可供参考的结果越充分，翻译延迟也相应增加。</string>
 </resources>

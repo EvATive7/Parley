@@ -320,7 +320,7 @@ class DashScopeRecognizerTest {
         val recognizer = DashScopeRecognizer(client, object : ServiceSettingsSource {
             override val current = ServiceSettings()
         })
-        try { recognizer.open(null); fail("Expected configuration failure") } catch (e: ServiceException) {
+        try { recognizer.open(AsrService.FunAsrRealtimeStream, null); fail("Expected configuration failure") } catch (e: ServiceException) {
             assertEquals(ServiceFailure.Configuration, e.failure)
         }
         assertEquals(0, server.requestCount)

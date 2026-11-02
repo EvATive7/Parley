@@ -30,20 +30,19 @@ import kotlin.coroutines.resumeWithException
 class OpenAiTranscriptionRecognizer @Inject constructor(
     private val client: OkHttpClient,
     private val settings: ServiceSettingsSource,
-) : SpeechRecognizer {
-    override val isStreaming = false
+) : ServiceRecognizer {
     private val warmer = ConnectionWarmer(client, "OpenAI ASR")
 
     /** The audio is uploaded after release; have the TLS connection ready by then. */
-    override fun prepare() {
-        if (settings.current?.takeIf { it.isReady }?.asrService in SUPPORTED_SERVICES) warmer.warm(TRANSCRIPTIONS_URL)
+    override fun prepare(service: AsrService) {
+        if (settings.current?.isReady == true && service in SUPPORTED_SERVICES) warmer.warm(TRANSCRIPTIONS_URL)
     }
 
-    override fun open(lang: String?): RecognitionSession {
+    override fun open(service: AsrService, lang: String?): RecognitionSession {
         val config = settings.current?.takeIf {
-            it.isReady && it.asrService in SUPPORTED_SERVICES
+            it.isReady && service in SUPPORTED_SERVICES
         } ?: throw ServiceException(ServiceFailure.Configuration)
-        val model = when (config.asrService) {
+        val model = when (service) {
             AsrService.Gpt4oTranscribeNonStream -> "gpt-4o-transcribe"
             AsrService.Gpt4oMiniTranscribeNonStream -> "gpt-4o-mini-transcribe"
             else -> error("Unsupported OpenAI transcription service")

@@ -143,4 +143,9 @@
     <string name="settings_config_invalid">ไฟล์นี้ไม่ใช่ไฟล์การตั้งค่าของ Parley</string>
     <string name="settings_config_too_new">ไฟล์นี้มาจาก Parley เวอร์ชันที่ใหม่กว่า โปรดอัปเดตแอปก่อนนำเข้า</string>
     <string name="settings_config_failed">ไม่สามารถอ่านหรือเขียนไฟล์ได้</string>
+    <string name="manual_input">พิมพ์ข้อความ</string>
+    <string name="manual_input_hint">พิมพ์สิ่งที่คุณต้องการพูด</string>
+    <string name="action_translate">แปล</string>
+    <string name="asr_which_service">บริการที่รู้จำข้อความนี้</string>
+    <string name="more_actions">เพิ่มเติม</string>
 </resources>

@@ -1,7 +1,12 @@
 package io.github.evative7.parley.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -49,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.github.evative7.parley.R
+import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.state.CardCell
 import io.github.evative7.parley.state.CardStage
 import io.github.evative7.parley.state.CardTranslation
@@ -269,7 +276,10 @@ private fun CardDialog(
                 Spacer(Modifier.size(16.dp))
 
                 if (editing && onEdit != null) {
-                    SourceEditor(card.source, enabled = editEnabled, onSubmit = onEdit, onCancel = { editing = false })
+                    SourceEditor(
+                        card.source, enabled = editEnabled, submitLabel = stringResource(R.string.action_retranslate),
+                        onSubmit = onEdit, onCancel = { editing = false },
+                    )
                 } else {
                     // A long translation scrolls; the buttons stay in place.
                     val scroll = rememberScrollState()
@@ -280,9 +290,7 @@ private fun CardDialog(
                             .verticalScroll(scroll, enabled = turn == Turn.None)
                             .padding(horizontal = 24.dp),
                     ) {
-                        if (source.isNotEmpty()) {
-                            Text(source, style = MaterialTheme.typography.bodyLarge, color = colors.onSurfaceVariant)
-                        }
+                        if (source.isNotEmpty()) Transcripts(source, card)
                         Translations(translations, streaming = false, spaced = source.isNotEmpty())
                         if (card.stage == CardStage.Error) {
                             if (source.isNotEmpty() || translations.isNotEmpty()) Spacer(Modifier.size(16.dp))
@@ -368,9 +376,87 @@ private fun Translations(translations: List<CardTranslation>, streaming: Boolean
     }
 }
 
-/** The recognized text, open for correction before it is translated again. */
+/**
+ * The recognized [source], and under it, each on its own line and looking the same, what the card's other
+ * recognition services heard. With several, each line has an info mark that names the service that heard it.
+ */
 @Composable
-private fun SourceEditor(source: String, enabled: Boolean, onSubmit: (String) -> Unit, onCancel: () -> Unit) {
+private fun Transcripts(source: String, card: CardState) {
+    val service = card.sourceService
+    if (card.alternatives.isEmpty() || service == null) {
+        Text(source, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        return
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        TranscriptLine(source, service)
+        for (alternative in card.alternatives) TranscriptLine(alternative.text, alternative.service)
+    }
+}
+
+@Composable
+private fun TranscriptLine(text: String, service: AsrService) {
+    val colors = MaterialTheme.colorScheme
+    val motion = MaterialTheme.motionScheme
+    var named by remember { mutableStateOf(false) }
+    Column {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text,
+                style = MaterialTheme.typography.bodyLarge,
+                color = colors.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = { named = !named }, modifier = Modifier.size(32.dp)) {
+                Icon(
+                    painterResource(R.drawable.ic_info),
+                    stringResource(R.string.asr_which_service),
+                    Modifier.size(18.dp),
+                    tint = if (named) colors.primary else colors.onSurfaceVariant,
+                )
+            }
+        }
+        AnimatedVisibility(
+            visible = named,
+            enter = expandVertically(motion.defaultSpatialSpec()) + fadeIn(motion.defaultEffectsSpec()),
+            exit = shrinkVertically(motion.defaultSpatialSpec()) + fadeOut(motion.fastEffectsSpec()),
+        ) {
+            Text(service.label(), style = MaterialTheme.typography.labelMedium, color = colors.primary)
+        }
+    }
+}
+
+/** Typing what to say instead of saying it; the text is translated like recognized speech. */
+@Composable
+fun ManualInputDialog(onSubmit: (String) -> Unit, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(shape = MaterialTheme.shapes.extraLarge, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+            Column(Modifier.padding(top = 24.dp, bottom = 16.dp)) {
+                Text(
+                    stringResource(R.string.manual_input),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                )
+                Spacer(Modifier.size(16.dp))
+                SourceEditor(
+                    "", enabled = true, submitLabel = stringResource(R.string.action_translate),
+                    onSubmit = onSubmit, onCancel = onDismiss, placeholder = stringResource(R.string.manual_input_hint),
+                )
+            }
+        }
+    }
+}
+
+/** The recognized text, open for correction before it is translated again; or, from empty, typed text. */
+@Composable
+private fun SourceEditor(
+    source: String,
+    enabled: Boolean,
+    submitLabel: String,
+    onSubmit: (String) -> Unit,
+    onCancel: () -> Unit,
+    placeholder: String? = null,
+) {
     val colors = MaterialTheme.colorScheme
     var text by rememberSaveable { mutableStateOf(source) }
     val focus = remember { FocusRequester() }
@@ -378,6 +464,7 @@ private fun SourceEditor(source: String, enabled: Boolean, onSubmit: (String) ->
     OutlinedTextField(
         value = text,
         onValueChange = { text = it },
+        placeholder = placeholder?.let { { Text(it) } },
         textStyle = MaterialTheme.typography.bodyLarge,
         minLines = 3,
         maxLines = 8,
@@ -391,7 +478,7 @@ private fun SourceEditor(source: String, enabled: Boolean, onSubmit: (String) ->
     Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(BarGap)) {
         ActionBar(
             Action(
-                R.drawable.ic_translate, stringResource(R.string.action_retranslate),
+                R.drawable.ic_translate, submitLabel,
                 // Unchanged text would only translate the same thing again.
                 enabled = enabled && text.isNotBlank() && text.trim() != source,
             ) { onSubmit(text) },

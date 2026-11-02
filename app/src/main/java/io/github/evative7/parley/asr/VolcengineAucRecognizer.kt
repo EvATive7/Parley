@@ -35,21 +35,20 @@ import kotlin.coroutines.resumeWithException
 class VolcengineAucRecognizer @Inject constructor(
     private val client: OkHttpClient,
     private val settings: ServiceSettingsSource,
-) : SpeechRecognizer {
-    override val isStreaming = false
+) : ServiceRecognizer {
     private val warmer = ConnectionWarmer(client, "Volcengine")
 
     /** The audio is uploaded after release; have the TLS connection ready by then. */
-    override fun prepare() {
+    override fun prepare(service: AsrService) {
         // Submit, query and flash endpoints share one host, so one connection serves all three.
-        if (settings.current?.takeIf { it.isReady }?.asrService in SUPPORTED_SERVICES) warmer.warm(VolcAucEndpoints.Default.submit)
+        if (settings.current?.isReady == true && service in SUPPORTED_SERVICES) warmer.warm(VolcAucEndpoints.Default.submit)
     }
 
-    override fun open(lang: String?): RecognitionSession {
+    override fun open(service: AsrService, lang: String?): RecognitionSession {
         val config = settings.current?.takeIf {
-            it.isReady && it.asrService in SUPPORTED_SERVICES
+            it.isReady && service in SUPPORTED_SERVICES
         } ?: throw ServiceException(ServiceFailure.Configuration)
-        val mode = when (config.asrService) {
+        val mode = when (service) {
             AsrService.DoubaoSeedAsr20NonStream -> VolcAucMode.Standard
             AsrService.DoubaoSeedAsr20NonStreamTurbo -> VolcAucMode.Turbo
             else -> error("Unsupported Volcengine AUC service")
