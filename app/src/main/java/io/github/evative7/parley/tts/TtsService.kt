@@ -24,6 +24,10 @@ enum class TtsService(
             "en", "zh-CN" -> "longanyang"
             else -> null
         }
+        DoubaoSeedTts20 -> when (lang.tag) {
+            "en", "zh-CN" -> "zh_female_gaolengyujie_uranus_bigtts"
+            else -> null
+        }
         Mock -> "mock"
         else -> null
     }

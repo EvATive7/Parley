@@ -25,6 +25,7 @@ class RoutingTextToSpeaker @Inject constructor(
         TtsService.CosyVoice35Plus to CloudTextToSpeaker(
             CosyVoiceSynthesizer(client, settings, TtsService.CosyVoice35Plus), player, cache,
         ),
+        TtsService.DoubaoSeedTts20 to CloudTextToSpeaker(DoubaoSynthesizer(client, settings), player, cache),
         TtsService.Mock to CloudTextToSpeaker(mock, player, cache),
     )
 

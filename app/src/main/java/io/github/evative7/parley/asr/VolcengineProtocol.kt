@@ -13,9 +13,11 @@ internal object VolcengineProtocol {
     const val CLIENT_FULL_REQUEST = 0x1
     const val CLIENT_AUDIO_ONLY_REQUEST = 0x2
     const val SERVER_FULL_RESPONSE = 0x9
+    const val SERVER_AUDIO_ONLY_RESPONSE = 0xb
     const val SERVER_ERROR_RESPONSE = 0xf
     const val POS_SEQUENCE = 0x1
     const val NEG_WITH_SEQUENCE = 0x3
+    const val WITH_EVENT = 0x4
     const val NO_SERIALIZATION = 0x0
     const val JSON_SERIALIZATION = 0x1
 
@@ -24,6 +26,14 @@ internal object VolcengineProtocol {
         val sequence: Int?,
         val isLast: Boolean,
         val json: JsonObject? = null,
+        val errorCode: Int? = null,
+    )
+
+    data class EventResponse(
+        val messageType: Int,
+        val event: Int,
+        val sessionId: String?,
+        val payload: ByteArray,
         val errorCode: Int? = null,
     )
 
@@ -45,6 +55,64 @@ internal object VolcengineProtocol {
         output.write(intBytes(body.size))
         output.write(body)
         return output.toByteArray()
+    }
+
+    /** V3 event frame used by bidirectional TTS. */
+    fun eventFrame(event: Int, sessionId: String? = null, payload: ByteArray = "{}".toByteArray()): ByteArray {
+        val output = ByteArrayOutputStream(16 + (sessionId?.length ?: 0) + payload.size)
+        output.write(0x11)
+        output.write((CLIENT_FULL_REQUEST shl 4) or WITH_EVENT)
+        output.write(JSON_SERIALIZATION shl 4)
+        output.write(0)
+        output.write(intBytes(event))
+        if (event !in CONNECTION_EVENTS) {
+            val session = sessionId.orEmpty().toByteArray(Charsets.UTF_8)
+            output.write(intBytes(session.size))
+            output.write(session)
+        }
+        output.write(intBytes(payload.size))
+        output.write(payload)
+        return output.toByteArray()
+    }
+
+    /** Parses a V3 event response, preserving raw PCM payloads. */
+    fun parseEvent(raw: ByteArray): EventResponse? {
+        if (raw.size < 8) return null
+        val headerBytes = (raw[0].toInt() and 0x0f) * 4
+        if (headerBytes < 4 || raw.size < headerBytes + 4) return null
+        val messageType = (raw[1].toInt() ushr 4) and 0x0f
+        val flags = raw[1].toInt() and 0x0f
+        if (messageType == SERVER_ERROR_RESPONSE) {
+            if (raw.size < headerBytes + 8) return null
+            val code = readInt(raw, headerBytes)
+            val size = readInt(raw, headerBytes + 4).coerceAtLeast(0)
+            val start = headerBytes + 8
+            return EventResponse(messageType, 0, null, raw.copyOfRange(start, minOf(raw.size, start + size)), code)
+        }
+        if (flags != WITH_EVENT) return null
+        var offset = headerBytes
+        val event = readInt(raw, offset)
+        offset += 4
+        var sessionId: String? = null
+        if (event in CONNECTION_RESPONSE_EVENTS) {
+            if (raw.size < offset + 4) return null
+            val size = readInt(raw, offset).coerceAtLeast(0)
+            offset += 4
+            if (raw.size < offset + size) return null
+            offset += size // Connect ID is diagnostic only.
+        } else if (event !in CONNECTION_EVENTS) {
+            if (raw.size < offset + 4) return null
+            val size = readInt(raw, offset).coerceAtLeast(0)
+            offset += 4
+            if (raw.size < offset + size) return null
+            sessionId = raw.copyOfRange(offset, offset + size).toString(Charsets.UTF_8)
+            offset += size
+        }
+        if (raw.size < offset + 4) return null
+        val size = readInt(raw, offset).coerceAtLeast(0)
+        offset += 4
+        if (raw.size < offset + size) return null
+        return EventResponse(messageType, event, sessionId, raw.copyOfRange(offset, offset + size))
     }
 
     fun parse(raw: ByteArray): Response? {
@@ -108,4 +176,7 @@ internal object VolcengineProtocol {
     private fun intBytes(value: Int): ByteArray = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(value).array()
     private fun readInt(value: ByteArray, offset: Int): Int =
         ByteBuffer.wrap(value, offset, 4).order(ByteOrder.BIG_ENDIAN).int
+
+    private val CONNECTION_EVENTS = setOf(1, 2, 50, 51, 52)
+    private val CONNECTION_RESPONSE_EVENTS = setOf(50, 51, 52)
 }
