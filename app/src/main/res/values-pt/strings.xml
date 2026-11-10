@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">O acesso ao microfone foi desativado. Ative-o nas configurações do sistema e volte.</string>
 
     <string name="pick_language">Que idioma você fala?</string>
+    <string name="language_unsupported_title">Aviso de suporte de idioma</string>
+    <string name="language_unsupported_body">%1$s não é compatível com: %2$s. O reconhecimento ou a fala podem não funcionar.</string>
+    <string name="action_continue">Continuar</string>
     <string name="swap_languages">Trocar idiomas</string>
     <string name="face_to_face">Modo frente a frente</string>
     <string name="face_to_face_exit">Sair do modo frente a frente</string>

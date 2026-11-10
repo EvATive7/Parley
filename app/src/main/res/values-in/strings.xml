@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">Akses mikrofon dinonaktifkan. Aktifkan di setelan sistem, lalu kembali.</string>
 
     <string name="pick_language">Bahasa apa yang Anda gunakan?</string>
+    <string name="language_unsupported_title">Peringatan dukungan bahasa</string>
+    <string name="language_unsupported_body">%1$s tidak didukung oleh: %2$s. Pengenalan atau suara mungkin tidak berfungsi.</string>
+    <string name="action_continue">Lanjutkan</string>
     <string name="swap_languages">Tukar bahasa</string>
     <string name="face_to_face">Mode tatap muka</string>
     <string name="face_to_face_exit">Keluar dari mode tatap muka</string>

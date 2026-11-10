@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">L’accès au microphone est désactivé. Activez-le dans les paramètres système, puis revenez dans l’application.</string>
 
     <string name="pick_language">Quelle langue parlez-vous ?</string>
+    <string name="language_unsupported_title">Avertissement de prise en charge</string>
+    <string name="language_unsupported_body">%1$s n’est pas pris en charge par : %2$s. La reconnaissance ou la synthèse vocale peut ne pas fonctionner.</string>
+    <string name="action_continue">Continuer</string>
     <string name="swap_languages">Permuter les langues</string>
     <string name="face_to_face">Mode face à face</string>
     <string name="face_to_face_exit">Quitter le mode face à face</string>

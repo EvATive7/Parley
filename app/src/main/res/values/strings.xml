@@ -8,6 +8,9 @@
 
 
     <string name="pick_language">Which language do you speak?</string>
+    <string name="language_unsupported_title">Language support warning</string>
+    <string name="language_unsupported_body">%1$s is not supported by: %2$s. Recognition or speech may not work.</string>
+    <string name="action_continue">Continue</string>
     <string name="swap_languages">Swap languages</string>
     <string name="face_to_face">Face-to-face mode</string>
     <string name="face_to_face_exit">Exit face-to-face mode</string>

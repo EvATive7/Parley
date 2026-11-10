@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">Quyền dùng micrô đã bị tắt. Hãy bật quyền này trong cài đặt hệ thống rồi quay lại.</string>
 
     <string name="pick_language">Bạn nói ngôn ngữ nào?</string>
+    <string name="language_unsupported_title">Cảnh báo hỗ trợ ngôn ngữ</string>
+    <string name="language_unsupported_body">%1$s không được hỗ trợ bởi: %2$s. Nhận dạng hoặc đọc giọng nói có thể không hoạt động.</string>
+    <string name="action_continue">Tiếp tục</string>
     <string name="swap_languages">Đổi ngôn ngữ</string>
     <string name="face_to_face">Chế độ đối diện</string>
     <string name="face_to_face_exit">Thoát chế độ đối diện</string>

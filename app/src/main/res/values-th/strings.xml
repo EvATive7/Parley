@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">ปิดการเข้าถึงไมโครโฟนอยู่ โปรดเปิดในการตั้งค่าระบบแล้วกลับมา</string>
 
     <string name="pick_language">คุณพูดภาษาอะไร</string>
+    <string name="language_unsupported_title">คำเตือนการรองรับภาษา</string>
+    <string name="language_unsupported_body">%1$s ไม่รองรับโดย: %2$s การรู้จำเสียงหรือการอ่านข้อความอาจไม่ทำงาน</string>
+    <string name="action_continue">ดำเนินการต่อ</string>
     <string name="swap_languages">สลับภาษา</string>
     <string name="face_to_face">โหมดตัวต่อตัว</string>
     <string name="face_to_face_exit">ออกจากโหมดตัวต่อตัว</string>

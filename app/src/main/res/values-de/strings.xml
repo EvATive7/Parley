@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">Der Mikrofonzugriff ist deaktiviert. Aktiviere ihn in den Systemeinstellungen und kehre dann zurück.</string>
 
     <string name="pick_language">Welche Sprache sprechen Sie?</string>
+    <string name="language_unsupported_title">Warnung zur Sprachunterstützung</string>
+    <string name="language_unsupported_body">%1$s wird von folgenden Diensten nicht unterstützt: %2$s. Erkennung oder Sprachausgabe funktioniert möglicherweise nicht.</string>
+    <string name="action_continue">Fortfahren</string>
     <string name="swap_languages">Sprachen tauschen</string>
     <string name="face_to_face">Gegenüber-Modus</string>
     <string name="face_to_face_exit">Gegenüber-Modus beenden</string>

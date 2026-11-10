@@ -78,7 +78,6 @@ fun ResultCard(
     onDelete: () -> Unit,
     onRetry: () -> Unit,
     onSpeak: (CardTranslation) -> Unit = {},
-    speechFallback: (CardTranslation) -> Boolean = { false },
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
     onEdit: ((String) -> Unit)? = null,
@@ -90,7 +89,7 @@ fun ResultCard(
     val motion = MaterialTheme.motionScheme
     TappableCard(
         card, source = card.source, translations = translations,
-        onCopy = onCopy, onDelete = onDelete, onSpeak = onSpeak, speechFallback = speechFallback,
+        onCopy = onCopy, onDelete = onDelete, onSpeak = onSpeak,
         modifier = modifier, turn = turn, onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
     ) {
         Column(
@@ -112,7 +111,7 @@ fun ResultCard(
 
             Translations(
                 translations, streaming = true, speechEnabled = card.stage == CardStage.Done,
-                onSpeak = onSpeak, speechFallback = speechFallback,
+                onSpeak = onSpeak,
             )
 
             ErrorRow(card, onRetry, retryEnabled, belowText = card.source.isNotEmpty() || waitingForSource)
@@ -136,7 +135,6 @@ fun ResultCell(
     onDelete: () -> Unit,
     onRetry: () -> Unit,
     onSpeak: (CardTranslation) -> Unit,
-    speechFallback: (CardTranslation) -> Boolean,
     turn: Turn,
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
@@ -152,7 +150,7 @@ fun ResultCell(
         is CardCell.Whole -> {
             ResultCard(
                 card = card, onCopy = onCopy, onDelete = onDelete, onRetry = onRetry,
-                onSpeak = onSpeak, speechFallback = speechFallback, modifier = modifier,
+                onSpeak = onSpeak, modifier = modifier,
                 retryEnabled = retryEnabled, onEdit = onEdit, shape = shape, turn = turn,
                 translations = listOf(cell.translation),
             )
@@ -173,7 +171,7 @@ fun ResultCell(
         card,
         source = if (translated) "" else text,
         translations = if (cell is CardCell.Translation) listOf(cell.translation) else emptyList(),
-        onCopy = onCopy, onDelete = onDelete, onSpeak = onSpeak, speechFallback = speechFallback,
+        onCopy = onCopy, onDelete = onDelete, onSpeak = onSpeak,
         modifier = modifier, turn = turn, onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
     ) {
         Column(
@@ -197,7 +195,7 @@ fun ResultCell(
                     )
                     if (cell is CardCell.Translation && card.stage == CardStage.Done) {
                         Spacer(Modifier.width(8.dp))
-                        SpeechButton(cell.translation, speechFallback(cell.translation)) { onSpeak(cell.translation) }
+                        SpeechButton(cell.translation) { onSpeak(cell.translation) }
                     }
                 }
             }
@@ -219,7 +217,6 @@ private fun TappableCard(
     onCopy: (String) -> Unit,
     onDelete: () -> Unit,
     onSpeak: (CardTranslation) -> Unit,
-    speechFallback: (CardTranslation) -> Boolean,
     modifier: Modifier = Modifier,
     turn: Turn = Turn.None,
     onEdit: ((String) -> Unit)? = null,
@@ -256,7 +253,6 @@ private fun TappableCard(
             onCopy = { open = false; onCopy(it) },
             onDelete = { open = false; onDelete() },
             onSpeak = onSpeak,
-            speechFallback = speechFallback,
             onEdit = edit?.let { { text: String -> open = false; it(text) } },
             editEnabled = editEnabled,
             onDismiss = { open = false },
@@ -274,7 +270,6 @@ private fun CardDialog(
     onCopy: (String) -> Unit,
     onDelete: () -> Unit,
     onSpeak: (CardTranslation) -> Unit,
-    speechFallback: (CardTranslation) -> Boolean,
     onEdit: ((String) -> Unit)?,
     editEnabled: Boolean,
     onDismiss: () -> Unit,
@@ -332,7 +327,7 @@ private fun CardDialog(
                             if (source.isNotEmpty()) Transcripts(source, card)
                             Translations(
                                 translations, streaming = false, spaced = source.isNotEmpty(), speechEnabled = true,
-                                onSpeak = onSpeak, speechFallback = speechFallback,
+                                onSpeak = onSpeak,
                             )
                             if (card.stage == CardStage.Error) {
                                 if (source.isNotEmpty() || translations.isNotEmpty()) Spacer(Modifier.size(16.dp))
@@ -434,7 +429,6 @@ private fun Translations(
     spaced: Boolean = true,
     speechEnabled: Boolean,
     onSpeak: (CardTranslation) -> Unit,
-    speechFallback: (CardTranslation) -> Boolean,
 ) {
     val colors = MaterialTheme.colorScheme
     val named = translations.size > 1
@@ -465,7 +459,7 @@ private fun Translations(
                 }
                 if (speechEnabled) {
                     Spacer(Modifier.width(8.dp))
-                    SpeechButton(t, speechFallback(t)) { onSpeak(t) }
+                    SpeechButton(t) { onSpeak(t) }
                 }
             }
         }
@@ -473,7 +467,7 @@ private fun Translations(
 }
 
 @Composable
-private fun SpeechButton(translation: CardTranslation, @Suppress("UNUSED_PARAMETER") noFallback: Boolean, onClick: () -> Unit) {
+private fun SpeechButton(translation: CardTranslation, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val playback = translation.playback
     val playing = playback == PlaybackState.Playing

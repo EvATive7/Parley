@@ -1,6 +1,7 @@
 package io.github.evative7.parley.ui
 
 import android.content.ClipData
+import android.content.res.Resources
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.view.HapticFeedbackConstants
@@ -54,6 +55,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.FilledTonalButton
@@ -84,6 +86,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
@@ -100,6 +103,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.evative7.parley.R
 import io.github.evative7.parley.data.ServiceSettings
+import io.github.evative7.parley.data.UnsupportedServices
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.state.CardState
 import io.github.evative7.parley.state.Hint
@@ -189,6 +193,7 @@ private fun ConversationScreen(
     val scope = rememberCoroutineScope()
     // Which language bar slot the picker dialog is open for.
     var picking by rememberSaveable { mutableStateOf<Int?>(null) }
+    var pendingLanguage by remember { mutableStateOf<PendingLanguage?>(null) }
     // The menu that opens under the talk button, and the typing dialog it opens.
     var menuOpen by rememberSaveable { mutableStateOf(false) }
     var typing by rememberSaveable { mutableStateOf(false) }
@@ -253,7 +258,6 @@ private fun ConversationScreen(
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
                             onSpeak = { vm.toggleSpeech(card.id, it.to) },
-                            speechFallback = { false },
                             turn = Turn.Clockwise,
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },
@@ -301,7 +305,6 @@ private fun ConversationScreen(
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
                             onSpeak = { vm.toggleSpeech(card.id, it.to) },
-                            speechFallback = { false },
                             turn = Turn.CounterClockwise,
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },
@@ -336,7 +339,6 @@ private fun ConversationScreen(
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
                             onSpeak = { vm.toggleSpeech(card.id, it.to) },
-                            speechFallback = { false },
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },
                             modifier = modifier,
@@ -404,16 +406,106 @@ private fun ConversationScreen(
         LanguagePickerDialog(
             selected = state.langs[slot],
             other = state.langs[1 - slot],
-            onPick = { vm.setLang(slot, it); picking = null },
+            onPick = { lang ->
+                val unsupported = settings?.unsupportedServices(lang)
+                if (unsupported == null || unsupported.isEmpty) {
+                    vm.setLang(slot, lang)
+                } else {
+                    pendingLanguage = PendingLanguage(slot, lang, unsupported)
+                }
+                picking = null
+            },
             onDismiss = { picking = null },
             // Face to face, the picker turns toward whoever tapped it.
-            turn = when {
-                !faceToFace -> Turn.None
-                slot == 0 -> Turn.Clockwise
-                else -> Turn.CounterClockwise
-            },
+            turn = pickerTurn(faceToFace, slot),
         )
     }
+    pendingLanguage?.let { pending ->
+        UnsupportedLanguageDialog(
+            pending = pending,
+            turn = pickerTurn(faceToFace, pending.slot),
+            onConfirm = {
+                vm.setLang(pending.slot, pending.lang)
+                pendingLanguage = null
+            },
+            onDismiss = { pendingLanguage = null },
+        )
+    }
+}
+
+private data class PendingLanguage(
+    val slot: Int,
+    val lang: Lang,
+    val unsupported: UnsupportedServices,
+)
+
+private fun pickerTurn(faceToFace: Boolean, slot: Int): Turn = when {
+    !faceToFace -> Turn.None
+    slot == 0 -> Turn.Clockwise
+    else -> Turn.CounterClockwise
+}
+
+@Composable
+private fun UnsupportedLanguageDialog(
+    pending: PendingLanguage,
+    turn: Turn,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val deviceResources = LocalContext.current.resources
+    val pickedResources = rememberLangResources(pending.lang)
+    val bilingual = !pickedResources.configuration.locales[0].toLanguageTag().equals(
+        deviceResources.configuration.locales[0].toLanguageTag(), ignoreCase = true,
+    )
+    fun label(resource: Int): String = buildList {
+        add(deviceResources.getString(resource))
+        if (bilingual) add(pickedResources.getString(resource))
+    }.joinToString(" / ")
+    BasicAlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = if (turn == Turn.None) Modifier else Modifier.padding(vertical = 24.dp).turned(turn),
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = turn == Turn.None),
+    ) {
+        TurnedDialogWindow(turn)
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ) {
+            Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(
+                    label(R.string.language_unsupported_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+                UnsupportedLanguageMessage(deviceResources, pending)
+                if (bilingual) UnsupportedLanguageMessage(pickedResources, pending)
+                Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = onDismiss) {
+                        Text(label(R.string.action_cancel))
+                    }
+                    TextButton(onClick = onConfirm) {
+                        Text(label(R.string.action_continue))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun UnsupportedLanguageMessage(resources: Resources, pending: PendingLanguage) {
+    val serviceNames = buildList {
+        addAll(pending.unsupported.asr.map { resources.getString(it.labelResource()) })
+        pending.unsupported.tts?.let { add(resources.getString(it.labelResource())) }
+    }.joinToString(", ")
+    Text(
+        resources.getString(
+            R.string.language_unsupported_body,
+            pending.lang.displayName(resources.configuration.locales[0]),
+            serviceNames,
+        ),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 /**

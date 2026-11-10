@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">El acceso al micrófono está desactivado. Actívalo en los ajustes del sistema y vuelve a la aplicación.</string>
 
     <string name="pick_language">¿Qué idioma habla?</string>
+    <string name="language_unsupported_title">Aviso de compatibilidad</string>
+    <string name="language_unsupported_body">%1$s no es compatible con: %2$s. Es posible que el reconocimiento o la voz no funcionen.</string>
+    <string name="action_continue">Continuar</string>
     <string name="swap_languages">Intercambiar idiomas</string>
     <string name="face_to_face">Modo cara a cara</string>
     <string name="face_to_face_exit">Salir del modo cara a cara</string>

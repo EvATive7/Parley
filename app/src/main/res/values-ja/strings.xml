@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">マイクへのアクセスが無効になっています。システム設定で有効にしてから戻ってください。</string>
 
     <string name="pick_language">どの言語を話しますか？</string>
+    <string name="language_unsupported_title">言語サポートの警告</string>
+    <string name="language_unsupported_body">%1$sは次のサービスでサポートされていません：%2$s。音声認識または読み上げが機能しない可能性があります。</string>
+    <string name="action_continue">続行</string>
     <string name="swap_languages">言語を入れ替える</string>
     <string name="face_to_face">対面モード</string>
     <string name="face_to_face_exit">対面モードを終了</string>

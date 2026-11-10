@@ -95,6 +95,34 @@ class ServiceSettingsTest {
         assertEquals("custom", custom.key.voice)
     }
 
+    @Test fun `unsupported checks report all enabled ASR and built-in TTS services`() {
+        val settings = live.copy(
+            asrServices = listOf(AsrService.DoubaoSeedAsr20Stream, AsrService.FunAsrRealtimeStream),
+            ttsService = TtsService.CosyVoiceV3Flash,
+            dashScopeRegion = DashScopeRegion.Singapore,
+        )
+        val unsupported = settings.unsupportedServices(Lang("ja"))
+        assertEquals(listOf(AsrService.DoubaoSeedAsr20Stream), unsupported.asr)
+        assertEquals(TtsService.CosyVoiceV3Flash, unsupported.tts)
+        assertFalse(unsupported.isEmpty)
+    }
+
+    @Test fun `custom TTS voice is treated as supported by settings check`() {
+        val settings = live.copy(
+            asrServices = listOf(AsrService.MockStream),
+            ttsService = TtsService.CosyVoiceV3Flash,
+            ttsVoices = mapOf(TtsService.CosyVoiceV3Flash.id to "custom-fr"),
+        )
+        assertTrue(settings.unsupportedServices(Lang("fr")).isEmpty)
+        assertNotNull(settings.speechChoice(7, Lang("fr"), "bonjour"))
+    }
+
+    @Test fun `unsupported built-in TTS produces no synthesis choice`() {
+        val settings = live.copy(ttsService = TtsService.CosyVoiceV3Flash)
+        assertEquals(TtsService.CosyVoiceV3Flash, settings.unsupportedServices(Lang("fr")).tts)
+        assertNull(settings.speechChoice(7, Lang("fr"), "bonjour"))
+    }
+
     @Test fun `the default service has a voice for every offered language`() {
         for (lang in Lang.targets) assertNotNull(live.speechChoice(7, lang, "x"))
     }

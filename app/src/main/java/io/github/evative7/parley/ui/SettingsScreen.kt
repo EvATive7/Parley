@@ -455,14 +455,17 @@ private fun SettingsSwitch(title: String, checked: Boolean, enabled: Boolean, on
 }
 
 @Composable
-private fun TtsService.label(): String = stringResource(when (this) {
+internal fun TtsService.label(): String = stringResource(labelResource())
+
+@StringRes
+internal fun TtsService.labelResource(): Int = when (this) {
     TtsService.QwenAudioTtsFlash -> R.string.settings_tts_qwen_audio_flash
     TtsService.CosyVoiceV3Flash -> R.string.settings_tts_cosy_v3_flash
     TtsService.DoubaoSeedTts20 -> R.string.settings_tts_doubao
     TtsService.MiniMaxSpeech28Turbo -> R.string.settings_tts_minimax_turbo
     TtsService.MiniMaxSpeech28Hd -> R.string.settings_tts_minimax_hd
     TtsService.Mock -> R.string.settings_tts_mock
-})
+}
 
 @StringRes
 private fun TtsService.priceDescription(): Int = when (this) {
@@ -843,7 +846,10 @@ private fun AsrProvider.hintResource(): Int? = when (this) {
 }
 
 @Composable
-internal fun AsrService.label(): String = stringResource(when (this) {
+internal fun AsrService.label(): String = stringResource(labelResource())
+
+@StringRes
+internal fun AsrService.labelResource(): Int = when (this) {
     AsrService.FunAsrRealtimeStream -> R.string.settings_asr_fun_stream
     AsrService.FunAsrRealtimeNonStream -> R.string.settings_asr_fun_non_stream
     AsrService.GptRealtimeWhisper -> R.string.settings_asr_gpt_realtime
@@ -854,7 +860,7 @@ internal fun AsrService.label(): String = stringResource(when (this) {
     AsrService.DoubaoSeedAsr20NonStreamTurbo -> R.string.settings_asr_doubao_turbo
     AsrService.MockStream -> R.string.settings_asr_mock_stream
     AsrService.MockNonStream -> R.string.settings_asr_mock_non_stream
-})
+}
 
 @Composable
 private fun AsrService.intro(): String = stringResource(when (this) {

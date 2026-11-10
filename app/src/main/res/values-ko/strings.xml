@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">마이크 권한이 꺼져 있습니다. 시스템 설정에서 권한을 켠 후 돌아오세요.</string>
 
     <string name="pick_language">어떤 언어를 사용하시나요?</string>
+    <string name="language_unsupported_title">언어 지원 경고</string>
+    <string name="language_unsupported_body">%1$s은(는) 다음 서비스에서 지원되지 않습니다: %2$s. 음성 인식 또는 읽어주기가 작동하지 않을 수 있습니다.</string>
+    <string name="action_continue">계속</string>
     <string name="swap_languages">언어 바꾸기</string>
     <string name="face_to_face">대면 모드</string>
     <string name="face_to_face_exit">대면 모드 종료</string>

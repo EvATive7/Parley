@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">Доступ к микрофону отключён. Включите его в системных настройках и вернитесь.</string>
 
     <string name="pick_language">На каком языке вы говорите?</string>
+    <string name="language_unsupported_title">Предупреждение о поддержке языка</string>
+    <string name="language_unsupported_body">%1$s не поддерживается следующими сервисами: %2$s. Распознавание или озвучивание может не работать.</string>
+    <string name="action_continue">Продолжить</string>
     <string name="swap_languages">Поменять языки местами</string>
     <string name="face_to_face">Режим лицом к лицу</string>
     <string name="face_to_face_exit">Выйти из режима лицом к лицу</string>

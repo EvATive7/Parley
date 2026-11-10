@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">L\'accesso al microfono è stato disattivato. Abilitalo nelle impostazioni di sistema, quindi torna qui.</string>
 
     <string name="pick_language">Quale lingua parli?</string>
+    <string name="language_unsupported_title">Avviso sul supporto linguistico</string>
+    <string name="language_unsupported_body">%1$s non è supportato da: %2$s. Il riconoscimento o la sintesi vocale potrebbero non funzionare.</string>
+    <string name="action_continue">Continua</string>
     <string name="swap_languages">Scambia lingue</string>
     <string name="face_to_face">Modalità faccia a faccia</string>
     <string name="face_to_face_exit">Esci dalla modalità faccia a faccia</string>

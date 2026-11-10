@@ -7,6 +7,9 @@
     <string name="onboarding_denied_hint">تم إيقاف الوصول إلى الميكروفون. فعّله في إعدادات النظام ثم ارجع.</string>
 
     <string name="pick_language">ما اللغة التي تتحدث بها؟</string>
+    <string name="language_unsupported_title">تحذير دعم اللغة</string>
+    <string name="language_unsupported_body">اللغة %1$s غير مدعومة في: %2$s. قد لا يعمل التعرف على الكلام أو النطق.</string>
+    <string name="action_continue">متابعة</string>
     <string name="swap_languages">تبديل اللغتين</string>
     <string name="face_to_face">وضع وجهًا لوجه</string>
     <string name="face_to_face_exit">الخروج من وضع وجهًا لوجه</string>

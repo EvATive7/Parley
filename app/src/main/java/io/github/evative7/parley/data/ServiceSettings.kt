@@ -108,6 +108,17 @@ data class ServiceSettings(
     fun asrErrors(provider: AsrProvider): List<SettingsError> =
         if (asrServices.any { it.provider == provider }) providerErrors(provider) else emptyList()
 
+    /** Enabled recognition and speech services that cannot handle [lang]. */
+    fun unsupportedServices(lang: Lang): UnsupportedServices {
+        val unsupportedAsr = asrServices.filterNot { it.supports(lang) }
+        val selectedTts = ttsService
+        val customVoice = selectedTts?.let { ttsVoices[it.id]?.trim().orEmpty() }.orEmpty()
+        val unsupportedTts = selectedTts?.takeIf {
+            customVoice.isEmpty() && !it.supports(lang, dashScopeRegion)
+        }
+        return UnsupportedServices(unsupportedAsr, unsupportedTts)
+    }
+
     /** Resolves a configured service and voice, or null when no built-in or custom voice can read [lang]. */
     fun speechChoice(cardId: Long, lang: Lang, text: String): SpeechChoice? {
         val selected = ttsService ?: return null
@@ -152,6 +163,13 @@ data class ServiceSettings(
 }
 
 data class SpeechChoice(val key: SpeechKey)
+
+data class UnsupportedServices(
+    val asr: List<AsrService>,
+    val tts: TtsService?,
+) {
+    val isEmpty: Boolean get() = asr.isEmpty() && tts == null
+}
 
 enum class SettingsError { AsrNone, AsrKey, AsrAppId, TranslationUrl, TranslationModel, TranslationKey, PresetName }
 
