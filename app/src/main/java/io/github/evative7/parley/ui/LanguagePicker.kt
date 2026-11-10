@@ -74,7 +74,8 @@ fun LanguagePickerDialog(
                 LazyColumn(
                     modifier = Modifier
                         .heightIn(max = if (turn == Turn.None) 440.dp else 450.dp)
-                        .then(if (turn == Turn.None) Modifier else Modifier.turnedScroll(listState)),
+                        .then(if (turn == Turn.None) Modifier else Modifier.turnedScroll(listState))
+                        .fadingScrollbar(listState),
                     state = listState,
                     userScrollEnabled = turn == Turn.None,
                     contentPadding = PaddingValues(horizontal = 12.dp),

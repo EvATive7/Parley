@@ -221,6 +221,7 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     }
 
     val scroll = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val contentScroll = rememberScrollState()
     Scaffold(
         modifier = Modifier.nestedScroll(scroll.nestedScrollConnection).imePadding(),
         snackbarHost = { SnackbarHost(snackbar) },
@@ -249,7 +250,8 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
         Column(
             Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(contentScroll)
+                .fadingScrollbar(contentScroll)
                 .padding(padding)
                 .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -586,7 +588,11 @@ private fun AsrServiceField(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                     )
-                    LazyColumn(Modifier.heightIn(max = 480.dp)) {
+                    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+                    LazyColumn(
+                        Modifier.heightIn(max = 480.dp).fadingScrollbar(listState),
+                        state = listState,
+                    ) {
                         AsrProvider.available.forEach { provider ->
                             item(key = "provider-${provider.name}") {
                                 Text(
@@ -685,7 +691,11 @@ private fun TtsServiceField(
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
                     )
-                    LazyColumn(Modifier.heightIn(max = 480.dp)) {
+                    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+                    LazyColumn(
+                        Modifier.heightIn(max = 480.dp).fadingScrollbar(listState),
+                        state = listState,
+                    ) {
                         item(key = "off") {
                             ServiceChoiceRow(
                                 title = stringResource(R.string.settings_tts_off),
@@ -1034,12 +1044,13 @@ private fun TranslationServiceDialog(
     val errors = preset.validationErrors()
     // Missing fields wait for Done; a malformed URL is pointed out as soon as one is typed.
     val shown = if (attempted) errors else errors.filter { it == SettingsError.TranslationUrl && preset.url.isNotEmpty() }
+    val contentScroll = rememberScrollState()
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(if (isNew) R.string.settings_translation_new else R.string.settings_translation_edit)) },
         text = {
             Column(
-                Modifier.verticalScroll(rememberScrollState()),
+                Modifier.verticalScroll(contentScroll).fadingScrollbar(contentScroll),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 // Simulated services only exist in debug builds; one saved earlier can still be edited.
