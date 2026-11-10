@@ -184,4 +184,7 @@
     <string name="clear_conversation_title">会話を消去しますか？</string>
     <string name="clear_conversation_body">この会話のカードはすべてこの端末から削除されます。元に戻すことはできません。</string>
     <string name="action_clear">消去</string>
+    <string name="tts_play">読み上げる</string>
+    <string name="tts_stop">読み上げを停止</string>
+    <string name="tts_system_fallback">端末の音声を使用</string>
 </resources>

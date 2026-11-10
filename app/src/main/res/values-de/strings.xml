@@ -184,4 +184,7 @@
     <string name="clear_conversation_title">Gespräch leeren?</string>
     <string name="clear_conversation_body">Alle Karten dieses Gesprächs werden von diesem Gerät entfernt. Das kann nicht rückgängig gemacht werden.</string>
     <string name="action_clear">Leeren</string>
+    <string name="tts_play">Vorlesen</string>
+    <string name="tts_stop">Vorlesen beenden</string>
+    <string name="tts_system_fallback">Verwendet die Gerätestimme</string>
 </resources>

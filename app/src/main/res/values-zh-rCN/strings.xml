@@ -186,4 +186,7 @@
     <string name="clear_conversation_title">清空对话？</string>
     <string name="clear_conversation_body">这段对话中的所有卡片都会从本机删除，且无法恢复。</string>
     <string name="action_clear">清空</string>
+    <string name="tts_play">朗读</string>
+    <string name="tts_stop">停止朗读</string>
+    <string name="tts_system_fallback">使用设备语音</string>
 </resources>

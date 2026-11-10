@@ -7,7 +7,9 @@ import io.github.evative7.parley.mock.MockAsrFault
 import io.github.evative7.parley.mock.MockSpeed
 import io.github.evative7.parley.mock.MockTtsFault
 import io.github.evative7.parley.tts.MiniMaxRegion
+import io.github.evative7.parley.tts.SpeechKey
 import io.github.evative7.parley.tts.TtsService
+import io.github.evative7.parley.model.Lang
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** Keys are plaintext only in memory; persistence is handled by KeyVault. */
@@ -83,10 +85,16 @@ data class ServiceSettings(
     val asrProviders: List<AsrProvider>
         get() = AsrProvider.entries.filter { p -> asrServices.any { it.provider == p } }
 
-    /** Every invalid field, in screen order. Only the selected ASR providers are required. */
+    /** Providers used by either recognition or speech, each once in settings order. */
+    val usedProviders: List<AsrProvider>
+        get() = AsrProvider.entries.filter { provider ->
+            asrServices.any { it.provider == provider } || ttsService?.provider == provider
+        }
+
+    /** Every invalid field, in screen order. Only providers used by ASR or TTS are required. */
     fun validationErrors(): List<SettingsError> = buildList {
         if (asrServices.isEmpty()) add(SettingsError.AsrNone)
-        for (provider in asrProviders) addAll(asrErrors(provider))
+        for (provider in usedProviders) addAll(providerErrors(provider))
         // The mock translator needs no endpoint.
         if (selectedTranslation?.mock == true) return@buildList
         if (!secureUrl(translationUrl)) add(SettingsError.TranslationUrl)
@@ -97,7 +105,24 @@ data class ServiceSettings(
     fun validationError(): SettingsError? = validationErrors().firstOrNull()
 
     /** The invalid credentials of one ASR provider, in screen order. */
-    fun asrErrors(provider: AsrProvider): List<SettingsError> = buildList {
+    fun asrErrors(provider: AsrProvider): List<SettingsError> =
+        if (asrServices.any { it.provider == provider }) providerErrors(provider) else emptyList()
+
+    /** Resolves a configured service and voice, including the per-language system fallback. */
+    fun speechChoice(cardId: Long, lang: Lang, text: String): SpeechChoice? {
+        val selected = ttsService ?: return null
+        val custom = ttsVoices[selected.id]?.trim().orEmpty()
+        val voice = custom.ifEmpty { selected.defaultVoice(lang).orEmpty() }
+        val fallback = selected != TtsService.System && voice.isEmpty()
+        val service = if (fallback) TtsService.System else selected
+        return SpeechChoice(
+            SpeechKey(cardId, lang, service, if (fallback) "system" else voice, text),
+            systemFallback = fallback,
+        )
+    }
+
+    /** The invalid credentials of one provider, in screen order. */
+    fun providerErrors(provider: AsrProvider): List<SettingsError> = buildList {
         when (provider) {
             AsrProvider.DashScope -> if (!validSecret(dashScopeKey)) add(SettingsError.AsrKey)
             AsrProvider.OpenAi -> if (!validSecret(openAiKey)) add(SettingsError.AsrKey)
@@ -105,7 +130,8 @@ data class ServiceSettings(
                 if (!validValue(volcengineAppId)) add(SettingsError.AsrAppId)
                 if (!validSecret(volcengineAccessToken)) add(SettingsError.AsrKey)
             }
-            AsrProvider.MiniMax, AsrProvider.Mock -> Unit
+            AsrProvider.MiniMax -> if (!validSecret(miniMaxKey)) add(SettingsError.AsrKey)
+            AsrProvider.Mock -> Unit
         }
     }
 
@@ -127,6 +153,8 @@ data class ServiceSettings(
         }
     }
 }
+
+data class SpeechChoice(val key: SpeechKey, val systemFallback: Boolean)
 
 enum class SettingsError { AsrNone, AsrKey, AsrAppId, TranslationUrl, TranslationModel, TranslationKey, PresetName }
 

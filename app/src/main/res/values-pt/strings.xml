@@ -183,4 +183,7 @@
     <string name="clear_conversation_title">Limpar a conversa?</string>
     <string name="clear_conversation_body">Todos os cartões desta conversa serão removidos deste dispositivo. Não é possível desfazer.</string>
     <string name="action_clear">Limpar</string>
+    <string name="tts_play">Read aloud</string>
+    <string name="tts_stop">Stop reading</string>
+    <string name="tts_system_fallback">Uses the device voice</string>
 </resources>

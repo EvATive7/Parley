@@ -185,4 +185,7 @@
     <string name="clear_conversation_title">要清除對話嗎？</string>
     <string name="clear_conversation_body">這段對話中的所有卡片都會從本機刪除，且無法復原。</string>
     <string name="action_clear">清除</string>
+    <string name="tts_play">朗讀</string>
+    <string name="tts_stop">停止朗讀</string>
+    <string name="tts_system_fallback">使用裝置語音</string>
 </resources>

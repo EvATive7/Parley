@@ -7,11 +7,17 @@ import io.github.evative7.parley.asr.RecognitionSession
 import io.github.evative7.parley.asr.SpeechRecognizer
 import io.github.evative7.parley.asr.Transcript
 import io.github.evative7.parley.audio.AudioSource
+import io.github.evative7.parley.data.ServiceSettings
+import io.github.evative7.parley.data.ServiceSettingsSource
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.model.LanguageDetector
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
 import io.github.evative7.parley.translate.Translator
+import io.github.evative7.parley.tts.PlaybackState
+import io.github.evative7.parley.tts.SpeechCache
+import io.github.evative7.parley.tts.SpeechKey
+import io.github.evative7.parley.tts.TextToSpeaker
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -105,7 +111,15 @@ class TranslateViewModelTest {
             object : LangPairStore {
                 override suspend fun load(): LangPair? = null
                 override suspend fun save(langs: LangPair) {}
-            }, conversationStore)
+            }, conversationStore,
+            object : TextToSpeaker {
+                override fun speak(key: SpeechKey, text: String, lang: Lang) =
+                    flowOf<PlaybackState>(PlaybackState.Preparing, PlaybackState.Playing, PlaybackState.Done)
+                override fun stop() {}
+            },
+            SpeechCache(),
+            object : ServiceSettingsSource { override val current = ServiceSettings(ttsService = null) },
+        )
             .also { store.put("vm", it) }
     }
 

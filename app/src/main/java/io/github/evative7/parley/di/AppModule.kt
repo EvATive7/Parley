@@ -21,6 +21,8 @@ import io.github.evative7.parley.state.LangPairStore
 import io.github.evative7.parley.state.MonotonicClock
 import io.github.evative7.parley.translate.RoutingTranslator
 import io.github.evative7.parley.translate.Translator
+import io.github.evative7.parley.tts.RoutingTextToSpeaker
+import io.github.evative7.parley.tts.TextToSpeaker
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -30,6 +32,7 @@ import javax.inject.Singleton
 abstract class AppModule {
     @Binds @Singleton abstract fun recognizer(impl: RoutingRecognizer): SpeechRecognizer
     @Binds @Singleton abstract fun translator(impl: RoutingTranslator): Translator
+    @Binds @Singleton abstract fun speaker(impl: RoutingTextToSpeaker): TextToSpeaker
     @Binds @Singleton abstract fun settings(impl: SettingsRepository): ServiceSettingsSource
     @Binds @Singleton abstract fun detector(impl: OfflineLanguageDetector): LanguageDetector
     @Binds @Singleton abstract fun languages(impl: LanguageRepository): LangPairStore

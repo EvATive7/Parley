@@ -3,10 +3,34 @@ package io.github.evative7.parley.tts
 import io.github.evative7.parley.model.Lang
 import kotlinx.coroutines.flow.Flow
 
-/** Reads a translation aloud. V1 defines the interface only; there is no implementation yet. */
+/** Reads translations aloud. Cards and the view model only depend on this interface. */
 interface TextToSpeaker {
-    fun speak(text: String, lang: Lang): Flow<PlaybackState>
+    fun speak(key: SpeechKey, text: String, lang: Lang): Flow<PlaybackState>
     fun stop()
 }
 
-enum class PlaybackState { Preparing, Playing, Done }
+/** A network synthesizer. Every session produces PCM 16-bit mono audio at 24 kHz. */
+interface SpeechSynthesizer {
+    fun open(lang: Lang, voice: String): SynthesisSession
+}
+
+interface SynthesisSession {
+    val audio: Flow<ByteArray>
+    fun append(text: String)
+    fun finish()
+}
+
+data class SpeechKey(
+    val cardId: Long,
+    val lang: Lang,
+    val service: TtsService,
+    val voice: String,
+    val text: String,
+)
+
+sealed interface PlaybackState {
+    data object Preparing : PlaybackState
+    data object Playing : PlaybackState
+    data object Done : PlaybackState
+    data class Failed(val message: String? = null) : PlaybackState
+}

@@ -2,6 +2,7 @@ package io.github.evative7.parley.tts
 
 import io.github.evative7.parley.BuildConfig
 import io.github.evative7.parley.asr.AsrProvider
+import io.github.evative7.parley.model.Lang
 
 enum class TtsService(
     val id: String,
@@ -16,6 +17,12 @@ enum class TtsService(
     MiniMaxSpeech28Turbo("minimax-speech-2.8-turbo", AsrProvider.MiniMax),
     MiniMaxSpeech28Hd("minimax-speech-2.8-hd", AsrProvider.MiniMax),
     Mock("mock", AsrProvider.Mock);
+
+    fun defaultVoice(lang: Lang): String? = when (this) {
+        System -> "system"
+        Mock -> "mock"
+        else -> null
+    }
 
     companion object {
         val Default = CosyVoice35Flash

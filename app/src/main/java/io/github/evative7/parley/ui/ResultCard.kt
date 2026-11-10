@@ -29,6 +29,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +69,7 @@ import io.github.evative7.parley.state.CardStage
 import io.github.evative7.parley.state.CardTranslation
 import io.github.evative7.parley.state.CardState
 import io.github.evative7.parley.state.ErrorKind
+import io.github.evative7.parley.tts.PlaybackState
 
 @Composable
 fun ResultCard(
@@ -75,6 +77,8 @@ fun ResultCard(
     onCopy: (String) -> Unit,
     onDelete: () -> Unit,
     onRetry: () -> Unit,
+    onSpeak: (CardTranslation) -> Unit = {},
+    speechFallback: (CardTranslation) -> Boolean = { false },
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
     onEdit: ((String) -> Unit)? = null,
@@ -86,8 +90,8 @@ fun ResultCard(
     val motion = MaterialTheme.motionScheme
     TappableCard(
         card, source = card.source, translations = translations,
-        onCopy = onCopy, onDelete = onDelete, modifier = modifier, turn = turn,
-        onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
+        onCopy = onCopy, onDelete = onDelete, onSpeak = onSpeak, speechFallback = speechFallback,
+        modifier = modifier, turn = turn, onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
     ) {
         Column(
             Modifier
@@ -106,7 +110,10 @@ fun ResultCard(
                 )
             }
 
-            Translations(translations, streaming = true)
+            Translations(
+                translations, streaming = true, speechEnabled = card.stage == CardStage.Done,
+                onSpeak = onSpeak, speechFallback = speechFallback,
+            )
 
             ErrorRow(card, onRetry, retryEnabled, belowText = card.source.isNotEmpty() || waitingForSource)
         }
@@ -128,6 +135,8 @@ fun ResultCell(
     onCopy: (String) -> Unit,
     onDelete: () -> Unit,
     onRetry: () -> Unit,
+    onSpeak: (CardTranslation) -> Unit,
+    speechFallback: (CardTranslation) -> Boolean,
     turn: Turn,
     modifier: Modifier = Modifier,
     retryEnabled: Boolean = true,
@@ -141,7 +150,12 @@ fun ResultCell(
         is CardCell.Source -> cell.text
         is CardCell.Translation -> cell.translation.text
         is CardCell.Whole -> {
-            ResultCard(card, onCopy, onDelete, onRetry, modifier, retryEnabled, onEdit, shape, turn, listOf(cell.translation))
+            ResultCard(
+                card = card, onCopy = onCopy, onDelete = onDelete, onRetry = onRetry,
+                onSpeak = onSpeak, speechFallback = speechFallback, modifier = modifier,
+                retryEnabled = retryEnabled, onEdit = onEdit, shape = shape, turn = turn,
+                translations = listOf(cell.translation),
+            )
             return
         }
     }
@@ -159,8 +173,8 @@ fun ResultCell(
         card,
         source = if (translated) "" else text,
         translations = if (cell is CardCell.Translation) listOf(cell.translation) else emptyList(),
-        onCopy = onCopy, onDelete = onDelete, modifier = modifier, turn = turn,
-        onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
+        onCopy = onCopy, onDelete = onDelete, onSpeak = onSpeak, speechFallback = speechFallback,
+        modifier = modifier, turn = turn, onEdit = onEdit, editEnabled = retryEnabled, shape = shape,
     ) {
         Column(
             Modifier
@@ -170,15 +184,22 @@ fun ResultCell(
             if (waiting) {
                 SkeletonLines(Modifier.fillMaxWidth())
             } else if (text.isNotEmpty()) {
-                StreamingText(
-                    text = text,
-                    style = if (translated) {
-                        MaterialTheme.typography.headlineSmallEmphasized
-                    } else {
-                        MaterialTheme.typography.bodyLarge
-                    },
-                    color = if (translated) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Row(verticalAlignment = Alignment.Top) {
+                    StreamingText(
+                        text = text,
+                        style = if (translated) {
+                            MaterialTheme.typography.headlineSmallEmphasized
+                        } else {
+                            MaterialTheme.typography.bodyLarge
+                        },
+                        color = if (translated) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    if (cell is CardCell.Translation && card.stage == CardStage.Done) {
+                        Spacer(Modifier.width(8.dp))
+                        SpeechButton(cell.translation, speechFallback(cell.translation)) { onSpeak(cell.translation) }
+                    }
+                }
             }
             if (showError) ErrorRow(card, onRetry, retryEnabled, belowText = text.isNotEmpty() || waiting)
         }
@@ -197,6 +218,8 @@ private fun TappableCard(
     translations: List<CardTranslation>,
     onCopy: (String) -> Unit,
     onDelete: () -> Unit,
+    onSpeak: (CardTranslation) -> Unit,
+    speechFallback: (CardTranslation) -> Boolean,
     modifier: Modifier = Modifier,
     turn: Turn = Turn.None,
     onEdit: ((String) -> Unit)? = null,
@@ -232,6 +255,8 @@ private fun TappableCard(
             card, source, translations.filter { it.text.isNotEmpty() },
             onCopy = { open = false; onCopy(it) },
             onDelete = { open = false; onDelete() },
+            onSpeak = onSpeak,
+            speechFallback = speechFallback,
             onEdit = edit?.let { { text: String -> open = false; it(text) } },
             editEnabled = editEnabled,
             onDismiss = { open = false },
@@ -248,6 +273,8 @@ private fun CardDialog(
     translations: List<CardTranslation>,
     onCopy: (String) -> Unit,
     onDelete: () -> Unit,
+    onSpeak: (CardTranslation) -> Unit,
+    speechFallback: (CardTranslation) -> Boolean,
     onEdit: ((String) -> Unit)?,
     editEnabled: Boolean,
     onDismiss: () -> Unit,
@@ -303,7 +330,10 @@ private fun CardDialog(
                                 .padding(horizontal = 24.dp),
                         ) {
                             if (source.isNotEmpty()) Transcripts(source, card)
-                            Translations(translations, streaming = false, spaced = source.isNotEmpty())
+                            Translations(
+                                translations, streaming = false, spaced = source.isNotEmpty(), speechEnabled = true,
+                                onSpeak = onSpeak, speechFallback = speechFallback,
+                            )
                             if (card.stage == CardStage.Error) {
                                 if (source.isNotEmpty() || translations.isNotEmpty()) Spacer(Modifier.size(16.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -398,7 +428,14 @@ private fun PersistentScrollbar(scroll: ScrollState, modifier: Modifier = Modifi
  * language, so each reader finds theirs. [streaming] text grows as it arrives; the dialog shows it settled.
  */
 @Composable
-private fun Translations(translations: List<CardTranslation>, streaming: Boolean, spaced: Boolean = true) {
+private fun Translations(
+    translations: List<CardTranslation>,
+    streaming: Boolean,
+    spaced: Boolean = true,
+    speechEnabled: Boolean,
+    onSpeak: (CardTranslation) -> Unit,
+    speechFallback: (CardTranslation) -> Boolean,
+) {
     val colors = MaterialTheme.colorScheme
     val named = translations.size > 1
     translations.filter { it.text.isNotEmpty() }.forEachIndexed { i, t ->
@@ -410,11 +447,57 @@ private fun Translations(translations: List<CardTranslation>, streaming: Boolean
                 Text(t.to.nativeName(), style = MaterialTheme.typography.labelMedium, color = colors.primary)
                 Spacer(Modifier.size(2.dp))
             }
-            if (streaming) {
-                StreamingText(text = t.text, style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
-            } else {
-                Text(t.text, style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
+            Row(verticalAlignment = Alignment.Top) {
+                if (streaming) {
+                    StreamingText(
+                        text = t.text,
+                        style = MaterialTheme.typography.headlineSmallEmphasized,
+                        color = colors.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                } else {
+                    Text(
+                        t.text,
+                        style = MaterialTheme.typography.headlineSmallEmphasized,
+                        color = colors.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                if (speechEnabled) {
+                    Spacer(Modifier.width(8.dp))
+                    SpeechButton(t, speechFallback(t)) { onSpeak(t) }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun SpeechButton(translation: CardTranslation, systemFallback: Boolean, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val playback = translation.playback
+    val playing = playback == PlaybackState.Playing
+    val failed = playback is PlaybackState.Failed
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        IconButton(onClick = onClick, modifier = Modifier.size(40.dp)) {
+            if (playback == PlaybackState.Preparing) {
+                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+            } else {
+                Icon(
+                    painterResource(if (playing) R.drawable.ic_stop else R.drawable.ic_volume_up),
+                    stringResource(if (playing) R.string.tts_stop else R.string.tts_play),
+                    Modifier.size(22.dp),
+                    tint = if (failed) colors.error else colors.primary,
+                )
+            }
+        }
+        if (systemFallback) {
+            Text(
+                "SYS",
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.onSurfaceVariant,
+                maxLines = 1,
+            )
         }
     }
 }

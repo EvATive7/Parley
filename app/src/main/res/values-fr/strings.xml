@@ -184,4 +184,7 @@
     <string name="clear_conversation_title">Effacer la conversation ?</string>
     <string name="clear_conversation_body">Toutes les cartes de cette conversation seront supprimées de cet appareil. Cette action est irréversible.</string>
     <string name="action_clear">Effacer</string>
+    <string name="tts_play">Lire à voix haute</string>
+    <string name="tts_stop">Arrêter la lecture</string>
+    <string name="tts_system_fallback">Utilise la voix de l’appareil</string>
 </resources>

@@ -147,6 +147,7 @@ fun TranslateScreen(vm: TranslateViewModel = viewModel(), settingsVm: SettingsVi
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { vm.onBackground() }
     // Settings finished loading or were just saved: connect with the new ones.
     LaunchedEffect(settings) { if (settings != null) vm.onForeground() }
+    LaunchedEffect(faceToFace) { vm.setFaceToFace(faceToFace) }
 
     val motion = MaterialTheme.motionScheme
     AnimatedContent(
@@ -251,6 +252,8 @@ private fun ConversationScreen(
                             onCopy = onCopy,
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
+                            onSpeak = { vm.toggleSpeech(card.id, it.to) },
+                            speechFallback = { settings?.speechChoice(card.id, it.to, it.text)?.systemFallback == true },
                             turn = Turn.Clockwise,
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },
@@ -297,6 +300,8 @@ private fun ConversationScreen(
                             onCopy = onCopy,
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
+                            onSpeak = { vm.toggleSpeech(card.id, it.to) },
+                            speechFallback = { settings?.speechChoice(card.id, it.to, it.text)?.systemFallback == true },
                             turn = Turn.CounterClockwise,
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },
@@ -330,6 +335,8 @@ private fun ConversationScreen(
                             onCopy = onCopy,
                             onDelete = { vm.delete(card.id) },
                             onRetry = { vm.onRetry(card.id) },
+                            onSpeak = { vm.toggleSpeech(card.id, it.to) },
+                            speechFallback = { settings?.speechChoice(card.id, it.to, it.text)?.systemFallback == true },
                             retryEnabled = !busy,
                             onEdit = { vm.editSource(card.id, it) },
                             modifier = modifier,

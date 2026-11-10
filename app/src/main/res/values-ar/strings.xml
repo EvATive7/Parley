@@ -187,4 +187,7 @@
     <string name="clear_conversation_title">مسح المحادثة؟</string>
     <string name="clear_conversation_body">ستُحذف كل بطاقة في هذه المحادثة من هذا الجهاز. لا يمكن التراجع عن ذلك.</string>
     <string name="action_clear">مسح</string>
+    <string name="tts_play">Read aloud</string>
+    <string name="tts_stop">Stop reading</string>
+    <string name="tts_system_fallback">Uses the device voice</string>
 </resources>

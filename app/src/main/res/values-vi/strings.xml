@@ -182,4 +182,7 @@
     <string name="clear_conversation_title">Xóa hội thoại?</string>
     <string name="clear_conversation_body">Tất cả thẻ trong hội thoại này sẽ bị xóa khỏi thiết bị này. Không thể hoàn tác.</string>
     <string name="action_clear">Xóa</string>
+    <string name="tts_play">Read aloud</string>
+    <string name="tts_stop">Stop reading</string>
+    <string name="tts_system_fallback">Uses the device voice</string>
 </resources>

@@ -184,4 +184,7 @@
     <string name="clear_conversation_title">¿Borrar la conversación?</string>
     <string name="clear_conversation_body">Todas las tarjetas de esta conversación se eliminarán de este dispositivo. No se puede deshacer.</string>
     <string name="action_clear">Borrar</string>
+    <string name="tts_play">Leer en voz alta</string>
+    <string name="tts_stop">Detener lectura</string>
+    <string name="tts_system_fallback">Usa la voz del dispositivo</string>
 </resources>

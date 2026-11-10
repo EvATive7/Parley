@@ -2,6 +2,9 @@ package io.github.evative7.parley.data
 
 import io.github.evative7.parley.asr.AsrProvider
 import io.github.evative7.parley.asr.AsrService
+import io.github.evative7.parley.model.Lang
+import io.github.evative7.parley.tts.MiniMaxRegion
+import io.github.evative7.parley.tts.TtsService
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -17,18 +20,23 @@ class ServiceSettingsTest {
             asrServices = listOf(AsrService.Gpt4oTranscribeNonStream),
             dashScopeKey = "",
             openAiKey = "openai-asr",
+            ttsService = null,
         ).isReady)
         assertTrue(live.copy(
             asrServices = listOf(AsrService.DoubaoSeedAsr20Stream),
             dashScopeKey = "",
             volcengineAppId = "app-id",
             volcengineAccessToken = "access-token",
+            ttsService = null,
         ).isReady)
         assertFalse(live.copy(storageError = true).isReady)
     }
 
     @Test fun `every selected provider needs its credentials, and at least one service is needed`() {
-        val both = live.copy(asrServices = listOf(AsrService.FunAsrRealtimeStream, AsrService.Gpt4oTranscribeNonStream))
+        val both = live.copy(
+            asrServices = listOf(AsrService.FunAsrRealtimeStream, AsrService.Gpt4oTranscribeNonStream),
+            ttsService = null,
+        )
         assertEquals(listOf(AsrProvider.DashScope, AsrProvider.OpenAi), both.asrProviders)
         assertEquals(listOf(SettingsError.AsrKey), both.asrErrors(AsrProvider.OpenAi))
         assertTrue(both.asrErrors(AsrProvider.DashScope).isEmpty())
@@ -49,6 +57,7 @@ class ServiceSettingsTest {
         val volc = live.copy(
             asrServices = listOf(AsrService.DoubaoSeedAsr20NonStream),
             dashScopeKey = "",
+            ttsService = null,
         )
         assertEquals(
             listOf(SettingsError.AsrAppId, SettingsError.AsrKey),
@@ -61,6 +70,27 @@ class ServiceSettingsTest {
             listOf(SettingsError.AsrKey, SettingsError.TranslationModel, SettingsError.TranslationKey),
             ServiceSettings(translationModel = "").validationErrors(),
         )
+    }
+
+    @Test fun `selected TTS provider credentials are required even when ASR uses another provider`() {
+        val miniMax = live.copy(
+            ttsService = TtsService.MiniMaxSpeech28Turbo,
+            miniMaxRegion = MiniMaxRegion.International,
+        )
+        assertEquals(listOf(AsrProvider.DashScope, AsrProvider.MiniMax), miniMax.usedProviders)
+        assertEquals(SettingsError.AsrKey, miniMax.validationError())
+        assertTrue(miniMax.copy(miniMaxKey = "minimax-key").isReady)
+        assertTrue(miniMax.copy(ttsService = TtsService.System).isReady)
+    }
+
+    @Test fun `voice selection uses custom IDs and falls back to the system when unmapped`() {
+        val fallback = live.speechChoice(7, Lang("fr"), "bonjour")!!
+        assertEquals(TtsService.System, fallback.key.service)
+        assertTrue(fallback.systemFallback)
+        val custom = live.copy(ttsVoices = mapOf(TtsService.Default.id to "custom")).speechChoice(7, Lang("fr"), "bonjour")!!
+        assertEquals(TtsService.Default, custom.key.service)
+        assertEquals("custom", custom.key.voice)
+        assertFalse(custom.systemFallback)
     }
 
     @Test fun `settings toString does not expose credentials`() {

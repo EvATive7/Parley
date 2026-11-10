@@ -3,6 +3,7 @@ package io.github.evative7.parley.state
 import io.github.evative7.parley.asr.AsrAlternative
 import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.model.Lang
+import io.github.evative7.parley.tts.PlaybackState
 
 data class UiState(
     val phase: PttPhase = PttPhase.Idle,
@@ -51,7 +52,12 @@ data class LangPair(val first: Lang, val second: Lang) {
 }
 
 /** One translation of a card's speech. */
-data class CardTranslation(val to: Lang, val text: String = "")
+data class CardTranslation(
+    val to: Lang,
+    val text: String = "",
+    /** Ephemeral playback state; conversation persistence deliberately ignores it. */
+    val playback: PlaybackState? = null,
+)
 
 data class CardState(
     val id: Long,

@@ -8,12 +8,18 @@ import io.github.evative7.parley.asr.SpeechRecognizer
 import io.github.evative7.parley.asr.Transcript
 import io.github.evative7.parley.audio.AudioSource
 import io.github.evative7.parley.audio.VolumeMeter
+import io.github.evative7.parley.data.ServiceSettings
+import io.github.evative7.parley.data.ServiceSettingsSource
 import io.github.evative7.parley.debug.DebugLog
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.model.LanguageDetector
 import io.github.evative7.parley.network.ServiceException
 import io.github.evative7.parley.network.ServiceFailure
 import io.github.evative7.parley.translate.Translator
+import io.github.evative7.parley.tts.PlaybackState
+import io.github.evative7.parley.tts.SpeechCache
+import io.github.evative7.parley.tts.SpeechKey
+import io.github.evative7.parley.tts.TextToSpeaker
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -46,6 +52,9 @@ class TranslateViewModel @Inject constructor(
     private val clock: MonotonicClock,
     private val langStore: LangPairStore,
     private val conversationStore: ConversationStore,
+    private val speaker: TextToSpeaker,
+    private val speechCache: SpeechCache,
+    private val settings: ServiceSettingsSource,
 ) : ViewModel() {
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state.asStateFlow()
@@ -64,6 +73,10 @@ class TranslateViewModel @Inject constructor(
     private var recordJob: Job? = null
     private var pipelineJob: Job? = null
     private var hintJob: Job? = null
+    private var speechJob: Job? = null
+    private var activeSpeech: Pair<Long, Lang>? = null
+    private var foreground = false
+    private var faceToFace = false
     private var activeId = -1L
     private var nextId = 0L
     private var pressedAt = 0L
@@ -93,13 +106,17 @@ class TranslateViewModel @Inject constructor(
         }
     }
 
-    fun onPress() = dispatch(PttEvent.Press)
+    fun onPress() {
+        stopSpeech()
+        dispatch(PttEvent.Press)
+    }
     fun onDrag(armed: Boolean) = dispatch(PttEvent.Drag(armed))
     fun onRelease() = dispatch(PttEvent.Release(clock.nowMs() - pressedAt))
     fun onAbort() = dispatch(PttEvent.Abort)
 
     /** The screen is visible: connect ahead of the next press so the handshake is not after it. */
     fun onForeground() {
+        foreground = true
         DebugLog.log(TAG) { "foreground: prepare ASR and translation connections" }
         recognizer.prepare()
         translator.prepare()
@@ -107,9 +124,15 @@ class TranslateViewModel @Inject constructor(
 
     /** Going to the background (or an incoming call) ends the recording without sending it. */
     fun onBackground() {
+        foreground = false
+        stopSpeech()
         DebugLog.log(TAG) { "background: abort and release ASR" }
         onAbort()
         recognizer.release()
+    }
+
+    fun setFaceToFace(enabled: Boolean) {
+        faceToFace = enabled
     }
 
     fun onRetry(id: Long) {
@@ -132,6 +155,56 @@ class TranslateViewModel @Inject constructor(
         viewModelScope.launch { langStore.save(langs) }
     }
 
+    /** A user tap starts or interrupts one settled translation. */
+    fun toggleSpeech(id: Long, lang: Lang) {
+        val card = _state.value.cards.firstOrNull { it.id == id && it.stage == CardStage.Done } ?: return
+        val translation = card.translations.firstOrNull { it.to == lang && it.text.isNotBlank() } ?: return
+        if (activeSpeech == (id to lang) && speechJob?.isActive == true) {
+            stopSpeech(id)
+            return
+        }
+        val choice = settings.current?.speechChoice(id, lang, translation.text) ?: return
+        playSpeech(choice.key, translation)
+    }
+
+    private fun playSpeech(key: SpeechKey, translation: CardTranslation) {
+        stopSpeech()
+        activeSpeech = key.cardId to key.lang
+        speechJob = viewModelScope.launch {
+            speaker.speak(key, translation.text, translation.to).collect { playback ->
+                updateCard(key.cardId) {
+                    copy(translations = translations.map {
+                        if (it.to == key.lang && it.text == key.text) it.copy(playback = playback) else it
+                    })
+                }
+                if (playback == PlaybackState.Done || playback is PlaybackState.Failed) {
+                    activeSpeech = null
+                }
+            }
+        }
+    }
+
+    private fun stopSpeech(cardId: Long? = null) {
+        val active = activeSpeech ?: return
+        if (cardId != null && active.first != cardId) return
+        speechJob?.cancel()
+        speechJob = null
+        speaker.stop()
+        activeSpeech = null
+        updateCard(active.first) {
+            copy(translations = translations.map {
+                if (it.to == active.second) it.copy(playback = null) else it
+            })
+        }
+    }
+
+    private fun maybeAutoPlay(card: CardState) {
+        val saved = settings.current ?: return
+        val translation = autoPlayTranslation(card, saved, foreground, faceToFace) ?: return
+        val choice = saved.speechChoice(card.id, translation.to, translation.text) ?: return
+        playSpeech(choice.key, translation)
+    }
+
     /**
      * Replaces a settled card's recognized text with [text] and translates it again, as a retry would.
      * The language is detected anew: the edit may have changed it. The edit is what was said, so the other
@@ -142,6 +215,8 @@ class TranslateViewModel @Inject constructor(
         if (edited.isEmpty() || _state.value.phase in BUSY_PHASES) return
         val card = _state.value.cards.firstOrNull { it.id == id } ?: return
         if (card.stage != CardStage.Done && card.stage != CardStage.Error) return
+        stopSpeech(id)
+        speechCache.removeCard(id)
         DebugLog.log(TAG) { "#$id source edited (${edited.length} chars)" }
         viewModelScope.launch {
             val sourceLang = detect(edited) ?: card.sourceLang
@@ -211,12 +286,16 @@ class TranslateViewModel @Inject constructor(
 
     fun delete(id: Long) {
         if (id == activeId && _state.value.phase in BUSY_PHASES) return
+        stopSpeech(id)
+        speechCache.removeCard(id)
         if (id == activeId) activeId = -1
         _state.update { s -> s.copy(cards = s.cards.filterNot { it.id == id }) }
     }
 
     fun clearConversation() {
         if (_state.value.phase in BUSY_PHASES) return
+        stopSpeech()
+        speechCache.clear()
         activeId = -1
         _state.update { it.copy(cards = emptyList()) }
         viewModelScope.launch {
@@ -448,6 +527,7 @@ class TranslateViewModel @Inject constructor(
         }
         updateCard(id) { copy(stage = CardStage.Done, canRetry = false) }
         if (id == activeId) dispatch(PttEvent.Translated)
+        _state.value.cards.firstOrNull { it.id == id }?.let(::maybeAutoPlay)
     }
 
     private fun discard() {
@@ -472,6 +552,7 @@ class TranslateViewModel @Inject constructor(
     }
 
     override fun onCleared() {
+        stopSpeech()
         stopRecording()
         session?.cancel()
         session = null
@@ -511,4 +592,19 @@ class TranslateViewModel @Inject constructor(
         const val TIMEOUT_MS = 10_000L
         val BUSY_PHASES = setOf(PttPhase.Recording, PttPhase.CancelArmed, PttPhase.Recognizing, PttPhase.Translating)
     }
+}
+
+/** The one translation eligible for automatic playback, or null when playback must remain tap-only. */
+internal fun autoPlayTranslation(
+    card: CardState,
+    settings: ServiceSettings,
+    foreground: Boolean,
+    faceToFace: Boolean,
+): CardTranslation? = card.translations.singleOrNull()?.takeIf {
+    card.stage == CardStage.Done &&
+        it.text.isNotBlank() &&
+        settings.ttsService != null &&
+        settings.ttsAutoPlay &&
+        foreground &&
+        (!faceToFace || settings.ttsAutoPlayFaceToFace)
 }

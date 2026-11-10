@@ -185,4 +185,7 @@
     <string name="clear_conversation_title">Очистить разговор?</string>
     <string name="clear_conversation_body">Все карточки этого разговора будут удалены с этого устройства. Отменить это нельзя.</string>
     <string name="action_clear">Очистить</string>
+    <string name="tts_play">Read aloud</string>
+    <string name="tts_stop">Stop reading</string>
+    <string name="tts_system_fallback">Uses the device voice</string>
 </resources>

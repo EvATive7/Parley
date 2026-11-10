@@ -183,4 +183,7 @@
     <string name="clear_conversation_title">Cancellare la conversazione?</string>
     <string name="clear_conversation_body">Tutte le schede di questa conversazione verranno rimosse da questo dispositivo. L\'operazione non può essere annullata.</string>
     <string name="action_clear">Cancella</string>
+    <string name="tts_play">Read aloud</string>
+    <string name="tts_stop">Stop reading</string>
+    <string name="tts_system_fallback">Uses the device voice</string>
 </resources>
