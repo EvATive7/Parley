@@ -47,7 +47,7 @@ class OpenAiTranscriptionRecognizer @Inject constructor(
             AsrService.Gpt4oMiniTranscribeNonStream -> "gpt-4o-mini-transcribe"
             else -> error("Unsupported OpenAI transcription service")
         }
-        return OpenAiTranscriptionSession(client, TRANSCRIPTIONS_URL, model, config.openAiAsrKey, lang)
+        return OpenAiTranscriptionSession(client, TRANSCRIPTIONS_URL, model, config.openAiKey, lang)
     }
 
     private companion object {

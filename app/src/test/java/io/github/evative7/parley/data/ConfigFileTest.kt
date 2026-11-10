@@ -5,6 +5,9 @@ import io.github.evative7.parley.asr.DashScopeRegion
 import io.github.evative7.parley.mock.MockAsrFault
 import io.github.evative7.parley.mock.MockSpeed
 import io.github.evative7.parley.mock.MockTranslationFault
+import io.github.evative7.parley.mock.MockTtsFault
+import io.github.evative7.parley.tts.MiniMaxRegion
+import io.github.evative7.parley.tts.TtsService
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -22,11 +25,19 @@ class ConfigFileTest {
         asrGraceMs = 2_500,
         dashScopeRegion = DashScopeRegion.Singapore,
         dashScopeKey = "ds",
-        openAiAsrKey = "oa",
-        volcAppId = "app",
-        volcAccessToken = "token",
+        openAiKey = "oa",
+        volcengineAppId = "app",
+        volcengineAccessToken = "token",
+        miniMaxRegion = MiniMaxRegion.International,
+        miniMaxKey = "mini",
         mockAsrSpeed = MockSpeed.Fast,
         mockAsrFault = MockAsrFault.NoSpeech,
+        ttsService = TtsService.MiniMaxSpeech28Hd,
+        ttsAutoPlay = true,
+        ttsAutoPlayFaceToFace = true,
+        ttsVoices = mapOf(TtsService.MiniMaxSpeech28Hd.id to "voice-id"),
+        mockTtsSpeed = MockSpeed.Slow,
+        mockTtsFault = MockTtsFault.Timeout,
     ).putTranslationPreset(real).putTranslationPreset(mock).selectTranslation(real)
 
     @Test fun `round trip keeps every setting and the selected service`() {
@@ -61,7 +72,28 @@ class ConfigFileTest {
             "openai":{"key":"oa"}}}"""
         val decoded = ConfigFile.decode(text)
         assertEquals(listOf(AsrService.Gpt4oTranscribeNonStream), decoded.asrServices)
-        assertEquals("oa", decoded.openAiAsrKey)
+        assertEquals("oa", decoded.openAiKey)
+    }
+
+    @Test fun `a version 2 file moves credentials to providers and adds TTS defaults`() {
+        val text = """{"format":"parley-config","version":2,"asr":{
+            "services":["gpt-4o-transcribe-non-stream-input"],"grace_ms":2500,
+            "dashscope":{"region":"Singapore","key":"ds"},
+            "openai":{"key":"oa"},
+            "volcengine":{"app_id":"app","access_token":"token"},
+            "mock":{"speed":"Fast","fault":"NoSpeech"}}}"""
+        val decoded = ConfigFile.decode(text)
+        assertEquals(listOf(AsrService.Gpt4oTranscribeNonStream), decoded.asrServices)
+        assertEquals(2_500L, decoded.asrGraceMs)
+        assertEquals(DashScopeRegion.Singapore, decoded.dashScopeRegion)
+        assertEquals("ds", decoded.dashScopeKey)
+        assertEquals("oa", decoded.openAiKey)
+        assertEquals("app", decoded.volcengineAppId)
+        assertEquals("token", decoded.volcengineAccessToken)
+        assertEquals(TtsService.Default, decoded.ttsService)
+        assertFalse(decoded.ttsAutoPlay)
+        assertFalse(decoded.ttsAutoPlayFaceToFace)
+        assertTrue(decoded.ttsVoices.isEmpty())
     }
 
     @Test fun `unknown and repeated services are dropped, and none left means the default`() {
@@ -86,9 +118,10 @@ class ConfigFileTest {
         assertEquals(ConfigFileException.Reason.NotAConfig, e.reason)
     }
 
-    @Test fun `version 2 writes the services as a list`() {
+    @Test fun `version 3 writes shared providers and ASR services as a list`() {
         val text = ConfigFile.encode(settings, "1.0")
+        assertTrue(text.contains("\"providers\""))
         assertTrue(text.contains("\"services\""))
-        assertFalse(text.contains("\"service\""))
+        assertFalse(text.contains("\"asr\": {\n        \"service\""))
     }
 }

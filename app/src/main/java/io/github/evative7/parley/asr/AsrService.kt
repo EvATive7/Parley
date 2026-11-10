@@ -3,13 +3,16 @@ package io.github.evative7.parley.asr
 import io.github.evative7.parley.BuildConfig
 
 enum class AsrProvider {
-    DashScope, OpenAi, Volcengine,
+    DashScope, OpenAi, Volcengine, MiniMax,
 
     /** Offline stand-in for trying the app without keys; debug builds only. */
     Mock;
 
     companion object {
-        val available: List<AsrProvider> = entries.filter { it != Mock || BuildConfig.DEBUG }
+        /** Providers with at least one ASR service in this build. */
+        val available: List<AsrProvider> = entries.filter {
+            it != MiniMax && (it != Mock || BuildConfig.DEBUG)
+        }
     }
 }
 

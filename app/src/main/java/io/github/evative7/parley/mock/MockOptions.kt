@@ -28,3 +28,12 @@ enum class MockTranslationFault {
         fun fromName(value: String?): MockTranslationFault = entries.firstOrNull { it.name == value } ?: None
     }
 }
+
+/** A failure the mock speech synthesizer produces on every request. */
+enum class MockTtsFault {
+    None, NetworkMidway, Authentication, Timeout;
+
+    companion object {
+        fun fromName(value: String?): MockTtsFault = entries.firstOrNull { it.name == value } ?: None
+    }
+}

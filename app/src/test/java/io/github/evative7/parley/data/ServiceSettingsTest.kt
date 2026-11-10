@@ -16,13 +16,13 @@ class ServiceSettingsTest {
         assertTrue(live.copy(
             asrServices = listOf(AsrService.Gpt4oTranscribeNonStream),
             dashScopeKey = "",
-            openAiAsrKey = "openai-asr",
+            openAiKey = "openai-asr",
         ).isReady)
         assertTrue(live.copy(
             asrServices = listOf(AsrService.DoubaoSeedAsr20Stream),
             dashScopeKey = "",
-            volcAppId = "app-id",
-            volcAccessToken = "access-token",
+            volcengineAppId = "app-id",
+            volcengineAccessToken = "access-token",
         ).isReady)
         assertFalse(live.copy(storageError = true).isReady)
     }
@@ -33,7 +33,7 @@ class ServiceSettingsTest {
         assertEquals(listOf(SettingsError.AsrKey), both.asrErrors(AsrProvider.OpenAi))
         assertTrue(both.asrErrors(AsrProvider.DashScope).isEmpty())
         assertFalse(both.isReady)
-        assertTrue(both.copy(openAiAsrKey = "openai").isReady)
+        assertTrue(both.copy(openAiKey = "openai").isReady)
         assertEquals(SettingsError.AsrNone, live.copy(asrServices = emptyList()).validationError())
     }
 
@@ -65,9 +65,9 @@ class ServiceSettingsTest {
 
     @Test fun `settings toString does not expose credentials`() {
         val settings = live.copy(
-            openAiAsrKey = "openai-secret",
-            volcAppId = "private-app-id",
-            volcAccessToken = "volc-secret",
+            openAiKey = "openai-secret",
+            volcengineAppId = "private-app-id",
+            volcengineAccessToken = "volc-secret",
         )
         for (secret in listOf("test-asr", "test-llm", "openai-secret", "private-app-id", "volc-secret")) {
             assertFalse(settings.toString().contains(secret))

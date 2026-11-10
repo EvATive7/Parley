@@ -5,6 +5,9 @@ import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.asr.DashScopeRegion
 import io.github.evative7.parley.mock.MockAsrFault
 import io.github.evative7.parley.mock.MockSpeed
+import io.github.evative7.parley.mock.MockTtsFault
+import io.github.evative7.parley.tts.MiniMaxRegion
+import io.github.evative7.parley.tts.TtsService
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** Keys are plaintext only in memory; persistence is handled by KeyVault. */
@@ -19,14 +22,24 @@ data class ServiceSettings(
      * compare; later answers are only shown.
      */
     val asrGraceMs: Long = DEFAULT_ASR_GRACE_MS,
+    // Provider credentials are shared by every service from that provider.
     val dashScopeRegion: DashScopeRegion = DashScopeRegion.Beijing,
     val dashScopeKey: String = "",
-    val openAiAsrKey: String = "",
-    val volcAppId: String = "",
-    val volcAccessToken: String = "",
+    val openAiKey: String = "",
+    val volcengineAppId: String = "",
+    val volcengineAccessToken: String = "",
+    val miniMaxRegion: MiniMaxRegion = MiniMaxRegion.China,
+    val miniMaxKey: String = "",
     /** Used by the mock recognizer only. */
     val mockAsrSpeed: MockSpeed = MockSpeed.Normal,
     val mockAsrFault: MockAsrFault = MockAsrFault.None,
+    val ttsService: TtsService? = TtsService.Default,
+    val ttsAutoPlay: Boolean = false,
+    val ttsAutoPlayFaceToFace: Boolean = false,
+    val ttsVoices: Map<String, String> = emptyMap(),
+    /** Used by the mock speech synthesizer only. */
+    val mockTtsSpeed: MockSpeed = MockSpeed.Normal,
+    val mockTtsFault: MockTtsFault = MockTtsFault.None,
     // The active translation service, copied from the selected preset. The translator reads only these.
     val translationUrl: String = "https://api.openai.com/v1",
     val translationModel: String = "gpt-4o-mini",
@@ -87,12 +100,12 @@ data class ServiceSettings(
     fun asrErrors(provider: AsrProvider): List<SettingsError> = buildList {
         when (provider) {
             AsrProvider.DashScope -> if (!validSecret(dashScopeKey)) add(SettingsError.AsrKey)
-            AsrProvider.OpenAi -> if (!validSecret(openAiAsrKey)) add(SettingsError.AsrKey)
+            AsrProvider.OpenAi -> if (!validSecret(openAiKey)) add(SettingsError.AsrKey)
             AsrProvider.Volcengine -> {
-                if (!validValue(volcAppId)) add(SettingsError.AsrAppId)
-                if (!validSecret(volcAccessToken)) add(SettingsError.AsrKey)
+                if (!validValue(volcengineAppId)) add(SettingsError.AsrAppId)
+                if (!validSecret(volcengineAccessToken)) add(SettingsError.AsrKey)
             }
-            AsrProvider.Mock -> Unit
+            AsrProvider.MiniMax, AsrProvider.Mock -> Unit
         }
     }
 

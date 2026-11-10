@@ -21,7 +21,7 @@ import org.junit.Test
 
 class RoutingRecognizerTest {
     private var current = ServiceSettings(
-        dashScopeKey = "dash", openAiAsrKey = "openai", translationKey = "llm", asrGraceMs = GRACE_MS,
+        dashScopeKey = "dash", openAiKey = "openai", translationKey = "llm", asrGraceMs = GRACE_MS,
     )
     private val source = object : ServiceSettingsSource { override val current get() = this@RoutingRecognizerTest.current }
     private val dash = FakeRecognizer()

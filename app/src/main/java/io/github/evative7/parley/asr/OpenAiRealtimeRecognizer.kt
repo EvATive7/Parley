@@ -32,7 +32,7 @@ class OpenAiRealtimeRecognizer @Inject constructor(
         val config = settings.current?.takeIf {
             it.isReady && service == AsrService.GptRealtimeWhisper
         } ?: throw ServiceException(ServiceFailure.Configuration)
-        return OpenAiRealtimeSession(client, REALTIME_URL, config.openAiAsrKey, lang)
+        return OpenAiRealtimeSession(client, REALTIME_URL, config.openAiKey, lang)
     }
 
     private companion object {

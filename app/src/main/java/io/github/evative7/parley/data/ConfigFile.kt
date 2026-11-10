@@ -6,9 +6,14 @@ import io.github.evative7.parley.asr.DashScopeRegion
 import io.github.evative7.parley.mock.MockAsrFault
 import io.github.evative7.parley.mock.MockSpeed
 import io.github.evative7.parley.mock.MockTranslationFault
+import io.github.evative7.parley.mock.MockTtsFault
+import io.github.evative7.parley.tts.MiniMaxRegion
+import io.github.evative7.parley.tts.TtsService
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.intOrNull
@@ -30,7 +35,7 @@ import kotlinx.serialization.json.putJsonObject
  */
 object ConfigFile {
     const val FORMAT = "parley-config"
-    const val VERSION = 2
+    const val VERSION = 3
 
     private val json = Json { prettyPrint = true }
 
@@ -40,23 +45,39 @@ object ConfigFile {
             put("format", FORMAT)
             put("version", VERSION)
             put("app_version", appVersion)
-            putJsonObject("asr") {
-                put("services", buildJsonArray { settings.asrServices.forEach { add(JsonPrimitive(it.id)) } })
-                put("grace_ms", settings.asrGraceMs)
+            putJsonObject("providers") {
                 putJsonObject("dashscope") {
                     put("region", settings.dashScopeRegion.name)
                     put("key", settings.dashScopeKey)
                 }
                 putJsonObject("openai") {
-                    put("key", settings.openAiAsrKey)
+                    put("key", settings.openAiKey)
                 }
                 putJsonObject("volcengine") {
-                    put("app_id", settings.volcAppId)
-                    put("access_token", settings.volcAccessToken)
+                    put("app_id", settings.volcengineAppId)
+                    put("access_token", settings.volcengineAccessToken)
                 }
+                putJsonObject("minimax") {
+                    put("region", settings.miniMaxRegion.name)
+                    put("key", settings.miniMaxKey)
+                }
+            }
+            putJsonObject("asr") {
+                put("services", buildJsonArray { settings.asrServices.forEach { add(JsonPrimitive(it.id)) } })
+                put("grace_ms", settings.asrGraceMs)
                 putJsonObject("mock") {
                     put("speed", settings.mockAsrSpeed.name)
                     put("fault", settings.mockAsrFault.name)
+                }
+            }
+            putJsonObject("tts") {
+                put("service", settings.ttsService?.let { JsonPrimitive(it.id) } ?: JsonNull)
+                put("auto_play", settings.ttsAutoPlay)
+                put("auto_play_face_to_face", settings.ttsAutoPlayFaceToFace)
+                put("voices", JsonObject(settings.ttsVoices.mapValues { JsonPrimitive(it.value) }))
+                putJsonObject("mock") {
+                    put("speed", settings.mockTtsSpeed.name)
+                    put("fault", settings.mockTtsFault.name)
                 }
             }
             putJsonObject("translation") {
@@ -119,6 +140,31 @@ object ConfigFile {
                 JsonObject(root + ("asr" to JsonObject(asr - "service" + ("services" to services))))
             }
         },
+        // 2 → 3: provider credentials became shared, and TTS settings were added.
+        { root ->
+            val asr = root.obj("asr") ?: JsonObject(emptyMap())
+            val providers = buildJsonObject {
+                asr["dashscope"]?.let { put("dashscope", it) }
+                asr["openai"]?.let { put("openai", it) }
+                asr["volcengine"]?.let { put("volcengine", it) }
+                putJsonObject("minimax") {
+                    put("region", MiniMaxRegion.China.name)
+                    put("key", "")
+                }
+            }
+            val migratedAsr = JsonObject(asr - "dashscope" - "openai" - "volcengine")
+            val tts = buildJsonObject {
+                put("service", TtsService.Default.id)
+                put("auto_play", false)
+                put("auto_play_face_to_face", false)
+                putJsonObject("voices") {}
+                putJsonObject("mock") {
+                    put("speed", MockSpeed.Normal.name)
+                    put("fault", MockTtsFault.None.name)
+                }
+            }
+            JsonObject(root + ("providers" to providers) + ("asr" to migratedAsr) + ("tts" to tts))
+        },
     )
 
     init {
@@ -127,16 +173,29 @@ object ConfigFile {
 
     /** Reads a document in the current layout. */
     private fun read(root: JsonObject): ServiceSettings {
+        val providers = root.obj("providers")
+        val dashScope = providers?.obj("dashscope")
+        val volcengine = providers?.obj("volcengine")
+        val miniMax = providers?.obj("minimax")
         val asr = root.obj("asr")
-        val dashScope = asr?.obj("dashscope")
-        val volc = asr?.obj("volcengine")
         val mockAsr = asr?.obj("mock")
+        val tts = root.obj("tts")
+        val mockTts = tts?.obj("mock")
         val serviceIds = asr?.get("services")?.jsonArray.orEmpty()
             .mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content }
         val graceMs = (asr?.get("grace_ms") as? JsonPrimitive)?.longOrNull
             ?.coerceIn(0, ServiceSettings.MAX_ASR_GRACE_MS) ?: ServiceSettings.DEFAULT_ASR_GRACE_MS
         // Services this build doesn't know or can't run are left out; none left means the default.
         val services = serviceIds.mapNotNull { AsrService.find(it) }.distinct().ifEmpty { listOf(AsrService.Default) }
+        val ttsService = when (val selected = tts?.get("service")) {
+            null -> TtsService.Default
+            JsonNull -> null
+            is JsonPrimitive -> TtsService.find(selected.content) ?: TtsService.Default
+            else -> TtsService.Default
+        }
+        val voices = tts?.obj("voices").orEmpty().mapNotNull { (service, value) ->
+            (value as? JsonPrimitive)?.takeIf { it.isString }?.content?.let { service to it }
+        }.toMap()
         val presets = root.obj("translation")?.get("services")?.jsonArray.orEmpty().mapNotNull { element ->
             val o = element.jsonObject
             val id = o.string("id") ?: return@mapNotNull null
@@ -159,11 +218,19 @@ object ConfigFile {
             asrGraceMs = graceMs,
             dashScopeRegion = DashScopeRegion.fromName(dashScope?.string("region")),
             dashScopeKey = dashScope?.string("key").orEmpty(),
-            openAiAsrKey = asr?.obj("openai")?.string("key").orEmpty(),
-            volcAppId = volc?.string("app_id").orEmpty(),
-            volcAccessToken = volc?.string("access_token").orEmpty(),
+            openAiKey = providers?.obj("openai")?.string("key").orEmpty(),
+            volcengineAppId = volcengine?.string("app_id").orEmpty(),
+            volcengineAccessToken = volcengine?.string("access_token").orEmpty(),
+            miniMaxRegion = MiniMaxRegion.fromName(miniMax?.string("region")),
+            miniMaxKey = miniMax?.string("key").orEmpty(),
             mockAsrSpeed = MockSpeed.fromName(mockAsr?.string("speed")),
             mockAsrFault = MockAsrFault.fromName(mockAsr?.string("fault")),
+            ttsService = ttsService,
+            ttsAutoPlay = tts?.boolean("auto_play") ?: false,
+            ttsAutoPlayFaceToFace = tts?.boolean("auto_play_face_to_face") ?: false,
+            ttsVoices = voices,
+            mockTtsSpeed = MockSpeed.fromName(mockTts?.string("speed")),
+            mockTtsFault = MockTtsFault.fromName(mockTts?.string("fault")),
             translationPresets = presets,
         ).selectTranslation(presets.firstOrNull { it.id == selectedId } ?: presets.firstOrNull())
     }
@@ -174,6 +241,7 @@ object ConfigFile {
     private fun JsonObject.obj(name: String): JsonObject? = this[name] as? JsonObject
     private fun JsonObject.string(name: String): String? =
         (this[name] as? JsonPrimitive)?.takeIf { it.isString }?.content
+    private fun JsonObject.boolean(name: String): Boolean? = (this[name] as? JsonPrimitive)?.booleanOrNull
 }
 
 class ConfigFileException(val reason: Reason) : Exception(reason.name) {

@@ -54,7 +54,7 @@ class VolcengineAucRecognizer @Inject constructor(
             else -> error("Unsupported Volcengine AUC service")
         }
         return VolcengineAucSession(
-            client, VolcAucEndpoints.Default, mode, config.volcAppId, config.volcAccessToken,
+            client, VolcAucEndpoints.Default, mode, config.volcengineAppId, config.volcengineAccessToken,
         )
     }
 

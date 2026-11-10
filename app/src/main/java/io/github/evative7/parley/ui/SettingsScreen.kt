@@ -378,19 +378,20 @@ private fun AsrProviderFields(
             ) { onChange(draft.copy(dashScopeKey = it)) }
         }
         AsrProvider.OpenAi -> SecretField(
-            stringResource(R.string.settings_key), draft.openAiAsrKey, enabled,
+            stringResource(R.string.settings_key), draft.openAiKey, enabled,
             SettingsError.AsrKey.shownIn(shown),
-        ) { onChange(draft.copy(openAiAsrKey = it)) }
+        ) { onChange(draft.copy(openAiKey = it)) }
         AsrProvider.Volcengine -> {
             SettingField(
-                stringResource(R.string.settings_app_id), draft.volcAppId, enabled,
+                stringResource(R.string.settings_app_id), draft.volcengineAppId, enabled,
                 SettingsError.AsrAppId.shownIn(shown), keyboardType = KeyboardType.Text,
-            ) { onChange(draft.copy(volcAppId = it)) }
+            ) { onChange(draft.copy(volcengineAppId = it)) }
             SecretField(
-                stringResource(R.string.settings_access_token), draft.volcAccessToken, enabled,
+                stringResource(R.string.settings_access_token), draft.volcengineAccessToken, enabled,
                 SettingsError.AsrKey.shownIn(shown),
-            ) { onChange(draft.copy(volcAccessToken = it)) }
+            ) { onChange(draft.copy(volcengineAccessToken = it)) }
         }
+        AsrProvider.MiniMax -> Unit
         AsrProvider.Mock -> {
             MockSpeedField(draft.mockAsrSpeed, enabled) { onChange(draft.copy(mockAsrSpeed = it)) }
             ChoiceField(
@@ -560,6 +561,7 @@ private fun AsrProvider.label(): String = stringResource(when (this) {
     AsrProvider.DashScope -> R.string.settings_provider_dashscope
     AsrProvider.OpenAi -> R.string.settings_provider_openai
     AsrProvider.Volcengine -> R.string.settings_provider_volcengine
+    AsrProvider.MiniMax -> R.string.settings_provider_volcengine
     AsrProvider.Mock -> R.string.settings_provider_mock
 })
 
@@ -568,7 +570,7 @@ private fun AsrProvider.hintResource(): Int? = when (this) {
     AsrProvider.DashScope -> R.string.settings_dashscope_hint
     AsrProvider.OpenAi -> null
     AsrProvider.Volcengine -> R.string.settings_volcengine_hint
-    AsrProvider.Mock -> null
+    AsrProvider.MiniMax, AsrProvider.Mock -> null
 }
 
 @Composable

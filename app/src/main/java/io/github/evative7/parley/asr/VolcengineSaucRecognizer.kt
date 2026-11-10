@@ -31,7 +31,7 @@ class VolcengineSaucRecognizer @Inject constructor(
         val config = settings.current?.takeIf {
             it.isReady && service == AsrService.DoubaoSeedAsr20Stream
         } ?: throw ServiceException(ServiceFailure.Configuration)
-        return VolcengineSaucSession(client, SAUC_URL, config.volcAppId, config.volcAccessToken, lang)
+        return VolcengineSaucSession(client, SAUC_URL, config.volcengineAppId, config.volcengineAccessToken, lang)
     }
 
     private companion object {
