@@ -4,7 +4,7 @@ import io.github.evative7.parley.debug.DebugLog
 import io.github.evative7.parley.model.Lang
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import java.io.ByteArrayOutputStream
@@ -15,8 +15,9 @@ class CloudTextToSpeaker(
     private val player: PcmPlayer,
     private val cache: SpeechCache,
 ) : TextToSpeaker {
-    override fun speak(key: SpeechKey, text: String, lang: Lang): Flow<PlaybackState> = flow {
-        emit(PlaybackState.Preparing)
+    override fun speak(key: SpeechKey, text: String, lang: Lang): Flow<PlaybackState> = channelFlow {
+        // A channel, not a plain flow: the player reports the first audio from its own thread.
+        send(PlaybackState.Preparing)
         val started = System.nanoTime()
         val cached = cache.get(key)
         val pcm = ByteArrayOutputStream()
@@ -35,16 +36,16 @@ class CloudTextToSpeaker(
                     first = false
                     val firstMs = (System.nanoTime() - started) / 1_000_000
                     DebugLog.log(TAG) { "#${key.cardId} TTS ${text.length} chars; first audio ${firstMs} ms" }
-                    emit(PlaybackState.Playing)
+                    send(PlaybackState.Playing)
                 }
             }
             if (cached == null) cache.put(key, pcm.toByteArray())
-            emit(PlaybackState.Done)
+            send(PlaybackState.Done)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             DebugLog.log(TAG) { "#${key.cardId} TTS failed (${e.javaClass.simpleName}: ${e.message})" }
-            emit(PlaybackState.Failed(e.message))
+            send(PlaybackState.Failed(e.message))
         }
     }
 
