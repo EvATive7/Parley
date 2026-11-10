@@ -114,7 +114,10 @@ import io.github.evative7.parley.data.TranslationPreset
 import io.github.evative7.parley.mock.MockAsrFault
 import io.github.evative7.parley.mock.MockSpeed
 import io.github.evative7.parley.mock.MockTranslationFault
+import io.github.evative7.parley.mock.MockTtsFault
 import io.github.evative7.parley.state.SettingsViewModel
+import io.github.evative7.parley.tts.MiniMaxRegion
+import io.github.evative7.parley.tts.TtsService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -245,35 +248,51 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             key(saved, revision) {
-                val providers = draft.asrProviders
-                val providerNames = providers.map { it.label() }
-                val providerHints = providers.mapNotNull { it.hintResource() }.map { stringResource(it) }
+                val asrProviders = draft.asrProviders
+                val asrProviderNames = asrProviders.map { it.label() }
                 ServiceCard(
                     icon = R.drawable.ic_mic,
                     title = stringResource(R.string.settings_asr),
-                    provider = providerNames.joinToString(" · "),
-                    hint = providerHints.joinToString("\n").ifEmpty { null },
+                    provider = asrProviderNames.joinToString(" · "),
                 ) {
                     AsrServiceField(
                         draft.asrServices, !saving, SettingsError.AsrNone.shownIn(shown),
                     ) { draft = draft.copy(asrServices = it) }
-                    // Only several services have others to wait for.
                     if (draft.asrServices.size > 1) {
                         AsrGraceField(draft.asrGraceMs, !saving) { draft = draft.copy(asrGraceMs = it) }
                     }
-                    // Each provider's errors are its own: a missing DashScope key doesn't mark the OpenAI one.
-                    for (provider in providers) {
-                        val providerShown = if (attempted) draft.asrErrors(provider) else emptyList()
-                        // With several, each provider's fields are headed by its name.
-                        if (providers.size > 1) {
+                    if (AsrProvider.Mock in asrProviders) {
+                        ProviderFields(AsrProvider.Mock, draft, !saving, emptyList()) { draft = it }
+                    }
+                }
+
+                TtsCard(draft, !saving) { draft = it }
+
+                val providers = draft.usedProviders.filter { it != AsrProvider.Mock }
+                val providerNames = providers.map { it.label() }
+                if (providers.isNotEmpty()) {
+                    ServiceCard(
+                        icon = R.drawable.ic_lock,
+                        title = stringResource(R.string.settings_credentials),
+                        provider = providerNames.joinToString(" · "),
+                    ) {
+                        for (provider in providers) {
                             Text(
                                 provider.label(),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(start = 4.dp, top = 4.dp),
                             )
+                            val providerShown = if (attempted) draft.providerErrors(provider) else emptyList()
+                            ProviderFields(provider, draft, !saving, providerShown) { draft = it }
+                            provider.hintResource()?.let {
+                                Text(
+                                    stringResource(it),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
-                        AsrProviderFields(provider, draft, !saving, providerShown) { draft = it }
                     }
                 }
 
@@ -360,9 +379,98 @@ private fun AsrGraceField(valueMs: Long, enabled: Boolean, onChange: (Long) -> U
 
 private const val GRACE_STEP_MS = 500L
 
-/** The credential fields of one ASR [provider], marking the errors in [shown]. */
 @Composable
-private fun AsrProviderFields(
+private fun TtsCard(draft: ServiceSettings, enabled: Boolean, onChange: (ServiceSettings) -> Unit) {
+    val service = draft.ttsService
+    ServiceCard(
+        icon = R.drawable.ic_volume_up,
+        title = stringResource(R.string.settings_tts),
+        provider = service?.label() ?: stringResource(R.string.settings_tts_off),
+        hint = service?.let { stringResource(it.priceDescription()) },
+    ) {
+        ChoiceField(
+            label = stringResource(R.string.settings_tts_service),
+            options = listOf<TtsService?>(null) + TtsService.available,
+            selected = service,
+            optionLabel = { it?.label() ?: stringResource(R.string.settings_tts_off) },
+            enabled = enabled,
+        ) { onChange(draft.copy(ttsService = it)) }
+        if (service != null && service !in setOf(TtsService.System, TtsService.Mock)) {
+            SettingField(
+                label = stringResource(R.string.settings_tts_voice),
+                value = draft.ttsVoices[service.id].orEmpty(),
+                enabled = enabled,
+                error = null,
+                keyboardType = KeyboardType.Text,
+                placeholder = stringResource(R.string.settings_tts_voice_default),
+            ) { voice ->
+                val voices = if (voice.isBlank()) draft.ttsVoices - service.id else draft.ttsVoices + (service.id to voice)
+                onChange(draft.copy(ttsVoices = voices))
+            }
+        }
+        if (service == TtsService.Mock) {
+            MockSpeedField(draft.mockTtsSpeed, enabled) { onChange(draft.copy(mockTtsSpeed = it)) }
+            ChoiceField(
+                label = stringResource(R.string.settings_mock_fault),
+                options = MockTtsFault.entries,
+                selected = draft.mockTtsFault,
+                optionLabel = { stringResource(it.label()) },
+                enabled = enabled,
+                warn = draft.mockTtsFault != MockTtsFault.None,
+            ) { onChange(draft.copy(mockTtsFault = it)) }
+        }
+        SettingsSwitch(
+            title = stringResource(R.string.settings_tts_autoplay),
+            checked = draft.ttsAutoPlay,
+            enabled = enabled,
+        ) { onChange(draft.copy(ttsAutoPlay = it)) }
+        SettingsSwitch(
+            title = stringResource(R.string.settings_tts_autoplay_face_to_face),
+            checked = draft.ttsAutoPlayFaceToFace,
+            enabled = enabled,
+        ) { onChange(draft.copy(ttsAutoPlayFaceToFace = it)) }
+    }
+}
+
+@Composable
+private fun SettingsSwitch(title: String, checked: Boolean, enabled: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange)
+            .padding(horizontal = 4.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(12.dp))
+        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
+    }
+}
+
+@Composable
+private fun TtsService.label(): String = stringResource(when (this) {
+    TtsService.System -> R.string.settings_tts_system
+    TtsService.CosyVoice35Flash -> R.string.settings_tts_cosy_flash
+    TtsService.CosyVoice35Plus -> R.string.settings_tts_cosy_plus
+    TtsService.DoubaoSeedTts20 -> R.string.settings_tts_doubao
+    TtsService.MiniMaxSpeech28Turbo -> R.string.settings_tts_minimax_turbo
+    TtsService.MiniMaxSpeech28Hd -> R.string.settings_tts_minimax_hd
+    TtsService.Mock -> R.string.settings_tts_mock
+})
+
+@StringRes
+private fun TtsService.priceDescription(): Int = when (this) {
+    TtsService.System, TtsService.Mock -> R.string.settings_tts_price_free
+    TtsService.CosyVoice35Flash -> R.string.settings_tts_price_cosy_flash
+    TtsService.CosyVoice35Plus -> R.string.settings_tts_price_cosy_plus
+    TtsService.DoubaoSeedTts20 -> R.string.settings_tts_price_doubao
+    TtsService.MiniMaxSpeech28Turbo -> R.string.settings_tts_price_minimax_turbo
+    TtsService.MiniMaxSpeech28Hd -> R.string.settings_tts_price_minimax_hd
+}
+
+/** The shared credential fields of one [provider], marking the errors in [shown]. */
+@Composable
+private fun ProviderFields(
     provider: AsrProvider,
     draft: ServiceSettings,
     enabled: Boolean,
@@ -391,7 +499,13 @@ private fun AsrProviderFields(
                 SettingsError.AsrKey.shownIn(shown),
             ) { onChange(draft.copy(volcengineAccessToken = it)) }
         }
-        AsrProvider.MiniMax -> Unit
+        AsrProvider.MiniMax -> {
+            MiniMaxRegionField(draft.miniMaxRegion, enabled) { onChange(draft.copy(miniMaxRegion = it)) }
+            SecretField(
+                stringResource(R.string.settings_key), draft.miniMaxKey, enabled,
+                SettingsError.AsrKey.shownIn(shown),
+            ) { onChange(draft.copy(miniMaxKey = it)) }
+        }
         AsrProvider.Mock -> {
             MockSpeedField(draft.mockAsrSpeed, enabled) { onChange(draft.copy(mockAsrSpeed = it)) }
             ChoiceField(
@@ -557,11 +671,34 @@ private fun DashScopeRegionField(selected: DashScopeRegion, enabled: Boolean, on
 }
 
 @Composable
+private fun MiniMaxRegionField(selected: MiniMaxRegion, enabled: Boolean, onPick: (MiniMaxRegion) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            stringResource(R.string.settings_minimax_region),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        ConnectedChoice(
+            options = MiniMaxRegion.entries,
+            selected = selected,
+            optionLabel = {
+                stringResource(
+                    if (it == MiniMaxRegion.China) R.string.settings_region_china
+                    else R.string.settings_region_international,
+                )
+            },
+            enabled = enabled,
+            onPick = onPick,
+        )
+    }
+}
+
+@Composable
 private fun AsrProvider.label(): String = stringResource(when (this) {
     AsrProvider.DashScope -> R.string.settings_provider_dashscope
     AsrProvider.OpenAi -> R.string.settings_provider_openai
     AsrProvider.Volcengine -> R.string.settings_provider_volcengine
-    AsrProvider.MiniMax -> R.string.settings_provider_volcengine
+    AsrProvider.MiniMax -> R.string.settings_provider_minimax
     AsrProvider.Mock -> R.string.settings_provider_mock
 })
 
@@ -845,6 +982,14 @@ private fun MockTranslationFault.label(): Int = when (this) {
     MockTranslationFault.Authentication -> R.string.mock_fault_authentication
     MockTranslationFault.RateLimit -> R.string.mock_fault_rate_limit
     MockTranslationFault.Timeout -> R.string.mock_fault_timeout
+}
+
+@StringRes
+private fun MockTtsFault.label(): Int = when (this) {
+    MockTtsFault.None -> R.string.mock_fault_none
+    MockTtsFault.NetworkMidway -> R.string.mock_fault_network_midway
+    MockTtsFault.Authentication -> R.string.mock_fault_authentication
+    MockTtsFault.Timeout -> R.string.mock_fault_timeout
 }
 
 @Composable

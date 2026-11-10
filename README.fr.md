@@ -66,6 +66,17 @@ Maintenez le bouton pour parler, puis relâchez-le pour traduire. Votre interloc
 
 Les services en streaming renvoient les résultats pendant que vous parlez. Les services non-streaming renvoient le résultat après la fin de la phrase et sont généralement plus précis. Les différents services d’un même fournisseur utilisent les mêmes identifiants.
 
+## 🔊 Services de synthèse vocale
+
+| Fournisseur | Service | Configuration requise | Tarif indicatif et comptage |
+| --- | --- | --- | --- |
+| Android | Voix du système | Aucune | Gratuit |
+| Alibaba Cloud DashScope | CosyVoice 3.5 Flash / Plus | Clé API et région DashScope partagées | Flash : 0,8 ¥/10 000 caractères ; Plus : 1,5 ¥/10 000 |
+| Volcengine | Doubao Seed TTS 2.0 | AppID et Access Token partagés ; activer Speech Synthesis 2.0 | 3 ¥/10 000 caractères ; un caractère chinois compte pour un |
+| MiniMax | Speech 2.8 Turbo / HD | Clé API et région Chine ou internationale | Turbo : 2 ¥/10 000 (Chine) ou 60 $/million ; HD : 3,5 ¥/10 000 ou 100 $/million ; un caractère chinois compte double |
+
+Les cartes peuvent être lues manuellement ou automatiquement après traduction, y compris en mode face à face. L’audio cloud est diffusé en PCM 24 kHz, avec un cache uniquement en mémoire de 20 résultats maximum, et s’interrompt au début d’un enregistrement. Une langue sans voix cloud vérifiée utilise la voix de l’appareil et affiche `SYS`.
+
 ## 🌏 Langues prises en charge
 
 **Traduction et interface** : anglais, chinois simplifié, chinois traditionnel, japonais, coréen, français, allemand, espagnol, italien, portugais, russe, arabe, thaï, vietnamien et indonésien.
@@ -152,7 +163,7 @@ app/src/main/java/io/github/evative7/parley/
 ├─ model/     Langues et identification locale de la langue
 ├─ data/      Paramètres, services de traduction, stockage des clés avec Keystore
 ├─ debug/     Journal de débogage intégré
-├─ tts/       Interface de synthèse vocale uniquement
+├─ tts/       Synthèse système/cloud, lecture PCM, routage et cache mémoire
 └─ di/        Liaisons Hilt et configuration réseau
 ```
 

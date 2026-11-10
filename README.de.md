@@ -66,6 +66,17 @@ Halte die Taste gedrückt, sprich und lass sie zum Übersetzen los. Die andere P
 
 Streaming-Dienste liefern Ergebnisse bereits während des Sprechens. Nicht-Streaming-Dienste geben das Ergebnis nach dem Sprechen auf einmal zurück und sind in der Regel genauer. Verschiedene Dienste desselben Anbieters verwenden einen gemeinsamen Satz Anmeldedaten.
 
+## 🔊 Sprachsynthesedienste
+
+| Anbieter | Dienst | Erforderliche Konfiguration | Richtpreis und Zeichenzählung |
+| --- | --- | --- | --- |
+| Android | Systemstimme | Keine | Kostenlos |
+| Alibaba Cloud DashScope | CosyVoice 3.5 Flash / Plus | Gemeinsamer DashScope API Key und Region | Flash: 0,8 ¥/10.000 Zeichen; Plus: 1,5 ¥/10.000 |
+| Volcengine | Doubao Seed TTS 2.0 | Gemeinsame AppID und Access Token; Speech Synthesis 2.0 aktivieren | 3 ¥/10.000 Zeichen; ein chinesisches Schriftzeichen zählt als eins |
+| MiniMax | Speech 2.8 Turbo / HD | API Key und Region China oder International | Turbo: 2 ¥/10.000 (China) oder 60 $/Mio.; HD: 3,5 ¥/10.000 oder 100 $/Mio.; ein chinesisches Schriftzeichen zählt doppelt |
+
+Karten können manuell oder nach der Übersetzung automatisch vorgelesen werden, auch im Gegenüber-Modus. Cloud-Audio wird als 24-kHz-PCM gestreamt, nur im Arbeitsspeicher für bis zu 20 Ergebnisse zwischengespeichert und beim Aufnahmestart unterbrochen. Für Sprachen ohne geprüfte Cloud-Stimme wird die Gerätestimme verwendet und `SYS` angezeigt.
+
 ## 🌏 Unterstützte Sprachen
 
 **Übersetzung und Benutzeroberfläche**: Englisch, vereinfachtes Chinesisch, traditionelles Chinesisch, Japanisch, Koreanisch, Französisch, Deutsch, Spanisch, Italienisch, Portugiesisch, Russisch, Arabisch, Thailändisch, Vietnamesisch und Indonesisch.
@@ -152,7 +163,7 @@ app/src/main/java/io/github/evative7/parley/
 ├─ model/     Sprachen und lokale Spracherkennung
 ├─ data/      Einstellungen, Übersetzungsdienste, Schlüsselablage mit Keystore
 ├─ debug/     App-internes Debug-Protokoll
-├─ tts/       Nur die Text-to-Speech-Schnittstelle
+├─ tts/       System-/Cloud-Sprachsynthese, PCM-Wiedergabe, Routing und Speichercache
 └─ di/        Hilt-Bindings und Netzwerkkonfiguration
 ```
 

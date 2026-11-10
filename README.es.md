@@ -66,6 +66,17 @@ Mantén pulsado para hablar y suelta para traducir. La otra persona hace lo mism
 
 Los servicios en streaming devuelven resultados mientras hablas. Los servicios sin streaming devuelven el resultado después de terminar y suelen ser más precisos. Los distintos servicios del mismo proveedor comparten un mismo conjunto de credenciales.
 
+## 🔊 Servicios de síntesis de voz
+
+| Proveedor | Servicio | Configuración necesaria | Precio orientativo y cómputo |
+| --- | --- | --- | --- |
+| Android | Voz del sistema | Ninguna | Gratis |
+| Alibaba Cloud DashScope | CosyVoice 3.5 Flash / Plus | API Key y región de DashScope compartidas | Flash: 0,8 ¥/10.000 caracteres; Plus: 1,5 ¥/10.000 |
+| Volcengine | Doubao Seed TTS 2.0 | AppID y Access Token compartidos; activar Speech Synthesis 2.0 | 3 ¥/10.000 caracteres; un carácter chino cuenta como uno |
+| MiniMax | Speech 2.8 Turbo / HD | API Key y región China o Internacional | Turbo: 2 ¥/10.000 (China) o 60 $/millón; HD: 3,5 ¥/10.000 o 100 $/millón; un carácter chino cuenta como dos |
+
+Las tarjetas pueden leerse manual o automáticamente después de traducir, también en modo cara a cara. El audio en la nube se transmite como PCM a 24 kHz, se almacena solo en memoria hasta 20 resultados y se interrumpe al empezar a grabar. Los idiomas sin una voz en la nube verificada usan la voz del dispositivo y muestran `SYS`.
+
 ## 🌏 Idiomas compatibles
 
 **Traducción e interfaz**: inglés, chino simplificado, chino tradicional, japonés, coreano, francés, alemán, español, italiano, portugués, ruso, árabe, tailandés, vietnamita e indonesio.
@@ -152,7 +163,7 @@ app/src/main/java/io/github/evative7/parley/
 ├─ model/     Idiomas e identificación local del idioma
 ├─ data/      Ajustes, servicios de traducción, almacenamiento de claves con Keystore
 ├─ debug/     Registro de depuración integrado
-├─ tts/       Solo interfaz de síntesis de voz
+├─ tts/       Síntesis de voz del sistema/nube, reproducción PCM, enrutamiento y caché en memoria
 └─ di/        Enlaces de Hilt y configuración de red
 ```
 
