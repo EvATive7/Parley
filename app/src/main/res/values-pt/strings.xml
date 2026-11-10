@@ -6,7 +6,7 @@
     <string name="onboarding_open_settings">Abrir configurações do sistema</string>
     <string name="onboarding_denied_hint">O acesso ao microfone foi desativado. Ative-o nas configurações do sistema e volte.</string>
 
-    <string name="pick_language">Escolha um idioma</string>
+    <string name="pick_language">Que idioma você fala?</string>
     <string name="swap_languages">Trocar idiomas</string>
     <string name="face_to_face">Modo frente a frente</string>
     <string name="face_to_face_exit">Sair do modo frente a frente</string>

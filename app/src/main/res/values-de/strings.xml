@@ -6,7 +6,7 @@
     <string name="onboarding_open_settings">Systemeinstellungen öffnen</string>
     <string name="onboarding_denied_hint">Der Mikrofonzugriff ist deaktiviert. Aktiviere ihn in den Systemeinstellungen und kehre dann zurück.</string>
 
-    <string name="pick_language">Sprache auswählen</string>
+    <string name="pick_language">Welche Sprache sprechen Sie?</string>
     <string name="swap_languages">Sprachen tauschen</string>
     <string name="face_to_face">Gegenüber-Modus</string>
     <string name="face_to_face_exit">Gegenüber-Modus beenden</string>

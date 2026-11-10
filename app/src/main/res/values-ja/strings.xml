@@ -6,7 +6,7 @@
     <string name="onboarding_open_settings">システム設定を開く</string>
     <string name="onboarding_denied_hint">マイクへのアクセスが無効になっています。システム設定で有効にしてから戻ってください。</string>
 
-    <string name="pick_language">言語を選択</string>
+    <string name="pick_language">どの言語を話しますか？</string>
     <string name="swap_languages">言語を入れ替える</string>
     <string name="face_to_face">対面モード</string>
     <string name="face_to_face_exit">対面モードを終了</string>

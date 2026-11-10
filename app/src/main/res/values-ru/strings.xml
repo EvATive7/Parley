@@ -6,7 +6,7 @@
     <string name="onboarding_open_settings">Открыть системные настройки</string>
     <string name="onboarding_denied_hint">Доступ к микрофону отключён. Включите его в системных настройках и вернитесь.</string>
 
-    <string name="pick_language">Выберите язык</string>
+    <string name="pick_language">На каком языке вы говорите?</string>
     <string name="swap_languages">Поменять языки местами</string>
     <string name="face_to_face">Режим лицом к лицу</string>
     <string name="face_to_face_exit">Выйти из режима лицом к лицу</string>

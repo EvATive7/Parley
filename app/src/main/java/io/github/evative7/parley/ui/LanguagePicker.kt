@@ -108,19 +108,15 @@ private fun LanguageRow(lang: Lang, selected: Boolean, inOtherSlot: Boolean, onC
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(Modifier.weight(1f)) {
-            // Each language in its own script, so the other party can find theirs too.
-            val native = lang.nativeName()
-            Text(native, style = MaterialTheme.typography.bodyLarge, color = content)
-            val local = lang.displayName()
-            if (local != native) {
-                Text(
-                    local,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (selected) content.copy(alpha = 0.72f) else colors.onSurfaceVariant,
-                )
-            }
-        }
+        // Native first so the other party can find their language; the device-local name disambiguates it.
+        val native = lang.nativeName()
+        val local = lang.displayName()
+        Text(
+            if (local == native) native else "$native · $local",
+            style = MaterialTheme.typography.bodyLarge,
+            color = content,
+            modifier = Modifier.weight(1f),
+        )
         when {
             selected -> Icon(painterResource(R.drawable.ic_check), null, tint = content)
             inOtherSlot -> SwapBadge()

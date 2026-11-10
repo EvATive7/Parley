@@ -6,7 +6,7 @@
     <string name="onboarding_open_settings">Buka setelan sistem</string>
     <string name="onboarding_denied_hint">Akses mikrofon dinonaktifkan. Aktifkan di setelan sistem, lalu kembali.</string>
 
-    <string name="pick_language">Pilih bahasa</string>
+    <string name="pick_language">Bahasa apa yang Anda gunakan?</string>
     <string name="swap_languages">Tukar bahasa</string>
     <string name="face_to_face">Mode tatap muka</string>
     <string name="face_to_face_exit">Keluar dari mode tatap muka</string>

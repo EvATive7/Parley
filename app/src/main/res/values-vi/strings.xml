@@ -6,7 +6,7 @@
     <string name="onboarding_open_settings">Mở cài đặt hệ thống</string>
     <string name="onboarding_denied_hint">Quyền dùng micrô đã bị tắt. Hãy bật quyền này trong cài đặt hệ thống rồi quay lại.</string>
 
-    <string name="pick_language">Chọn ngôn ngữ</string>
+    <string name="pick_language">Bạn nói ngôn ngữ nào?</string>
     <string name="swap_languages">Đổi ngôn ngữ</string>
     <string name="face_to_face">Chế độ đối diện</string>
     <string name="face_to_face_exit">Thoát chế độ đối diện</string>

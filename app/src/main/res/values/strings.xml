@@ -7,7 +7,7 @@
     <string name="onboarding_denied_hint">Microphone access was turned off. Enable it in system settings, then come back.</string>
 
 
-    <string name="pick_language">Choose a language</string>
+    <string name="pick_language">Which language do you speak?</string>
     <string name="swap_languages">Swap languages</string>
     <string name="face_to_face">Face-to-face mode</string>
     <string name="face_to_face_exit">Exit face-to-face mode</string>

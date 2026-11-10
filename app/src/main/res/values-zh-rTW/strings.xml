@@ -6,7 +6,7 @@
     <string name="onboarding_open_settings">開啟系統設定</string>
     <string name="onboarding_denied_hint">麥克風權限已關閉。請在系統設定中開啟後返回。</string>
 
-    <string name="pick_language">選擇語言</string>
+    <string name="pick_language">您說哪種語言？</string>
     <string name="swap_languages">互換語言</string>
     <string name="face_to_face">面對面模式</string>
     <string name="face_to_face_exit">退出面對面模式</string>
