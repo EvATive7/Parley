@@ -15,14 +15,22 @@ class TtsAutoPlayTest {
         stage = CardStage.Done,
         translations = listOf(translation),
     )
-    private val enabled = ServiceSettings(ttsService = TtsService.Mock, ttsAutoPlay = true)
+    private val enabled = ServiceSettings(ttsService = TtsService.Mock, ttsAutoGenerate = true, ttsAutoPlayPortrait = true)
 
     @Test fun `one completed translation auto plays only in the foreground`() {
         assertEquals(translation, autoPlayTranslation(card, enabled, foreground = true, faceToFace = false))
         assertNull(autoPlayTranslation(card, enabled, foreground = false, faceToFace = false))
         assertNull(autoPlayTranslation(card.copy(stage = CardStage.Translating), enabled, true, false))
-        assertNull(autoPlayTranslation(card, enabled.copy(ttsAutoPlay = false), true, false))
+        assertNull(autoPlayTranslation(card, enabled.copy(ttsAutoPlayPortrait = false), true, false))
+        assertNull(autoPlayTranslation(card, enabled.copy(ttsAutoGenerate = false), true, false))
         assertNull(autoPlayTranslation(card, enabled.copy(ttsService = null), true, false))
+    }
+
+    @Test fun `each layout has its own switch, and both need generation`() {
+        val faceToFaceOnly = enabled.copy(ttsAutoPlayPortrait = false, ttsAutoPlayFaceToFace = true)
+        assertEquals(translation, autoPlayTranslation(card, faceToFaceOnly, foreground = true, faceToFace = true))
+        assertNull(autoPlayTranslation(card, faceToFaceOnly, foreground = true, faceToFace = false))
+        assertNull(autoPlayTranslation(card, faceToFaceOnly.copy(ttsAutoGenerate = false), true, true))
     }
 
     @Test fun `two targets are tap only and face to face needs its own switch`() {

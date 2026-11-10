@@ -35,7 +35,7 @@ import kotlinx.serialization.json.putJsonObject
  */
 object ConfigFile {
     const val FORMAT = "parley-config"
-    const val VERSION = 3
+    const val VERSION = 4
 
     private val json = Json { prettyPrint = true }
 
@@ -72,7 +72,8 @@ object ConfigFile {
             }
             putJsonObject("tts") {
                 put("service", settings.ttsService?.let { JsonPrimitive(it.id) } ?: JsonNull)
-                put("auto_play", settings.ttsAutoPlay)
+                put("auto_generate", settings.ttsAutoGenerate)
+                put("auto_play_portrait", settings.ttsAutoPlayPortrait)
                 put("auto_play_face_to_face", settings.ttsAutoPlayFaceToFace)
                 put("voices", JsonObject(settings.ttsVoices.mapValues { JsonPrimitive(it.value) }))
                 putJsonObject("mock") {
@@ -152,6 +153,22 @@ object ConfigFile {
             // No `tts` or MiniMax entry: the reader's defaults apply, and this step stays fixed even if they change.
             JsonObject(root + ("providers" to providers) + ("asr" to migratedAsr))
         },
+        // 3 → 4: `auto_play` split into generating speech and playing it in each layout. It used to cover both
+        // layouts, with `auto_play_face_to_face` as an extra condition for face-to-face mode.
+        { root ->
+            val tts = root.obj("tts")
+            if (tts == null) root else {
+                val autoPlay = tts.boolean("auto_play") ?: false
+                val faceToFace = tts.boolean("auto_play_face_to_face") ?: false
+                val migrated = JsonObject(
+                    tts - "auto_play" +
+                        ("auto_generate" to JsonPrimitive(autoPlay)) +
+                        ("auto_play_portrait" to JsonPrimitive(autoPlay)) +
+                        ("auto_play_face_to_face" to JsonPrimitive(autoPlay && faceToFace)),
+                )
+                JsonObject(root + ("tts" to migrated))
+            }
+        },
     )
 
     init {
@@ -213,7 +230,8 @@ object ConfigFile {
             mockAsrSpeed = MockSpeed.fromName(mockAsr?.string("speed")),
             mockAsrFault = MockAsrFault.fromName(mockAsr?.string("fault")),
             ttsService = ttsService,
-            ttsAutoPlay = tts?.boolean("auto_play") ?: false,
+            ttsAutoGenerate = tts?.boolean("auto_generate") ?: false,
+            ttsAutoPlayPortrait = tts?.boolean("auto_play_portrait") ?: false,
             ttsAutoPlayFaceToFace = tts?.boolean("auto_play_face_to_face") ?: false,
             ttsVoices = voices,
             mockTtsSpeed = MockSpeed.fromName(mockTts?.string("speed")),

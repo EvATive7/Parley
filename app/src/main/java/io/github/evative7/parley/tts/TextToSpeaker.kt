@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.Flow
 /** Reads translations aloud. Cards and the view model only depend on this interface. */
 interface TextToSpeaker {
     fun speak(key: SpeechKey, text: String, lang: Lang): Flow<PlaybackState>
+    /** Synthesizes [key] into the replay cache without playing it, so a later [speak] starts at once. */
+    suspend fun prepare(key: SpeechKey, text: String, lang: Lang) {}
     fun stop()
 }
 

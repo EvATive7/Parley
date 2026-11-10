@@ -75,6 +75,8 @@ class TranslateViewModel @Inject constructor(
     private var hintJob: Job? = null
     private var speechJob: Job? = null
     private var activeSpeech: Pair<Long, Lang>? = null
+    /** Speech being synthesized ahead of a tap; a tap on it waits rather than synthesizing twice. */
+    private val generating = mutableMapOf<SpeechKey, Job>()
     private var foreground = false
     private var faceToFace = false
     private var activeId = -1L
@@ -182,17 +184,23 @@ class TranslateViewModel @Inject constructor(
         stopSpeech()
         activeSpeech = key.cardId to key.lang
         speechJob = viewModelScope.launch {
+            generating[key]?.let { pending ->
+                setPlayback(key, PlaybackState.Preparing)
+                pending.join()
+            }
             speaker.speak(key, translation.text, translation.to).collect { playback ->
-                updateCard(key.cardId) {
-                    copy(translations = translations.map {
-                        if (it.to == key.lang && it.text == key.text) it.copy(playback = playback) else it
-                    })
-                }
+                setPlayback(key, playback)
                 if (playback == PlaybackState.Done || playback is PlaybackState.Failed) {
                     activeSpeech = null
                 }
             }
         }
+    }
+
+    private fun setPlayback(key: SpeechKey, playback: PlaybackState) = updateCard(key.cardId) {
+        copy(translations = translations.map {
+            if (it.to == key.lang && it.text == key.text) it.copy(playback = playback) else it
+        })
     }
 
     private fun stopSpeech(cardId: Long? = null) {
@@ -209,11 +217,29 @@ class TranslateViewModel @Inject constructor(
         }
     }
 
-    private fun maybeAutoPlay(card: CardState) {
+    /** With auto-generation on, plays a settled card's translation when the layout's switch allows, else readies it. */
+    private fun autoGenerate(card: CardState) {
         val saved = settings.current ?: return
-        val translation = autoPlayTranslation(card, saved, foreground, faceToFace) ?: return
-        val choice = saved.speechChoice(card.id, translation.to, translation.text) ?: return
-        playSpeech(choice.key, translation)
+        if (!saved.ttsAutoGenerate || card.stage != CardStage.Done) return
+        autoPlayTranslation(card, saved, foreground, faceToFace)?.let { translation ->
+            saved.speechChoice(card.id, translation.to, translation.text)?.let { playSpeech(it.key, translation) }
+            return
+        }
+        for (translation in card.translations) {
+            if (translation.text.isBlank()) continue
+            val key = saved.speechChoice(card.id, translation.to, translation.text)?.key ?: continue
+            if (key in generating) continue
+            val job = viewModelScope.launch { speaker.prepare(key, translation.text, translation.to) }
+            generating[key] = job
+            job.invokeOnCompletion { if (generating[key] === job) generating.remove(key) }
+        }
+    }
+
+    private fun cancelGenerating(cardId: Long? = null) {
+        generating.filterKeys { cardId == null || it.cardId == cardId }.forEach { (key, job) ->
+            job.cancel()
+            generating.remove(key)
+        }
     }
 
     /**
@@ -227,6 +253,7 @@ class TranslateViewModel @Inject constructor(
         val card = _state.value.cards.firstOrNull { it.id == id } ?: return
         if (card.stage != CardStage.Done && card.stage != CardStage.Error) return
         stopSpeech(id)
+        cancelGenerating(id)
         speechCache.removeCard(id)
         DebugLog.log(TAG) { "#$id source edited (${edited.length} chars)" }
         viewModelScope.launch {
@@ -298,6 +325,7 @@ class TranslateViewModel @Inject constructor(
     fun delete(id: Long) {
         if (id == activeId && _state.value.phase in BUSY_PHASES) return
         stopSpeech(id)
+        cancelGenerating(id)
         speechCache.removeCard(id)
         if (id == activeId) activeId = -1
         _state.update { s -> s.copy(cards = s.cards.filterNot { it.id == id }) }
@@ -306,6 +334,7 @@ class TranslateViewModel @Inject constructor(
     fun clearConversation() {
         if (_state.value.phase in BUSY_PHASES) return
         stopSpeech()
+        cancelGenerating()
         speechCache.clear()
         activeId = -1
         _state.update { it.copy(cards = emptyList()) }
@@ -538,7 +567,7 @@ class TranslateViewModel @Inject constructor(
         }
         updateCard(id) { copy(stage = CardStage.Done, canRetry = false) }
         if (id == activeId) dispatch(PttEvent.Translated)
-        _state.value.cards.firstOrNull { it.id == id }?.let(::maybeAutoPlay)
+        _state.value.cards.firstOrNull { it.id == id }?.let(::autoGenerate)
     }
 
     private fun discard() {
@@ -615,7 +644,7 @@ internal fun autoPlayTranslation(
     card.stage == CardStage.Done &&
         it.text.isNotBlank() &&
         settings.ttsService != null &&
-        settings.ttsAutoPlay &&
+        settings.ttsAutoGenerate &&
         foreground &&
-        (!faceToFace || settings.ttsAutoPlayFaceToFace)
+        (if (faceToFace) settings.ttsAutoPlayFaceToFace else settings.ttsAutoPlayPortrait)
 }

@@ -38,5 +38,9 @@ class RoutingTextToSpeaker @Inject constructor(
         cloud[key.service]?.speak(key, text, lang)
             ?: flowOf(PlaybackState.Failed("Speech service is not available"))
 
+    override suspend fun prepare(key: SpeechKey, text: String, lang: Lang) {
+        cloud[key.service]?.prepare(key, text, lang)
+    }
+
     override fun stop() = cloud.values.forEach(TextToSpeaker::stop)
 }

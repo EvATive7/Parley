@@ -36,7 +36,11 @@ data class ServiceSettings(
     val mockAsrSpeed: MockSpeed = MockSpeed.Normal,
     val mockAsrFault: MockAsrFault = MockAsrFault.None,
     val ttsService: TtsService? = TtsService.Default,
-    val ttsAutoPlay: Boolean = false,
+    /** Synthesize each finished translation's speech ahead of a tap; required by both auto-play switches. */
+    val ttsAutoGenerate: Boolean = false,
+    /** Play the generated speech by itself in the normal, portrait layout. */
+    val ttsAutoPlayPortrait: Boolean = false,
+    /** Play the generated speech by itself in face-to-face mode. */
     val ttsAutoPlayFaceToFace: Boolean = false,
     val ttsVoices: Map<String, String> = emptyMap(),
     /** Used by the mock speech synthesizer only. */

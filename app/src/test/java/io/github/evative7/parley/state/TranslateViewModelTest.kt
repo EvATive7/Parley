@@ -62,6 +62,7 @@ class TranslateViewModelTest {
     private var microphoneFails = false
     private lateinit var conversationStore: FakeConversationStore
     private var speechCalls = 0
+    private val prepared = mutableListOf<SpeechKey>()
     private var speechSettings = ServiceSettings(ttsService = null)
 
     @Before fun setup() {
@@ -119,6 +120,9 @@ class TranslateViewModelTest {
                     speechCalls++
                     return flowOf(PlaybackState.Preparing, PlaybackState.Playing, PlaybackState.Done)
                 }
+                override suspend fun prepare(key: SpeechKey, text: String, lang: Lang) {
+                    prepared += key
+                }
                 override fun stop() {}
             },
             SpeechCache(),
@@ -142,6 +146,33 @@ class TranslateViewModelTest {
         val translation = vm.state.value.cards.single().translations.single()
         assertTrue(translation.playback is PlaybackState.Failed)
         assertEquals(0, speechCalls)
+    }
+
+    @Test fun `generated speech plays only where its layout allows, and is readied otherwise`() = runTest {
+        speechSettings = ServiceSettings(
+            ttsService = io.github.evative7.parley.tts.TtsService.Mock,
+            ttsAutoGenerate = true,
+            ttsAutoPlayFaceToFace = true,
+        )
+        val vm = vm()
+        vm.onForeground()
+        vm.submitText("hello")
+        runCurrent()
+        // Portrait playback is off: the speech is generated but not played.
+        assertEquals(0, speechCalls)
+        assertEquals(listOf("Hello"), prepared.map { it.text })
+
+        vm.setFaceToFace(true)
+        vm.submitText("again")
+        runCurrent()
+        assertEquals(1, speechCalls)
+        assertEquals(1, prepared.size)
+
+        speechSettings = speechSettings.copy(ttsAutoGenerate = false)
+        vm.submitText("once more")
+        runCurrent()
+        assertEquals(1, speechCalls)
+        assertEquals(1, prepared.size)
     }
 
     private fun release(vm: TranslateViewModel) {

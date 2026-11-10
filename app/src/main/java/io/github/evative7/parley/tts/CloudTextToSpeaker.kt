@@ -50,6 +50,26 @@ class CloudTextToSpeaker(
         }
     }
 
+    override suspend fun prepare(key: SpeechKey, text: String, lang: Lang) {
+        if (cache.get(key) != null) return
+        val started = System.nanoTime()
+        try {
+            val session = synthesizer.open(lang, key.voice)
+            session.append(text)
+            session.finish()
+            val pcm = ByteArrayOutputStream()
+            session.audio.collect(pcm::write)
+            cache.put(key, pcm.toByteArray())
+            val ms = (System.nanoTime() - started) / 1_000_000
+            DebugLog.log(TAG) { "#${key.cardId} TTS ${text.length} chars generated ahead in ${ms} ms" }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // A tap synthesizes again and reports the failure where it can be seen.
+            DebugLog.log(TAG) { "#${key.cardId} TTS generation failed (${e.javaClass.simpleName}: ${e.message})" }
+        }
+    }
+
     override fun stop() = player.stop()
 
     private companion object {

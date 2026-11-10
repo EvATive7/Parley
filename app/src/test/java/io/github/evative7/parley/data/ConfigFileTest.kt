@@ -33,7 +33,8 @@ class ConfigFileTest {
         mockAsrSpeed = MockSpeed.Fast,
         mockAsrFault = MockAsrFault.NoSpeech,
         ttsService = TtsService.MiniMaxSpeech28Hd,
-        ttsAutoPlay = true,
+        ttsAutoGenerate = true,
+        ttsAutoPlayPortrait = true,
         ttsAutoPlayFaceToFace = true,
         ttsVoices = mapOf(TtsService.MiniMaxSpeech28Hd.id to "voice-id"),
         mockTtsSpeed = MockSpeed.Slow,
@@ -91,9 +92,27 @@ class ConfigFileTest {
         assertEquals("app", decoded.volcengineAppId)
         assertEquals("token", decoded.volcengineAccessToken)
         assertEquals(TtsService.Default, decoded.ttsService)
-        assertFalse(decoded.ttsAutoPlay)
+        assertFalse(decoded.ttsAutoGenerate)
+        assertFalse(decoded.ttsAutoPlayPortrait)
         assertFalse(decoded.ttsAutoPlayFaceToFace)
         assertTrue(decoded.ttsVoices.isEmpty())
+    }
+
+    @Test fun `a version 3 file's auto play becomes generating plus playing in each layout`() {
+        fun decode(tts: String) = ConfigFile.decode("""{"format":"parley-config","version":3,"tts":$tts}""")
+        val both = decode("""{"service":"mock","auto_play":true,"auto_play_face_to_face":true}""")
+        assertTrue(both.ttsAutoGenerate)
+        assertTrue(both.ttsAutoPlayPortrait)
+        assertTrue(both.ttsAutoPlayFaceToFace)
+        val portraitOnly = decode("""{"auto_play":true,"auto_play_face_to_face":false}""")
+        assertTrue(portraitOnly.ttsAutoGenerate)
+        assertTrue(portraitOnly.ttsAutoPlayPortrait)
+        assertFalse(portraitOnly.ttsAutoPlayFaceToFace)
+        // Face to face used to need the main switch too.
+        val off = decode("""{"auto_play":false,"auto_play_face_to_face":true}""")
+        assertFalse(off.ttsAutoGenerate)
+        assertFalse(off.ttsAutoPlayPortrait)
+        assertFalse(off.ttsAutoPlayFaceToFace)
     }
 
     @Test fun `system and unknown TTS services use the current default while null stays off`() {
@@ -127,7 +146,7 @@ class ConfigFileTest {
         assertEquals(ConfigFileException.Reason.NotAConfig, e.reason)
     }
 
-    @Test fun `version 3 writes shared providers and ASR services as a list`() {
+    @Test fun `the current version writes shared providers and ASR services as a list`() {
         val text = ConfigFile.encode(settings, "1.0")
         assertTrue(text.contains("\"providers\""))
         assertTrue(text.contains("\"services\""))
