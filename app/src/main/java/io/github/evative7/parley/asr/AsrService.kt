@@ -1,6 +1,8 @@
 package io.github.evative7.parley.asr
 
 import io.github.evative7.parley.BuildConfig
+import io.github.evative7.parley.model.Lang
+import io.github.evative7.parley.model.LanguageSupport
 
 enum class AsrProvider {
     DashScope, OpenAi, Volcengine, MiniMax,
@@ -70,6 +72,33 @@ enum class AsrService(
     MockStream("mock-stream", AsrProvider.Mock, streaming = true),
     MockNonStream("mock-non-stream", AsrProvider.Mock, streaming = false);
 
+    val languageSupport: LanguageSupport get() = when (this) {
+        // https://www.alibabacloud.com/help/en/model-studio/fun-asr-client-events
+        // Assumed: the undated alias, not the 2026-02-28 snapshot limited to zh/en/ja.
+        FunAsrRealtimeStream, FunAsrRealtimeNonStream -> LanguageSupport(
+            codes("zh en ja ko vi th id ms tl hi ar fr de es pt ru it nl sv da fi no el pl cs hu ro bg hr sk"),
+            listOf("Cantonese", "Sichuanese", "other Chinese dialects"),
+        )
+        // https://developers.openai.com/api/docs/guides/speech-to-text
+        // Assumed for all three: Whisper's officially listed languages.
+        GptRealtimeWhisper, Gpt4oTranscribeNonStream, Gpt4oMiniTranscribeNonStream -> LanguageSupport(
+            codes("af ar hy az be bs bg ca zh hr cs da nl en et fi fr gl de el he hi hu is id it ja kn kk ko lv lt mk ms mr mi ne no fa pl pt ro ru sr sk sl es sw sv tl ta th tr uk ur vi cy"),
+        )
+        // https://docs.volcengine.com/docs/6561/1354869
+        DoubaoSeedAsr20Stream -> LanguageSupport(
+            codes("zh en"),
+            listOf("Shanghainese", "Minnan", "Sichuanese", "Shaanxi", "Cantonese", "other Chinese dialects"),
+        )
+        // https://docs.volcengine.com/docs/6561/1354868 (Turbo assumed identical).
+        DoubaoSeedAsr20NonStream, DoubaoSeedAsr20NonStreamTurbo -> LanguageSupport(
+            codes("zh en ja id es pt de fr ko fil ms th ar it bn el nl ru tr vi pl ro ne uk"),
+            listOf("Cantonese"),
+        )
+        MockStream, MockNonStream -> LanguageSupport(Lang.targets.map { it.base }.toSet())
+    }
+
+    fun supports(lang: Lang): Boolean = lang.base in languageSupport.languages
+
     companion object {
         val Default = FunAsrRealtimeStream
 
@@ -80,6 +109,8 @@ enum class AsrService(
 
         /** The service with [id] if this build can run it. */
         fun find(id: String?): AsrService? = available.firstOrNull { it.id == id }
+
+        private fun codes(value: String): Set<String> = value.split(' ').toSet()
     }
 }
 

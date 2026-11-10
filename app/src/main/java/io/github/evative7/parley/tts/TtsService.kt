@@ -4,6 +4,7 @@ import io.github.evative7.parley.BuildConfig
 import io.github.evative7.parley.asr.AsrProvider
 import io.github.evative7.parley.asr.DashScopeRegion
 import io.github.evative7.parley.model.Lang
+import io.github.evative7.parley.model.LanguageSupport
 
 enum class TtsService(
     val id: String,
@@ -71,6 +72,34 @@ enum class TtsService(
         Mock -> "mock"
     }
 
+    /** Official coverage beyond Parley's built-in voice mapping. */
+    val languageSupport: LanguageSupport get() = when (this) {
+        // https://help.aliyun.com/zh/model-studio/qwen-audio-tts-voice-list
+        QwenAudioTtsFlash -> LanguageSupport(
+            codes("bg nl hu ro da hr el cs no sv hi sk fi ur sr lt lv tr fa he mn sl az pl ca km lo ka af ne be ml lb sq ta si te et ceb bs my hy la is mt sw kk uk"),
+            listOf("Shanghainese", "Cantonese", "Northeastern", "Chongqing", "Shaanxi", "Yunnan", "Ningbo", "Gansu"),
+        )
+        // https://help.aliyun.com/zh/model-studio/cosyvoice-voice-list
+        CosyVoiceV3Flash -> LanguageSupport(emptySet(), listOf("Cantonese", "Northeastern", "Shaanxi", "Minnan"))
+        DoubaoSeedTts20 -> LanguageSupport(
+            codes("fil ms"),
+            listOf("Sichuanese", "Cantonese", "other Chinese dialects"),
+        )
+        // https://platform.minimax.io/docs/api-reference/speech/t2a-websocket.md
+        MiniMaxSpeech28Turbo, MiniMaxSpeech28Hd -> LanguageSupport(
+            codes("tr nl uk pl ro el cs fi hi bg da he ms fa sk sv hr fil hu no sl ca nn ta af"),
+            listOf("Cantonese"),
+        )
+        Mock -> LanguageSupport(emptySet())
+    }
+
+    /** Support within Parley is exactly the availability of a built-in voice in [region]. */
+    fun supports(lang: Lang, region: DashScopeRegion): Boolean = defaultVoice(lang, region) != null
+
+    fun support(region: DashScopeRegion): LanguageSupport = languageSupport.copy(
+        languages = languageSupport.languages + Lang.targets.filter { supports(it, region) }.map { it.base },
+    )
+
     companion object {
         val Default = QwenAudioTtsFlash
 
@@ -79,6 +108,8 @@ enum class TtsService(
 
         /** The service with [id] if this build can run it. */
         fun find(id: String?): TtsService? = available.firstOrNull { it.id == id }
+
+        private fun codes(value: String): Set<String> = value.split(' ').toSet()
     }
 }
 

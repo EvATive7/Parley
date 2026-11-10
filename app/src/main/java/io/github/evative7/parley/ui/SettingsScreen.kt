@@ -89,6 +89,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -115,6 +116,11 @@ import io.github.evative7.parley.mock.MockAsrFault
 import io.github.evative7.parley.mock.MockSpeed
 import io.github.evative7.parley.mock.MockTranslationFault
 import io.github.evative7.parley.mock.MockTtsFault
+import io.github.evative7.parley.model.Lang
+import io.github.evative7.parley.model.LanguageSupport
+import io.github.evative7.parley.model.SupportTextTemplates
+import io.github.evative7.parley.model.render
+import io.github.evative7.parley.model.summarize
 import io.github.evative7.parley.state.SettingsViewModel
 import io.github.evative7.parley.tts.MiniMaxRegion
 import io.github.evative7.parley.tts.TtsService
@@ -122,6 +128,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.InputStream
+import java.util.Locale
 
 /** Service settings: one card per service; storage trouble surfaces as a snackbar. */
 @Composable
@@ -386,7 +393,7 @@ private fun TtsCard(draft: ServiceSettings, enabled: Boolean, onChange: (Service
         icon = R.drawable.ic_volume_up,
         title = stringResource(R.string.settings_tts),
         provider = service?.label() ?: stringResource(R.string.settings_tts_off),
-        hint = service?.let { stringResource(it.priceDescription()) },
+        hint = null,
     ) {
         ChoiceField(
             label = stringResource(R.string.settings_tts_service),
@@ -395,6 +402,13 @@ private fun TtsCard(draft: ServiceSettings, enabled: Boolean, onChange: (Service
             optionLabel = { it?.label() ?: stringResource(R.string.settings_tts_off) },
             enabled = enabled,
         ) { onChange(draft.copy(ttsService = it)) }
+        service?.let {
+            Text(
+                it.fullDescription(draft.dashScopeRegion),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         if (service != null && service != TtsService.Mock) {
             SettingField(
                 label = stringResource(R.string.settings_tts_voice),
@@ -607,7 +621,7 @@ private fun AsrServiceField(
                                         Column(Modifier.weight(1f)) {
                                             Text(service.label(), style = MaterialTheme.typography.bodyLarge)
                                             Text(
-                                                service.description(),
+                                                service.fullDescription(),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
@@ -724,18 +738,46 @@ internal fun AsrService.label(): String = stringResource(when (this) {
 })
 
 @Composable
-private fun AsrService.description(): String = stringResource(when (this) {
-    AsrService.FunAsrRealtimeStream -> R.string.settings_asr_fun_stream_desc
-    AsrService.FunAsrRealtimeNonStream -> R.string.settings_asr_fun_non_stream_desc
-    AsrService.GptRealtimeWhisper -> R.string.settings_asr_gpt_realtime_desc
-    AsrService.Gpt4oTranscribeNonStream -> R.string.settings_asr_gpt_4o_desc
-    AsrService.Gpt4oMiniTranscribeNonStream -> R.string.settings_asr_gpt_4o_mini_desc
-    AsrService.DoubaoSeedAsr20Stream -> R.string.settings_asr_doubao_stream_desc
-    AsrService.DoubaoSeedAsr20NonStream -> R.string.settings_asr_doubao_non_stream_desc
-    AsrService.DoubaoSeedAsr20NonStreamTurbo -> R.string.settings_asr_doubao_turbo_desc
-    AsrService.MockStream -> R.string.settings_asr_mock_stream_desc
-    AsrService.MockNonStream -> R.string.settings_asr_mock_non_stream_desc
+private fun AsrService.intro(): String = stringResource(when (this) {
+    AsrService.FunAsrRealtimeStream, AsrService.FunAsrRealtimeNonStream -> R.string.settings_asr_fun_intro
+    AsrService.GptRealtimeWhisper, AsrService.Gpt4oTranscribeNonStream -> R.string.settings_asr_gpt_intro
+    AsrService.Gpt4oMiniTranscribeNonStream -> R.string.settings_asr_gpt_mini_intro
+    AsrService.DoubaoSeedAsr20Stream, AsrService.DoubaoSeedAsr20NonStream -> R.string.settings_asr_doubao_intro
+    AsrService.DoubaoSeedAsr20NonStreamTurbo -> R.string.settings_asr_doubao_turbo_intro
+    AsrService.MockStream, AsrService.MockNonStream -> R.string.settings_asr_mock_intro
 })
+
+@Composable
+private fun AsrService.fullDescription(): String = listOf(
+    intro(),
+    languageSupport.supportDescription(),
+    stringResource(if (streaming) R.string.settings_asr_stream_variant else R.string.settings_asr_non_stream_variant),
+).joinToString("\n")
+
+@Composable
+private fun TtsService.fullDescription(region: DashScopeRegion): String = listOf(
+    stringResource(R.string.settings_tts_intro),
+    support(region).supportDescription(),
+    stringResource(priceDescription()),
+).joinToString("\n")
+
+@Composable
+private fun LanguageSupport.supportDescription(): String {
+    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val resources = LocalContext.current.resources
+    val templates = SupportTextTemplates(
+        supports = { resources.getString(R.string.settings_supports, it) },
+        unsupported = { resources.getString(R.string.settings_does_not_support, it) },
+        extras = { resources.getString(R.string.settings_also_supports, it) },
+        extrasRemaining = { names, count -> resources.getString(R.string.settings_also_supports_more, names, count) },
+        dialects = { resources.getString(R.string.settings_supports_dialects, it) },
+    )
+    return summarize().render(
+        languageName = { Locale.forLanguageTag(it).getDisplayName(locale).replaceFirstChar(Char::titlecase) },
+        projectName = { it.displayName(locale) },
+        templates = templates,
+    )
+}
 
 @Composable
 private fun ServiceCard(
