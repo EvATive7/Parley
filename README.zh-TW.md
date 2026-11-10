@@ -71,7 +71,7 @@
 | 服務商 | 服務 | 必要設定 | 參考價格與計數規則 |
 | --- | --- | --- | --- |
 | Android | 系統語音 | 無 | 免費 |
-| 阿里雲 DashScope | CosyVoice 3.5 Flash / Plus | 共用 DashScope API Key 與地域 | Flash：¥0.8/萬字元；Plus：¥1.5/萬字元 |
+| 阿里雲 DashScope | Qwen Audio 3.1 TTS Flash、CosyVoice 3 Flash | 共用 DashScope API Key 與地域 | Qwen Audio：輸入 ¥1.5、輸出 ¥12/百萬 token（約 ¥0.3/萬字元）；CosyVoice：¥1/萬字元，一個漢字計兩個字元 |
 | 火山引擎 | 豆包 Seed TTS 2.0 | 共用 AppID 與 Access Token，須開通語音合成 2.0 | ¥3/萬字元；一個漢字計一個字元 |
 | MiniMax | Speech 2.8 Turbo / HD | API Key、中國區或國際區 | Turbo：中國區 ¥2/萬、國際區 $60/百萬；HD：中國區 ¥3.5/萬、國際區 $100/百萬；一個漢字計兩個字元 |
 

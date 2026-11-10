@@ -12,7 +12,7 @@ import org.junit.Test
 class CosyVoiceProtocolTest {
     @Test fun `run task requests 24 kHz PCM with model voice and language hint`() {
         val root = Json.parseToJsonElement(
-            CosyVoiceProtocol.runTask("task", "cosyvoice-v3.5-flash", "longanyang", Lang("zh-CN")),
+            CosyVoiceProtocol.runTask("task", "qwen-audio-3.1-tts-flash", "longanhuan_v3.1", Lang("zh-CN")),
         ).jsonObject
         val header = root.getValue("header").jsonObject
         val payload = root.getValue("payload").jsonObject
@@ -20,8 +20,8 @@ class CosyVoiceProtocolTest {
         assertEquals("run-task", header.getValue("action").jsonPrimitive.content)
         assertEquals("task", header.getValue("task_id").jsonPrimitive.content)
         assertEquals("tts", payload.getValue("task").jsonPrimitive.content)
-        assertEquals("cosyvoice-v3.5-flash", payload.getValue("model").jsonPrimitive.content)
-        assertEquals("longanyang", parameters.getValue("voice").jsonPrimitive.content)
+        assertEquals("qwen-audio-3.1-tts-flash", payload.getValue("model").jsonPrimitive.content)
+        assertEquals("longanhuan_v3.1", parameters.getValue("voice").jsonPrimitive.content)
         assertEquals("pcm", parameters.getValue("format").jsonPrimitive.content)
         assertEquals("24000", parameters.getValue("sample_rate").jsonPrimitive.content)
         assertTrue(parameters.getValue("language_hints").toString().contains("zh"))

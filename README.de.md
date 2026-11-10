@@ -71,7 +71,7 @@ Streaming-Dienste liefern Ergebnisse bereits während des Sprechens. Nicht-Strea
 | Anbieter | Dienst | Erforderliche Konfiguration | Richtpreis und Zeichenzählung |
 | --- | --- | --- | --- |
 | Android | Systemstimme | Keine | Kostenlos |
-| Alibaba Cloud DashScope | CosyVoice 3.5 Flash / Plus | Gemeinsamer DashScope API Key und Region | Flash: 0,8 ¥/10.000 Zeichen; Plus: 1,5 ¥/10.000 |
+| Alibaba Cloud DashScope | Qwen Audio 3.1 TTS Flash, CosyVoice 3 Flash | Gemeinsamer DashScope API Key und Region | Qwen Audio: 1,5 ¥ Eingabe / 12 ¥ Ausgabe pro Million Tokens (etwa 0,3 ¥/10.000 Zeichen); CosyVoice: 1 ¥/10.000 Zeichen, ein chinesisches Schriftzeichen zählt doppelt |
 | Volcengine | Doubao Seed TTS 2.0 | Gemeinsame AppID und Access Token; Speech Synthesis 2.0 aktivieren | 3 ¥/10.000 Zeichen; ein chinesisches Schriftzeichen zählt als eins |
 | MiniMax | Speech 2.8 Turbo / HD | API Key und Region China oder International | Turbo: 2 ¥/10.000 (China) oder 60 $/Mio.; HD: 3,5 ¥/10.000 oder 100 $/Mio.; ein chinesisches Schriftzeichen zählt doppelt |
 

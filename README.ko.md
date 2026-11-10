@@ -71,7 +71,7 @@
 | 제공업체 | 서비스 | 필요한 설정 | 참고 가격 및 문자 계산 |
 | --- | --- | --- | --- |
 | Android | 시스템 음성 | 없음 | 무료 |
-| Alibaba Cloud DashScope | CosyVoice 3.5 Flash / Plus | 공용 DashScope API Key와 리전 | Flash: 1만 자당 ¥0.8, Plus: ¥1.5 |
+| Alibaba Cloud DashScope | Qwen Audio 3.1 TTS Flash, CosyVoice 3 Flash | 공용 DashScope API Key와 리전 | Qwen Audio: 100만 토큰당 입력 ¥1.5·출력 ¥12(1만 자당 약 ¥0.3), CosyVoice: 1만 자당 ¥1(한자 한 글자는 두 글자) |
 | Volcengine | Doubao Seed TTS 2.0 | 공용 AppID와 Access Token, 음성 합성 2.0 활성화 | 1만 자당 ¥3, 중국어 한자는 한 자로 계산 |
 | MiniMax | Speech 2.8 Turbo / HD | API Key, 중국 또는 국제 리전 | Turbo: 중국 ¥2/1만, 국제 $60/100만. HD: 중국 ¥3.5/1만, 국제 $100/100만. 중국어 한자는 두 자로 계산 |
 

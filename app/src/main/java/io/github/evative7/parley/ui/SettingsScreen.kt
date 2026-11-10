@@ -450,8 +450,8 @@ private fun SettingsSwitch(title: String, checked: Boolean, enabled: Boolean, on
 @Composable
 private fun TtsService.label(): String = stringResource(when (this) {
     TtsService.System -> R.string.settings_tts_system
-    TtsService.CosyVoice35Flash -> R.string.settings_tts_cosy_flash
-    TtsService.CosyVoice35Plus -> R.string.settings_tts_cosy_plus
+    TtsService.QwenAudioTtsFlash -> R.string.settings_tts_qwen_audio_flash
+    TtsService.CosyVoiceV3Flash -> R.string.settings_tts_cosy_v3_flash
     TtsService.DoubaoSeedTts20 -> R.string.settings_tts_doubao
     TtsService.MiniMaxSpeech28Turbo -> R.string.settings_tts_minimax_turbo
     TtsService.MiniMaxSpeech28Hd -> R.string.settings_tts_minimax_hd
@@ -461,8 +461,8 @@ private fun TtsService.label(): String = stringResource(when (this) {
 @StringRes
 private fun TtsService.priceDescription(): Int = when (this) {
     TtsService.System, TtsService.Mock -> R.string.settings_tts_price_free
-    TtsService.CosyVoice35Flash -> R.string.settings_tts_price_cosy_flash
-    TtsService.CosyVoice35Plus -> R.string.settings_tts_price_cosy_plus
+    TtsService.QwenAudioTtsFlash -> R.string.settings_tts_price_qwen_audio_flash
+    TtsService.CosyVoiceV3Flash -> R.string.settings_tts_price_cosy_v3_flash
     TtsService.DoubaoSeedTts20 -> R.string.settings_tts_price_doubao
     TtsService.MiniMaxSpeech28Turbo -> R.string.settings_tts_price_minimax_turbo
     TtsService.MiniMaxSpeech28Hd -> R.string.settings_tts_price_minimax_hd

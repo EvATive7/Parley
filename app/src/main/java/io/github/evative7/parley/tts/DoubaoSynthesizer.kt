@@ -217,7 +217,7 @@ internal object DoubaoProtocol {
     private fun Lang.explicitLanguage(): String = when (tag) {
         "zh-CN", "zh-TW" -> "zh-cn"
         "es" -> "es-mx"
-        "pt" -> "pt"
+        "pt" -> "pt-br"
         else -> base
     }
 }

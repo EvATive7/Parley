@@ -19,11 +19,11 @@ class RoutingTextToSpeaker @Inject constructor(
     settings: ServiceSettingsSource,
 ) : TextToSpeaker {
     private val cloud = mapOf(
-        TtsService.CosyVoice35Flash to CloudTextToSpeaker(
-            CosyVoiceSynthesizer(client, settings, TtsService.CosyVoice35Flash), player, cache,
+        TtsService.QwenAudioTtsFlash to CloudTextToSpeaker(
+            CosyVoiceSynthesizer(client, settings, TtsService.QwenAudioTtsFlash), player, cache,
         ),
-        TtsService.CosyVoice35Plus to CloudTextToSpeaker(
-            CosyVoiceSynthesizer(client, settings, TtsService.CosyVoice35Plus), player, cache,
+        TtsService.CosyVoiceV3Flash to CloudTextToSpeaker(
+            CosyVoiceSynthesizer(client, settings, TtsService.CosyVoiceV3Flash), player, cache,
         ),
         TtsService.DoubaoSeedTts20 to CloudTextToSpeaker(DoubaoSynthesizer(client, settings), player, cache),
         TtsService.MiniMaxSpeech28Turbo to CloudTextToSpeaker(

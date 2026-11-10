@@ -1,6 +1,7 @@
 package io.github.evative7.parley.data
 
 import io.github.evative7.parley.asr.AsrProvider
+import io.github.evative7.parley.asr.DashScopeRegion
 import io.github.evative7.parley.asr.AsrService
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.tts.MiniMaxRegion
@@ -84,13 +85,24 @@ class ServiceSettingsTest {
     }
 
     @Test fun `voice selection uses custom IDs and falls back to the system when unmapped`() {
-        val fallback = live.speechChoice(7, Lang("fr"), "bonjour")!!
+        val cosy = live.copy(ttsService = TtsService.CosyVoiceV3Flash)
+        val fallback = cosy.speechChoice(7, Lang("fr"), "bonjour")!!
         assertEquals(TtsService.System, fallback.key.service)
         assertTrue(fallback.systemFallback)
-        val custom = live.copy(ttsVoices = mapOf(TtsService.Default.id to "custom")).speechChoice(7, Lang("fr"), "bonjour")!!
-        assertEquals(TtsService.Default, custom.key.service)
+        val custom = cosy.copy(ttsVoices = mapOf(TtsService.CosyVoiceV3Flash.id to "custom")).speechChoice(7, Lang("fr"), "bonjour")!!
+        assertEquals(TtsService.CosyVoiceV3Flash, custom.key.service)
         assertEquals("custom", custom.key.voice)
         assertFalse(custom.systemFallback)
+    }
+
+    @Test fun `the default service has a voice for every offered language`() {
+        for (lang in Lang.targets) assertFalse(live.speechChoice(7, lang, "x")!!.systemFallback)
+    }
+
+    @Test fun `voices offered in only one region fall back elsewhere`() {
+        val cosy = live.copy(ttsService = TtsService.CosyVoiceV3Flash)
+        assertEquals("loongtomoka_v3", cosy.copy(dashScopeRegion = DashScopeRegion.Beijing).speechChoice(7, Lang("ja"), "x")!!.key.voice)
+        assertTrue(cosy.copy(dashScopeRegion = DashScopeRegion.Singapore).speechChoice(7, Lang("ja"), "x")!!.systemFallback)
     }
 
     @Test fun `settings toString does not expose credentials`() {

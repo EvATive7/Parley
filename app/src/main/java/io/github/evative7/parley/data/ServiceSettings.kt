@@ -112,7 +112,7 @@ data class ServiceSettings(
     fun speechChoice(cardId: Long, lang: Lang, text: String): SpeechChoice? {
         val selected = ttsService ?: return null
         val custom = ttsVoices[selected.id]?.trim().orEmpty()
-        val voice = custom.ifEmpty { selected.defaultVoice(lang).orEmpty() }
+        val voice = custom.ifEmpty { selected.defaultVoice(lang, dashScopeRegion).orEmpty() }
         val fallback = selected != TtsService.System && voice.isEmpty()
         val service = if (fallback) TtsService.System else selected
         return SpeechChoice(

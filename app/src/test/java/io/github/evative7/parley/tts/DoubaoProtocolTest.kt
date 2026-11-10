@@ -12,7 +12,7 @@ import org.junit.Test
 class DoubaoProtocolTest {
     @Test fun `start session reuses Volcengine event framing and requests PCM`() {
         val parsed = VolcengineProtocol.parseEvent(
-            DoubaoProtocol.startSession("session", "zh_female_gaolengyujie_uranus_bigtts", Lang("zh-CN")),
+            DoubaoProtocol.startSession("session", "zh_female_vv_uranus_bigtts", Lang("zh-CN")),
         )!!
         assertEquals(DoubaoProtocol.START_SESSION, parsed.event)
         assertEquals("session", parsed.sessionId)
