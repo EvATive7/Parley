@@ -14,7 +14,7 @@ class SpeechCacheTest {
         assertArrayEquals(byteArrayOf(1), cache.get(base))
         assertNull(cache.get(base.copy(cardId = 2)))
         assertNull(cache.get(base.copy(lang = Lang("fr"))))
-        assertNull(cache.get(base.copy(service = TtsService.System)))
+        assertNull(cache.get(base.copy(service = TtsService.QwenAudioTtsFlash)))
         assertNull(cache.get(base.copy(voice = "other")))
         assertNull(cache.get(base.copy(text = "changed")))
     }

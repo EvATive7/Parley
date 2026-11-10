@@ -473,7 +473,7 @@ private fun Translations(
 }
 
 @Composable
-private fun SpeechButton(translation: CardTranslation, systemFallback: Boolean, onClick: () -> Unit) {
+private fun SpeechButton(translation: CardTranslation, @Suppress("UNUSED_PARAMETER") noFallback: Boolean, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val playback = translation.playback
     val playing = playback == PlaybackState.Playing
@@ -491,12 +491,12 @@ private fun SpeechButton(translation: CardTranslation, systemFallback: Boolean, 
                 )
             }
         }
-        if (systemFallback) {
+        if (failed) {
             Text(
-                "SYS",
+                playback.message ?: stringResource(R.string.tts_unsupported_language),
                 style = MaterialTheme.typography.labelSmall,
-                color = colors.onSurfaceVariant,
-                maxLines = 1,
+                color = colors.error,
+                maxLines = 2,
             )
         }
     }

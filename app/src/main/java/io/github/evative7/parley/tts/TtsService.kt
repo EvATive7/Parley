@@ -11,7 +11,6 @@ enum class TtsService(
     /** Switched off for now: not offered, and dropped from saved settings. */
     val disabled: Boolean = false,
 ) {
-    System("system", null),
     QwenAudioTtsFlash("qwen-audio-3.1-tts-flash", AsrProvider.DashScope),
     CosyVoiceV3Flash("cosyvoice-v3-flash", AsrProvider.DashScope),
     DoubaoSeedTts20("doubao-seed-tts-2.0", AsrProvider.Volcengine),
@@ -24,7 +23,6 @@ enum class TtsService(
      * provider offers some voices in only one region. Voices were checked against each provider's voice list.
      */
     fun defaultVoice(lang: Lang, region: DashScopeRegion = DashScopeRegion.Beijing): String? = when (this) {
-        System -> "system"
         // One voice speaks every language Parley offers, in both regions.
         QwenAudioTtsFlash -> if (lang in Lang.targets) "longanhuan_v3.1" else null
         CosyVoiceV3Flash -> when (lang.tag) {

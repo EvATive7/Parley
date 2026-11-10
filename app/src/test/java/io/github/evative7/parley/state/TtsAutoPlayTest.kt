@@ -15,7 +15,7 @@ class TtsAutoPlayTest {
         stage = CardStage.Done,
         translations = listOf(translation),
     )
-    private val enabled = ServiceSettings(ttsService = TtsService.System, ttsAutoPlay = true)
+    private val enabled = ServiceSettings(ttsService = TtsService.Mock, ttsAutoPlay = true)
 
     @Test fun `one completed translation auto plays only in the foreground`() {
         assertEquals(translation, autoPlayTranslation(card, enabled, foreground = true, faceToFace = false))

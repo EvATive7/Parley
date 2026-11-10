@@ -96,6 +96,15 @@ class ConfigFileTest {
         assertTrue(decoded.ttsVoices.isEmpty())
     }
 
+    @Test fun `system and unknown TTS services use the current default while null stays off`() {
+        fun decode(service: String) = ConfigFile.decode(
+            """{"format":"parley-config","version":3,"tts":{"service":$service}}""",
+        ).ttsService
+        assertEquals(TtsService.Default, decode("\"system\""))
+        assertEquals(TtsService.Default, decode("\"removed-service\""))
+        assertEquals(null, decode("null"))
+    }
+
     @Test fun `unknown and repeated services are dropped, and none left means the default`() {
         val text = """{"format":"parley-config","version":2,"asr":{"services":
             ["removed-service","doubao-seed-asr-2-0-stream-input","doubao-seed-asr-2-0-stream-input"]}}"""

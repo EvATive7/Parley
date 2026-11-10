@@ -8,6 +8,8 @@ import io.github.evative7.parley.tts.MiniMaxRegion
 import io.github.evative7.parley.tts.TtsService
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -81,28 +83,26 @@ class ServiceSettingsTest {
         assertEquals(listOf(AsrProvider.DashScope, AsrProvider.MiniMax), miniMax.usedProviders)
         assertEquals(SettingsError.AsrKey, miniMax.validationError())
         assertTrue(miniMax.copy(miniMaxKey = "minimax-key").isReady)
-        assertTrue(miniMax.copy(ttsService = TtsService.System).isReady)
+        assertTrue(miniMax.copy(ttsService = null).isReady)
     }
 
-    @Test fun `voice selection uses custom IDs and falls back to the system when unmapped`() {
+    @Test fun `voice selection refuses unmapped languages but always accepts a custom ID`() {
         val cosy = live.copy(ttsService = TtsService.CosyVoiceV3Flash)
-        val fallback = cosy.speechChoice(7, Lang("fr"), "bonjour")!!
-        assertEquals(TtsService.System, fallback.key.service)
-        assertTrue(fallback.systemFallback)
-        val custom = cosy.copy(ttsVoices = mapOf(TtsService.CosyVoiceV3Flash.id to "custom")).speechChoice(7, Lang("fr"), "bonjour")!!
+        assertNull(cosy.speechChoice(7, Lang("fr"), "bonjour"))
+        val custom = cosy.copy(ttsVoices = mapOf(TtsService.CosyVoiceV3Flash.id to "custom"))
+            .speechChoice(7, Lang("fr"), "bonjour")!!
         assertEquals(TtsService.CosyVoiceV3Flash, custom.key.service)
         assertEquals("custom", custom.key.voice)
-        assertFalse(custom.systemFallback)
     }
 
     @Test fun `the default service has a voice for every offered language`() {
-        for (lang in Lang.targets) assertFalse(live.speechChoice(7, lang, "x")!!.systemFallback)
+        for (lang in Lang.targets) assertNotNull(live.speechChoice(7, lang, "x"))
     }
 
-    @Test fun `voices offered in only one region fall back elsewhere`() {
+    @Test fun `voices offered in only one region are refused elsewhere`() {
         val cosy = live.copy(ttsService = TtsService.CosyVoiceV3Flash)
         assertEquals("loongtomoka_v3", cosy.copy(dashScopeRegion = DashScopeRegion.Beijing).speechChoice(7, Lang("ja"), "x")!!.key.voice)
-        assertTrue(cosy.copy(dashScopeRegion = DashScopeRegion.Singapore).speechChoice(7, Lang("ja"), "x")!!.systemFallback)
+        assertNull(cosy.copy(dashScopeRegion = DashScopeRegion.Singapore).speechChoice(7, Lang("ja"), "x"))
     }
 
     @Test fun `settings toString does not expose credentials`() {

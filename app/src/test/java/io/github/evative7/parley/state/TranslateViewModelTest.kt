@@ -61,6 +61,8 @@ class TranslateViewModelTest {
     private var detected: Lang? = Lang("en")
     private var microphoneFails = false
     private lateinit var conversationStore: FakeConversationStore
+    private var speechCalls = 0
+    private var speechSettings = ServiceSettings(ttsService = null)
 
     @Before fun setup() {
         Dispatchers.setMain(dispatcher)
@@ -113,14 +115,33 @@ class TranslateViewModelTest {
                 override suspend fun save(langs: LangPair) {}
             }, conversationStore,
             object : TextToSpeaker {
-                override fun speak(key: SpeechKey, text: String, lang: Lang) =
-                    flowOf<PlaybackState>(PlaybackState.Preparing, PlaybackState.Playing, PlaybackState.Done)
+                override fun speak(key: SpeechKey, text: String, lang: Lang): Flow<PlaybackState> {
+                    speechCalls++
+                    return flowOf(PlaybackState.Preparing, PlaybackState.Playing, PlaybackState.Done)
+                }
                 override fun stop() {}
             },
             SpeechCache(),
-            object : ServiceSettingsSource { override val current = ServiceSettings(ttsService = null) },
+            object : ServiceSettingsSource { override val current get() = speechSettings },
         )
             .also { store.put("vm", it) }
+    }
+
+    @Test fun `unsupported speech fails without calling the speaker`() = runTest {
+        speechSettings = ServiceSettings(
+            ttsService = io.github.evative7.parley.tts.TtsService.CosyVoiceV3Flash,
+            dashScopeKey = "key",
+        )
+        val vm = vm()
+        vm.setLang(0, Lang("en"))
+        vm.setLang(1, Lang("fr"))
+        vm.submitText("hello")
+        runCurrent()
+        val card = vm.state.value.cards.single()
+        vm.toggleSpeech(card.id, Lang("fr"))
+        val translation = vm.state.value.cards.single().translations.single()
+        assertTrue(translation.playback is PlaybackState.Failed)
+        assertEquals(0, speechCalls)
     }
 
     private fun release(vm: TranslateViewModel) {

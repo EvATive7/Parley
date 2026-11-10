@@ -186,7 +186,7 @@
     <string name="action_clear">Borrar</string>
     <string name="tts_play">Leer en voz alta</string>
     <string name="tts_stop">Detener lectura</string>
-    <string name="tts_system_fallback">Usa la voz del dispositivo</string>
+    <string name="tts_unsupported_language">Ninguna voz integrada admite este idioma</string>
     <string name="settings_credentials">Credenciales de proveedores</string>
     <string name="settings_provider_minimax">MiniMax</string>
     <string name="settings_minimax_region">Región</string>
@@ -199,7 +199,6 @@
     <string name="settings_tts_voice_default">Automático según el idioma</string>
     <string name="settings_tts_autoplay">Leer traducciones automáticamente</string>
     <string name="settings_tts_autoplay_face_to_face">Lectura automática en modo cara a cara</string>
-    <string name="settings_tts_system">Voz del sistema</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>
     <string name="settings_tts_doubao">Doubao Seed TTS 2.0</string>

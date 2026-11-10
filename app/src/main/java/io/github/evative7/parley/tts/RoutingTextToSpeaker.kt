@@ -8,10 +8,9 @@ import okhttp3.OkHttpClient
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Selects the device engine or the configured cloud synthesizer for a resolved speech key. */
+/** Selects the configured cloud synthesizer for a resolved speech key. */
 @Singleton
 class RoutingTextToSpeaker @Inject constructor(
-    private val system: SystemTextToSpeaker,
     mock: MockSynthesizer,
     player: PcmPlayer,
     cache: SpeechCache,
@@ -35,14 +34,9 @@ class RoutingTextToSpeaker @Inject constructor(
         TtsService.Mock to CloudTextToSpeaker(mock, player, cache),
     )
 
-    override fun speak(key: SpeechKey, text: String, lang: Lang): Flow<PlaybackState> = when (key.service) {
-        TtsService.System -> system.speak(key, text, lang)
-        else -> cloud[key.service]?.speak(key, text, lang)
+    override fun speak(key: SpeechKey, text: String, lang: Lang): Flow<PlaybackState> =
+        cloud[key.service]?.speak(key, text, lang)
             ?: flowOf(PlaybackState.Failed("Speech service is not available"))
-    }
 
-    override fun stop() {
-        system.stop()
-        cloud.values.forEach(TextToSpeaker::stop)
-    }
+    override fun stop() = cloud.values.forEach(TextToSpeaker::stop)
 }

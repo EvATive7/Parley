@@ -163,7 +163,18 @@ class TranslateViewModel @Inject constructor(
             stopSpeech(id)
             return
         }
-        val choice = settings.current?.speechChoice(id, lang, translation.text) ?: return
+        val saved = settings.current ?: return
+        val choice = saved.speechChoice(id, lang, translation.text)
+        if (choice == null) {
+            updateCard(id) {
+                copy(translations = translations.map {
+                    if (it.to == lang && it.text == translation.text) {
+                        it.copy(playback = PlaybackState.Failed("No built-in voice supports this language"))
+                    } else it
+                })
+            }
+            return
+        }
         playSpeech(choice.key, translation)
     }
 

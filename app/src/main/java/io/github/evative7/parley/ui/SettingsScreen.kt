@@ -395,7 +395,7 @@ private fun TtsCard(draft: ServiceSettings, enabled: Boolean, onChange: (Service
             optionLabel = { it?.label() ?: stringResource(R.string.settings_tts_off) },
             enabled = enabled,
         ) { onChange(draft.copy(ttsService = it)) }
-        if (service != null && service !in setOf(TtsService.System, TtsService.Mock)) {
+        if (service != null && service != TtsService.Mock) {
             SettingField(
                 label = stringResource(R.string.settings_tts_voice),
                 value = draft.ttsVoices[service.id].orEmpty(),
@@ -449,7 +449,6 @@ private fun SettingsSwitch(title: String, checked: Boolean, enabled: Boolean, on
 
 @Composable
 private fun TtsService.label(): String = stringResource(when (this) {
-    TtsService.System -> R.string.settings_tts_system
     TtsService.QwenAudioTtsFlash -> R.string.settings_tts_qwen_audio_flash
     TtsService.CosyVoiceV3Flash -> R.string.settings_tts_cosy_v3_flash
     TtsService.DoubaoSeedTts20 -> R.string.settings_tts_doubao
@@ -460,7 +459,7 @@ private fun TtsService.label(): String = stringResource(when (this) {
 
 @StringRes
 private fun TtsService.priceDescription(): Int = when (this) {
-    TtsService.System, TtsService.Mock -> R.string.settings_tts_price_free
+    TtsService.Mock -> R.string.settings_tts_price_free
     TtsService.QwenAudioTtsFlash -> R.string.settings_tts_price_qwen_audio_flash
     TtsService.CosyVoiceV3Flash -> R.string.settings_tts_price_cosy_v3_flash
     TtsService.DoubaoSeedTts20 -> R.string.settings_tts_price_doubao

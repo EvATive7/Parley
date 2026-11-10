@@ -70,12 +70,11 @@ Streaming services return results while you speak. Non-streaming services return
 
 | Provider | Service | Required configuration | Reference price and counting |
 | --- | --- | --- | --- |
-| Android | System voice | None | Free |
 | Alibaba Cloud DashScope | Qwen Audio 3.1 TTS Flash, CosyVoice 3 Flash | Shared DashScope API key and region | Qwen Audio: ¥1.5 input / ¥12 output per million tokens (about ¥0.3/10k characters); CosyVoice: ¥1/10k characters, one Chinese character counts as two |
 | Volcengine | Doubao Seed TTS 2.0 | Shared AppID and Access Token; enable Speech Synthesis 2.0 | ¥3/10k characters; one Chinese character counts as one |
 | MiniMax | Speech 2.8 Turbo / HD | API key and China or International region | Turbo: ¥2/10k (China) or $60/M (international); HD: ¥3.5/10k or $100/M; one Chinese character counts as two |
 
-Cards can be read manually or automatically after translation, including in face-to-face mode. Audio is streamed as 24 kHz PCM, cached only in memory (up to 20 results), and interrupted when recording starts. A language without a verified cloud voice uses the device voice and shows `SYS`.
+Cards can be read manually or automatically after translation, including in face-to-face mode. Audio is streamed as 24 kHz PCM, cached only in memory (up to 20 results), and interrupted when recording starts.
 
 ## 🌏 Supported languages
 

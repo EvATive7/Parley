@@ -188,7 +188,7 @@
     <string name="action_clear">清空</string>
     <string name="tts_play">朗读</string>
     <string name="tts_stop">停止朗读</string>
-    <string name="tts_system_fallback">使用设备语音</string>
+    <string name="tts_unsupported_language">没有内置音色支持此语言</string>
     <string name="settings_credentials">服务商凭据</string>
     <string name="settings_provider_minimax">MiniMax</string>
     <string name="settings_minimax_region">地域</string>
@@ -201,7 +201,6 @@
     <string name="settings_tts_voice_default">按语言自动选择</string>
     <string name="settings_tts_autoplay">自动朗读译文</string>
     <string name="settings_tts_autoplay_face_to_face">面对面模式下自动朗读</string>
-    <string name="settings_tts_system">系统语音</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>
     <string name="settings_tts_doubao">豆包 Seed TTS 2.0</string>

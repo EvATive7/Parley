@@ -70,7 +70,6 @@
 
 | 事業者 | サービス | 必要な設定 | 参考価格と文字数の数え方 |
 | --- | --- | --- | --- |
-| Android | システム音声 | なし | 無料 |
 | Alibaba Cloud DashScope | Qwen Audio 3.1 TTS Flash、CosyVoice 3 Flash | 共通の DashScope API Key とリージョン | Qwen Audio：100 万トークンあたり入力 ¥1.5・出力 ¥12（1 万文字あたり約 ¥0.3）、CosyVoice：1 万文字あたり ¥1（漢字 1 文字は 2 文字） |
 | Volcengine | Doubao Seed TTS 2.0 | 共通の AppID と Access Token、音声合成 2.0 の有効化 | 1 万文字あたり ¥3、中国語の漢字 1 字は 1 文字 |
 | MiniMax | Speech 2.8 Turbo / HD | API Key、中国または国際リージョン | Turbo：中国 ¥2/1 万、国際 $60/100 万。HD：中国 ¥3.5/1 万、国際 $100/100 万。中国語の漢字 1 字は 2 文字 |

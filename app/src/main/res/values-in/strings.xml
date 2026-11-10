@@ -184,7 +184,7 @@
     <string name="action_clear">Hapus</string>
     <string name="tts_play">Read aloud</string>
     <string name="tts_stop">Stop reading</string>
-    <string name="tts_system_fallback">Uses the device voice</string>
+    <string name="tts_unsupported_language">No built-in voice supports this language</string>
     <string name="settings_credentials">Provider credentials</string>
     <string name="settings_provider_minimax">MiniMax</string>
     <string name="settings_minimax_region">Region</string>
@@ -197,7 +197,6 @@
     <string name="settings_tts_voice_default">Automatic for each language</string>
     <string name="settings_tts_autoplay">Automatically read translations</string>
     <string name="settings_tts_autoplay_face_to_face">Automatically read in face-to-face mode</string>
-    <string name="settings_tts_system">System voice</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>
     <string name="settings_tts_doubao">Doubao Seed TTS 2.0</string>

@@ -108,17 +108,14 @@ data class ServiceSettings(
     fun asrErrors(provider: AsrProvider): List<SettingsError> =
         if (asrServices.any { it.provider == provider }) providerErrors(provider) else emptyList()
 
-    /** Resolves a configured service and voice, including the per-language system fallback. */
+    /** Resolves a configured service and voice, or null when no built-in or custom voice can read [lang]. */
     fun speechChoice(cardId: Long, lang: Lang, text: String): SpeechChoice? {
         val selected = ttsService ?: return null
         val custom = ttsVoices[selected.id]?.trim().orEmpty()
         val voice = custom.ifEmpty { selected.defaultVoice(lang, dashScopeRegion).orEmpty() }
-        val fallback = selected != TtsService.System && voice.isEmpty()
-        val service = if (fallback) TtsService.System else selected
-        return SpeechChoice(
-            SpeechKey(cardId, lang, service, if (fallback) "system" else voice, text),
-            systemFallback = fallback,
-        )
+        return voice.takeIf(String::isNotEmpty)?.let {
+            SpeechChoice(SpeechKey(cardId, lang, selected, it, text))
+        }
     }
 
     /** The invalid credentials of one provider, in screen order. */
@@ -154,7 +151,7 @@ data class ServiceSettings(
     }
 }
 
-data class SpeechChoice(val key: SpeechKey, val systemFallback: Boolean)
+data class SpeechChoice(val key: SpeechKey)
 
 enum class SettingsError { AsrNone, AsrKey, AsrAppId, TranslationUrl, TranslationModel, TranslationKey, PresetName }
 

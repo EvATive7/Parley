@@ -186,7 +186,7 @@
     <string name="action_clear">消去</string>
     <string name="tts_play">読み上げる</string>
     <string name="tts_stop">読み上げを停止</string>
-    <string name="tts_system_fallback">端末の音声を使用</string>
+    <string name="tts_unsupported_language">この言語に対応する内蔵音声がありません</string>
     <string name="settings_credentials">プロバイダー認証情報</string>
     <string name="settings_provider_minimax">MiniMax</string>
     <string name="settings_minimax_region">リージョン</string>
@@ -199,7 +199,6 @@
     <string name="settings_tts_voice_default">言語ごとに自動選択</string>
     <string name="settings_tts_autoplay">翻訳を自動で読み上げる</string>
     <string name="settings_tts_autoplay_face_to_face">対面モードで自動読み上げ</string>
-    <string name="settings_tts_system">システム音声</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>
     <string name="settings_tts_doubao">Doubao Seed TTS 2.0</string>
