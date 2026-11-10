@@ -20,6 +20,10 @@ enum class TtsService(
 
     fun defaultVoice(lang: Lang): String? = when (this) {
         System -> "system"
+        CosyVoice35Flash, CosyVoice35Plus -> when (lang.tag) {
+            "en", "zh-CN" -> "longanyang"
+            else -> null
+        }
         Mock -> "mock"
         else -> null
     }
