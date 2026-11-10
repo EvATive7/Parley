@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🗣️ Parley
+<img src="docs/logo.svg" alt="Parley logo" width="128" height="128">
+
+# Parley
 
 開源的 Android 面對面翻譯應用程式。
 

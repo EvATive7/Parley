@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🗣️ Parley
+<img src="docs/logo.svg" alt="Parley logo" width="128" height="128">
+
+# Parley
 
 오픈 소스 Android 대면 번역 앱입니다.
 

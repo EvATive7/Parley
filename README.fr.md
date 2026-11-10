@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🗣️ Parley
+<img src="docs/logo.svg" alt="Parley logo" width="128" height="128">
+
+# Parley
 
 Application Android open source de traduction en face à face.
 
