@@ -395,20 +395,11 @@ private fun TtsCard(draft: ServiceSettings, enabled: Boolean, onChange: (Service
         provider = service?.label() ?: stringResource(R.string.settings_tts_off),
         hint = null,
     ) {
-        ChoiceField(
-            label = stringResource(R.string.settings_tts_service),
-            options = listOf<TtsService?>(null) + TtsService.available,
+        TtsServiceField(
             selected = service,
-            optionLabel = { it?.label() ?: stringResource(R.string.settings_tts_off) },
+            region = draft.dashScopeRegion,
             enabled = enabled,
         ) { onChange(draft.copy(ttsService = it)) }
-        service?.let {
-            Text(
-                it.fullDescription(draft.dashScopeRegion),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
         if (service != null && service != TtsService.Mock) {
             SettingField(
                 label = stringResource(R.string.settings_tts_voice),
@@ -642,6 +633,124 @@ private fun AsrServiceField(
                         Text(stringResource(R.string.action_done))
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TtsServiceField(
+    selected: TtsService?,
+    region: DashScopeRegion,
+    enabled: Boolean,
+    onChange: (TtsService?) -> Unit,
+) {
+    var open by remember { mutableStateOf(false) }
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        onClick = { open = true },
+        enabled = enabled,
+        shape = MaterialTheme.shapes.large,
+        color = colors.surfaceContainerHighest,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            Modifier.heightIn(min = FieldHeight).padding(start = 16.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.settings_tts_service),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                )
+                Text(
+                    selected?.label() ?: stringResource(R.string.settings_tts_off),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.onSurface,
+                )
+            }
+            Icon(painterResource(R.drawable.ic_chevron_right), null, tint = colors.onSurfaceVariant)
+        }
+    }
+    if (open) {
+        BasicAlertDialog(onDismissRequest = { open = false }) {
+            Surface(
+                shape = MaterialTheme.shapes.extraLarge,
+                color = colors.surfaceContainerHigh,
+            ) {
+                Column(Modifier.padding(vertical = 20.dp)) {
+                    Text(
+                        stringResource(R.string.settings_tts_service),
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                    )
+                    LazyColumn(Modifier.heightIn(max = 480.dp)) {
+                        item(key = "off") {
+                            ServiceChoiceRow(
+                                title = stringResource(R.string.settings_tts_off),
+                                description = null,
+                                selected = selected == null,
+                                onClick = { onChange(null); open = false },
+                            )
+                        }
+                        AsrProvider.available.filter { provider ->
+                            TtsService.available.any { it.provider == provider }
+                        }.forEach { provider ->
+                            item(key = "provider-${provider.name}") {
+                                Text(
+                                    provider.label(),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = colors.primary,
+                                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 4.dp),
+                                )
+                            }
+                            items(TtsService.available.filter { it.provider == provider }, key = { it.id }) { service ->
+                                ServiceChoiceRow(
+                                    title = service.label(),
+                                    description = service.fullDescription(region),
+                                    selected = selected == service,
+                                    onClick = { onChange(service); open = false },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ServiceChoiceRow(
+    title: String,
+    description: String?,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large,
+        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp),
+    ) {
+        Row(
+            Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.bodyLarge)
+                description?.let {
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            if (selected) {
+                Spacer(Modifier.width(12.dp))
+                Icon(painterResource(R.drawable.ic_check), null)
             }
         }
     }
