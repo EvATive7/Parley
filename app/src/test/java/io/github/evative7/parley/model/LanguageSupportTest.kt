@@ -8,41 +8,67 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LanguageSupportTest {
-    private val templates = SupportTextTemplates(
+    private val english = SupportWording(
         supports = { "Supports $it." },
         unsupported = { "Doesn't support $it." },
         extras = { "Also supports $it." },
-        extrasRemaining = { names, count -> "Also supports $names and $count more." },
-        dialects = { "Also supports dialects such as $it." },
+        extrasMore = { names, more, _ -> "Also supports $names and $more more." },
+        list = { it.joinToString(", ") },
+        series = { it.joinToString(", ") },
+        sentenceGap = " ",
+    )
+    private val chinese = SupportWording(
+        supports = { "支持$it。" },
+        unsupported = { "不支持$it。" },
+        extras = { "另支持$it。" },
+        extrasMore = { names, more, _ -> "另支持${names}及其他${more}种语言。" },
+        list = { it.joinToString("、") },
+        series = { it.joinToString("、") },
+        sentenceGap = "",
     )
 
     @Test fun `summary compares project languages by base in project order`() {
         val project = listOf(Lang("en"), Lang("zh-CN"), Lang("ja"), Lang("zh-TW"))
-        val summary = LanguageSupport(setOf("zh", "en", "fr")).summarize(project)
+        val summary = LanguageSupport.of("zh en fr").summarize(project)
         assertEquals(listOf(Lang("en"), Lang("zh-CN"), Lang("zh-TW")), summary.supported)
         assertEquals(listOf(Lang("ja")), summary.unsupported)
         assertEquals(listOf("fr"), summary.extras)
+        assertEquals(1, summary.extraTotal)
     }
 
-    @Test fun `render includes capped extras remainder and dialect sentence`() {
-        val support = LanguageSupport(
-            setOf("en", "de", "fr", "it", "ja", "ko", "pt", "ru"),
-            listOf("Cantonese", "Shanghainese"),
+    @Test fun `extras keep the documented order, dialects included, and are capped`() {
+        val support = LanguageSupport.of("en yue wuu de fr it ja ko pt")
+        val summary = support.summarize(listOf(Lang("en")), extraLimit = 6)
+        assertEquals(listOf("yue", "wuu", "de", "fr", "it", "ja"), summary.extras)
+        assertEquals(8, summary.extraTotal)
+        assertEquals(
+            "Supports en. Also supports YUE, WUU, DE, FR, IT, JA and 2 more.",
+            summary.render(languageName = { it.uppercase() }, projectName = { it.tag }, wording = english),
         )
-        val text = support.summarize(listOf(Lang("en"), Lang("zh-CN")), extraLimit = 6).render(
-            languageName = { it.uppercase() }, projectName = { it.tag }, templates = templates,
+        assertEquals(
+            "支持en。另支持YUE、WUU、DE、FR、IT、JA及其他2种语言。",
+            summary.render(languageName = { it.uppercase() }, projectName = { it.tag }, wording = chinese),
         )
-        assertTrue(text.contains("Supports en."))
-        assertTrue(text.contains("Doesn't support zh-CN."))
-        assertTrue(text.contains("and 1 more."))
-        assertTrue(text.contains("Cantonese, Shanghainese"))
     }
 
-    @Test fun `render omits unsupported extras and dialect sentences when empty`() {
-        val text = LanguageSupport(setOf("en")).summarize(listOf(Lang("en"))).render(
-            languageName = { it }, projectName = { it.tag }, templates = templates,
+    @Test fun `render omits empty sentences`() {
+        val text = LanguageSupport.of("en").summarize(listOf(Lang("en"))).render(
+            languageName = { it }, projectName = { it.tag }, wording = english,
         )
         assertEquals("Supports en.", text)
+    }
+
+    @Test fun `support line goes before the last sentence of a description`() {
+        assertEquals(
+            "阿里的实时转写模型，质量较高。\nLINE\n流式输入版延迟更低，识别速度更快。",
+            withSupportLine("阿里的实时转写模型，质量较高。流式输入版延迟更低，识别速度更快。", "LINE"),
+        )
+        assertEquals(
+            "Model with good accuracy, built on Seed ASR 2.0 (non-stream input).\nLINE\nThe stream version is faster.",
+            withSupportLine("Model with good accuracy, built on Seed ASR 2.0 (non-stream input). The stream version is faster.", "LINE"),
+        )
+        // No sentence break to split at: the line goes last.
+        assertEquals("ข้อความ ไม่มีจุด\nLINE", withSupportLine("ข้อความ ไม่มีจุด", "LINE"))
     }
 
     @Test fun `TTS project support always agrees with the regional default voice`() {
@@ -53,7 +79,7 @@ class LanguageSupportTest {
                     assertEquals(
                         "$service $region ${lang.tag}",
                         service.defaultVoice(lang, region) != null,
-                        lang.base in support.languages,
+                        support.supports(lang),
                     )
                 }
             }

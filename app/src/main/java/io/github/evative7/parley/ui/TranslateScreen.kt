@@ -1,5 +1,6 @@
 package io.github.evative7.parley.ui
 
+import android.icu.text.ListFormatter
 import android.content.ClipData
 import android.content.res.Resources
 import android.content.pm.ActivityInfo
@@ -407,7 +408,8 @@ private fun ConversationScreen(
             selected = state.langs[slot],
             other = state.langs[1 - slot],
             onPick = { lang ->
-                val unsupported = settings?.unsupportedServices(lang)
+                // Taking the other side's language only swaps the pair; both are already in use.
+                val unsupported = settings?.takeIf { lang != state.langs[1 - slot] }?.unsupportedServices(lang)
                 if (unsupported == null || unsupported.isEmpty) {
                     vm.setLang(slot, lang)
                 } else {
@@ -457,9 +459,10 @@ private fun UnsupportedLanguageDialog(
     val bilingual = !pickedResources.configuration.locales[0].toLanguageTag().equals(
         deviceResources.configuration.locales[0].toLanguageTag(), ignoreCase = true,
     )
+    // The picked language first: whoever chose it is most likely the one reading.
     fun label(resource: Int): String = buildList {
-        add(deviceResources.getString(resource))
-        if (bilingual) add(pickedResources.getString(resource))
+        add(pickedResources.getString(resource))
+        if (bilingual) add(deviceResources.getString(resource))
     }.joinToString(" / ")
     BasicAlertDialog(
         onDismissRequest = onDismiss,
@@ -476,8 +479,8 @@ private fun UnsupportedLanguageDialog(
                     label(R.string.language_unsupported_title),
                     style = MaterialTheme.typography.headlineSmall,
                 )
-                UnsupportedLanguageMessage(deviceResources, pending)
-                if (bilingual) UnsupportedLanguageMessage(pickedResources, pending)
+                UnsupportedLanguageMessage(pickedResources, pending)
+                if (bilingual) UnsupportedLanguageMessage(deviceResources, pending)
                 Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = onDismiss) {
                         Text(label(R.string.action_cancel))
@@ -496,7 +499,7 @@ private fun UnsupportedLanguageMessage(resources: Resources, pending: PendingLan
     val serviceNames = buildList {
         addAll(pending.unsupported.asr.map { resources.getString(it.labelResource()) })
         pending.unsupported.tts?.let { add(resources.getString(it.labelResource())) }
-    }.joinToString(", ")
+    }.let { ListFormatter.getInstance(resources.configuration.locales[0]).format(it) }
     Text(
         resources.getString(
             R.string.language_unsupported_body,

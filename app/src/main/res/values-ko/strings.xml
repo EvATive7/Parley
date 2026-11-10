@@ -6,7 +6,6 @@
     <string name="onboarding_open_settings">시스템 설정 열기</string>
     <string name="onboarding_denied_hint">마이크 권한이 꺼져 있습니다. 시스템 설정에서 권한을 켠 후 돌아오세요.</string>
 
-    <string name="pick_language">어떤 언어를 사용하시나요?</string>
     <string name="language_unsupported_title">언어 지원 경고</string>
     <string name="language_unsupported_body">%1$s은(는) 다음 서비스에서 지원되지 않습니다: %2$s. 음성 인식 또는 읽어주기가 작동하지 않을 수 있습니다.</string>
     <string name="action_continue">계속</string>
@@ -39,20 +38,10 @@
     <string name="settings_title">서비스</string>
     <string name="settings_privacy">음성과 텍스트는 선택한 서비스로만 전송됩니다. 키는 Android Keystore를 사용해 이 기기에서 암호화됩니다.</string>
     <string name="settings_asr">음성 인식</string>
-    <string name="settings_asr_fun_intro">Alibaba의 실시간 전사 모델로 품질, 속도, 정확도의 균형을 제공합니다.</string>
-    <string name="settings_asr_gpt_intro">OpenAI의 범용 전사 모델로 여러 언어를 안정적으로 인식합니다.</string>
-    <string name="settings_asr_gpt_mini_intro">OpenAI의 경량 전사 모델로 잦은 사용 시 비용과 지연을 줄입니다.</string>
-    <string name="settings_asr_doubao_intro">ByteDance의 Doubao 전사 모델로 복잡한 환경과 전문 분야를 정확하게 인식합니다.</string>
-    <string name="settings_asr_doubao_turbo_intro">ByteDance의 빠른 Doubao 전사 모델로 지연을 줄입니다.</string>
-    <string name="settings_asr_mock_intro">개발 및 테스트용 오프라인 모의 인식입니다.</string>
-    <string name="settings_asr_stream_variant">스트리밍 입력은 낮은 지연으로 중간 결과를 반환합니다.</string>
-    <string name="settings_asr_non_stream_variant">전체 녹음 입력은 발화 후 더 완전한 텍스트를 반환합니다.</string>
-    <string name="settings_tts_intro">합성 음성을 24 kHz PCM으로 스트리밍 재생합니다.</string>
     <string name="settings_supports">%1$s을(를) 지원합니다.</string>
     <string name="settings_does_not_support">%1$s을(를) 지원하지 않습니다.</string>
     <string name="settings_also_supports">%1$s도 지원합니다.</string>
     <string name="settings_also_supports_more">%1$s 외 %2$d개 언어도 지원합니다.</string>
-    <string name="settings_supports_dialects">%1$s 등의 방언도 지원합니다.</string>
     <string name="settings_asr_service">인식 서비스</string>
     <string name="settings_provider_dashscope">DashScope</string>
     <string name="settings_provider_openai">OpenAI</string>
@@ -222,6 +211,12 @@
     <string name="settings_tts_minimax_turbo">MiniMax Speech 2.8 Turbo</string>
     <string name="settings_tts_minimax_hd">MiniMax Speech 2.8 HD</string>
     <string name="settings_tts_mock">모의 음성(오프라인)</string>
+    <string name="settings_tts_qwen_audio_flash_desc">Alibaba Qwen의 실시간 음성 합성 모델로, 지연 시간이 짧고 발음이 자연스럽습니다. 하나의 음성으로 이 앱의 모든 언어를 읽을 수 있으며 비용도 매우 낮습니다.</string>
+    <string name="settings_tts_cosy_v3_flash_desc">Alibaba Tongyi의 음성 합성 모델로, 중국어 음성이 다양하고 표현력이 좋습니다. 외국어 음성은 적으며, 일본어와 한국어 음성은 베이징 리전에서만 제공됩니다.</string>
+    <string name="settings_tts_doubao_desc">ByteDance Doubao의 음성 합성 모델로, 의미 이해와 감정 표현이 뛰어나고 음성이 자연스럽습니다. 대부분의 언어에 원어민 음성이 있습니다.</string>
+    <string name="settings_tts_minimax_turbo_desc">MiniMax의 음성 합성 모델로, 언어별 품질이 고르고 언어마다 원어민 음성이 있습니다. Turbo 버전은 지연 시간이 짧고 비용이 낮습니다.</string>
+    <string name="settings_tts_minimax_hd_desc">MiniMax의 음성 합성 모델로, 언어별 품질이 고르고 언어마다 원어민 음성이 있습니다. HD 버전은 음질과 표현력이 더 좋고 비용이 높습니다.</string>
+    <string name="settings_tts_mock_desc">음성 대신 신호음을 재생합니다. 네트워크 서비스에 연결하지 않으며 자격 증명이 필요 없습니다. 개발 및 테스트용입니다.</string>
     <string name="settings_tts_price_free">무료. 클라우드 음성을 사용하지 않습니다.</string>
     <string name="settings_tts_price_qwen_audio_flash">입력 100만 토큰당 ¥1.5, 출력 ¥12. 실측 기준 1만 자당 약 ¥0.3.</string>
     <string name="settings_tts_price_cosy_v3_flash">1만 자당 ¥1. 한자 한 글자는 두 글자로 계산됩니다.</string>

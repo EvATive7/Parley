@@ -6,7 +6,6 @@
     <string name="onboarding_open_settings">Открыть системные настройки</string>
     <string name="onboarding_denied_hint">Доступ к микрофону отключён. Включите его в системных настройках и вернитесь.</string>
 
-    <string name="pick_language">На каком языке вы говорите?</string>
     <string name="language_unsupported_title">Предупреждение о поддержке языка</string>
     <string name="language_unsupported_body">%1$s не поддерживается следующими сервисами: %2$s. Распознавание или озвучивание может не работать.</string>
     <string name="action_continue">Продолжить</string>
@@ -39,20 +38,10 @@
     <string name="settings_title">Сервисы</string>
     <string name="settings_privacy">Аудио и текст отправляются только выбранным сервисам. Ключи зашифрованы на этом устройстве с помощью Android Keystore.</string>
     <string name="settings_asr">Распознавание речи</string>
-    <string name="settings_asr_fun_intro">Alibaba\'s realtime transcription model balances quality, speed, and accuracy.</string>
-    <string name="settings_asr_gpt_intro">OpenAI\'s general-purpose transcription model provides robust multilingual recognition.</string>
-    <string name="settings_asr_gpt_mini_intro">OpenAI\'s lightweight transcription model reduces cost and latency for frequent use.</string>
-    <string name="settings_asr_doubao_intro">ByteDance\'s Doubao transcription model is designed for accurate recognition in complex and domain-specific scenarios.</string>
-    <string name="settings_asr_doubao_turbo_intro">ByteDance\'s faster Doubao transcription model reduces latency.</string>
-    <string name="settings_asr_mock_intro">Offline simulated recognition for development and testing.</string>
-    <string name="settings_asr_stream_variant">Streaming input returns partial results with lower latency.</string>
-    <string name="settings_asr_non_stream_variant">Whole-recording input returns more complete text after speech ends.</string>
-    <string name="settings_tts_intro">Streams synthesized speech as 24 kHz PCM.</string>
     <string name="settings_supports">Supports %1$s.</string>
     <string name="settings_does_not_support">Doesn\'t support %1$s.</string>
     <string name="settings_also_supports">Also supports %1$s.</string>
     <string name="settings_also_supports_more">Also supports %1$s and %2$d more.</string>
-    <string name="settings_supports_dialects">Also supports dialects such as %1$s.</string>
     <string name="settings_asr_service">Сервис распознавания</string>
     <string name="settings_provider_dashscope">DashScope</string>
     <string name="settings_provider_openai">OpenAI</string>
@@ -223,6 +212,12 @@
     <string name="settings_tts_minimax_turbo">MiniMax Speech 2.8 Turbo</string>
     <string name="settings_tts_minimax_hd">MiniMax Speech 2.8 HD</string>
     <string name="settings_tts_mock">Simulated speech (offline)</string>
+    <string name="settings_tts_qwen_audio_flash_desc">Alibaba\'s Qwen realtime speech synthesis model with low latency and natural, fluent pronunciation. One voice reads every language in this app, at a very low cost.</string>
+    <string name="settings_tts_cosy_v3_flash_desc">Alibaba\'s Tongyi speech synthesis model with rich, expressive Chinese voices. It has few voices for other languages, and its Japanese and Korean voices are offered only in the Beijing region.</string>
+    <string name="settings_tts_doubao_desc">ByteDance\'s Doubao speech synthesis model with better semantic understanding and emotional expression, and natural voices. Most languages have a native voice.</string>
+    <string name="settings_tts_minimax_turbo_desc">MiniMax\'s speech synthesis model with balanced quality across languages and a native voice for each one. The Turbo version has lower latency and costs less.</string>
+    <string name="settings_tts_minimax_hd_desc">MiniMax\'s speech synthesis model with balanced quality across languages and a native voice for each one. The HD version has better sound and expressiveness and costs more.</string>
+    <string name="settings_tts_mock_desc">Plays a tone instead of speech. Connects to no network service and requires no credentials. For development and testing.</string>
     <string name="settings_tts_price_free">Free. Cloud speech is not used.</string>
     <string name="settings_tts_price_qwen_audio_flash">Input ¥1.5 and output ¥12 per million tokens; about ¥0.3 per 10,000 characters in practice.</string>
     <string name="settings_tts_price_cosy_v3_flash">¥1 per 10,000 characters. One Chinese character counts as two.</string>

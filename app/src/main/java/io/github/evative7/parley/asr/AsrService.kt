@@ -72,32 +72,31 @@ enum class AsrService(
     MockStream("mock-stream", AsrProvider.Mock, streaming = true),
     MockNonStream("mock-non-stream", AsrProvider.Mock, streaming = false);
 
+    /** What the provider documents; Parley sends no language hint, so this is what auto-detection covers. */
     val languageSupport: LanguageSupport get() = when (this) {
         // https://www.alibabacloud.com/help/en/model-studio/fun-asr-client-events
-        // Assumed: the undated alias, not the 2026-02-28 snapshot limited to zh/en/ja.
-        FunAsrRealtimeStream, FunAsrRealtimeNonStream -> LanguageSupport(
-            codes("zh en ja ko vi th id ms tl hi ar fr de es pt ru it nl sv da fi no el pl cs hu ro bg hr sk"),
-            listOf("Cantonese", "Sichuanese", "other Chinese dialects"),
+        // Assumed: the undated alias, not the 2026-02-28 snapshot limited to zh/en/ja. Dialects per the model
+        // overview ("multi-region dialect coverage").
+        FunAsrRealtimeStream, FunAsrRealtimeNonStream -> LanguageSupport.of(
+            "zh en ja ko vi th id ms tl hi ar fr de es pt ru it yue wuu nan hak gan hsn nl sv da fi no el pl cs hu ro bg hr sk",
         )
         // https://developers.openai.com/api/docs/guides/speech-to-text
         // Assumed for all three: Whisper's officially listed languages.
-        GptRealtimeWhisper, Gpt4oTranscribeNonStream, Gpt4oMiniTranscribeNonStream -> LanguageSupport(
-            codes("af ar hy az be bs bg ca zh hr cs da nl en et fi fr gl de el he hi hu is id it ja kn kk ko lv lt mk ms mr mi ne no fa pl pt ro ru sr sk sl es sw sv tl ta th tr uk ur vi cy"),
+        GptRealtimeWhisper, Gpt4oTranscribeNonStream, Gpt4oMiniTranscribeNonStream -> LanguageSupport.of(
+            "en zh ja ko fr de es it pt ru ar th vi id af hy az be bs bg ca hr cs da nl et fi gl el he hi hu is " +
+                "kn kk lv lt mk ms mr mi ne no fa pl ro sr sk sl sw sv tl ta tr uk ur cy",
         )
-        // https://docs.volcengine.com/docs/6561/1354869
-        DoubaoSeedAsr20Stream -> LanguageSupport(
-            codes("zh en"),
-            listOf("Shanghainese", "Minnan", "Sichuanese", "Shaanxi", "Cantonese", "other Chinese dialects"),
-        )
+        // https://docs.volcengine.com/docs/6561/1354869: without a `language`, which Parley never sends, only
+        // Chinese, English and Chinese dialects.
+        DoubaoSeedAsr20Stream -> LanguageSupport.of("zh en yue wuu nan")
         // https://docs.volcengine.com/docs/6561/1354868 (Turbo assumed identical).
-        DoubaoSeedAsr20NonStream, DoubaoSeedAsr20NonStreamTurbo -> LanguageSupport(
-            codes("zh en ja id es pt de fr ko fil ms th ar it bn el nl ru tr vi pl ro ne uk"),
-            listOf("Cantonese"),
+        DoubaoSeedAsr20NonStream, DoubaoSeedAsr20NonStreamTurbo -> LanguageSupport.of(
+            "zh en ja ko fr de es it pt ru ar th vi id yue fil ms bn el nl tr pl ro ne uk",
         )
-        MockStream, MockNonStream -> LanguageSupport(Lang.targets.map { it.base }.toSet())
+        MockStream, MockNonStream -> LanguageSupport(Lang.targets.map { it.base }.distinct())
     }
 
-    fun supports(lang: Lang): Boolean = lang.base in languageSupport.languages
+    fun supports(lang: Lang): Boolean = languageSupport.supports(lang)
 
     companion object {
         val Default = FunAsrRealtimeStream
@@ -110,7 +109,6 @@ enum class AsrService(
         /** The service with [id] if this build can run it. */
         fun find(id: String?): AsrService? = available.firstOrNull { it.id == id }
 
-        private fun codes(value: String): Set<String> = value.split(' ').toSet()
     }
 }
 

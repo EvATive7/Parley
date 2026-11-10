@@ -6,7 +6,6 @@
     <string name="onboarding_open_settings">開啟系統設定</string>
     <string name="onboarding_denied_hint">麥克風權限已關閉。請在系統設定中開啟後返回。</string>
 
-    <string name="pick_language">您說哪種語言？</string>
     <string name="language_unsupported_title">語言支援提醒</string>
     <string name="language_unsupported_body">以下服務不支援%1$s：%2$s。語音辨識或朗讀可能無法使用。</string>
     <string name="action_continue">繼續</string>
@@ -39,20 +38,10 @@
     <string name="settings_title">服務設定</string>
     <string name="settings_privacy">語音和文字僅傳送給所選服務，金鑰在本機透過 Android Keystore 加密儲存。</string>
     <string name="settings_asr">語音辨識</string>
-    <string name="settings_asr_fun_intro">阿里的即時轉寫模型，兼顧品質、速度與準確率。</string>
-    <string name="settings_asr_gpt_intro">OpenAI 的通用轉寫模型，提供可靠的多語言辨識。</string>
-    <string name="settings_asr_gpt_mini_intro">OpenAI 的輕量轉寫模型，降低高頻使用的成本與延遲。</string>
-    <string name="settings_asr_doubao_intro">字節豆包轉寫模型面向複雜場景與垂直領域的準確辨識。</string>
-    <string name="settings_asr_doubao_turbo_intro">字節豆包的高速轉寫模型，延遲更低。</string>
-    <string name="settings_asr_mock_intro">用於開發和測試的離線模擬辨識。</string>
-    <string name="settings_asr_stream_variant">串流輸入可低延遲傳回中間結果。</string>
-    <string name="settings_asr_non_stream_variant">整段輸入會在說完後傳回更完整的文字。</string>
-    <string name="settings_tts_intro">以 24 kHz PCM 串流播放合成語音。</string>
     <string name="settings_supports">支援%1$s。</string>
     <string name="settings_does_not_support">不支援%1$s。</string>
-    <string name="settings_also_supports">另外支援%1$s。</string>
-    <string name="settings_also_supports_more">另外支援%1$s等 %2$d 種語言。</string>
-    <string name="settings_supports_dialects">另外支援%1$s等方言。</string>
+    <string name="settings_also_supports">另支援%1$s。</string>
+    <string name="settings_also_supports_more">另支援%1$s及其他%2$d種語言。</string>
     <string name="settings_asr_service">辨識服務</string>
     <string name="settings_provider_dashscope">阿里雲百煉 DashScope</string>
     <string name="settings_provider_openai">OpenAI</string>
@@ -223,6 +212,12 @@
     <string name="settings_tts_minimax_turbo">MiniMax Speech 2.8 Turbo</string>
     <string name="settings_tts_minimax_hd">MiniMax Speech 2.8 HD</string>
     <string name="settings_tts_mock">模擬語音（離線）</string>
+    <string name="settings_tts_qwen_audio_flash_desc">阿里千問的即時語音合成模型，延遲低，發音自然流暢。同一個音色即可朗讀本應用程式的全部語言，費用很低。</string>
+    <string name="settings_tts_cosy_v3_flash_desc">阿里通義的語音合成模型，中文音色豐富，表現力好。外語音色較少，日語和韓語音色只在北京地域提供。</string>
+    <string name="settings_tts_doubao_desc">字節豆包的語音合成模型，語意理解和情感表達更好，音色自然。大多數語言都有原生音色。</string>
+    <string name="settings_tts_minimax_turbo_desc">MiniMax 的語音合成模型，多語種表現均衡，每種語言都有原生音色。Turbo 版延遲更低，費用更低。</string>
+    <string name="settings_tts_minimax_hd_desc">MiniMax 的語音合成模型，多語種表現均衡，每種語言都有原生音色。HD 版音質和表現力更好，費用更高。</string>
+    <string name="settings_tts_mock_desc">播放提示音代替朗讀，不連接任何網路服務，無需憑證。用於開發與測試。</string>
     <string name="settings_tts_price_free">免費，不使用雲端語音服務。</string>
     <string name="settings_tts_price_qwen_audio_flash">輸入每百萬 token ¥1.5，輸出 ¥12；實測約每 1 萬字元 ¥0.3。</string>
     <string name="settings_tts_price_cosy_v3_flash">每 1 萬字元 ¥1；一個漢字計兩個字元。</string>

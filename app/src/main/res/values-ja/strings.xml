@@ -6,7 +6,6 @@
     <string name="onboarding_open_settings">システム設定を開く</string>
     <string name="onboarding_denied_hint">マイクへのアクセスが無効になっています。システム設定で有効にしてから戻ってください。</string>
 
-    <string name="pick_language">どの言語を話しますか？</string>
     <string name="language_unsupported_title">言語サポートの警告</string>
     <string name="language_unsupported_body">%1$sは次のサービスでサポートされていません：%2$s。音声認識または読み上げが機能しない可能性があります。</string>
     <string name="action_continue">続行</string>
@@ -39,20 +38,10 @@
     <string name="settings_title">サービス</string>
     <string name="settings_privacy">音声とテキストは、選択したサービスにのみ送信されます。キーは Android Keystore を使用してこの端末上で暗号化されます。</string>
     <string name="settings_asr">音声認識</string>
-    <string name="settings_asr_fun_intro">Alibaba のリアルタイム文字起こしモデルで、品質、速度、精度を両立します。</string>
-    <string name="settings_asr_gpt_intro">OpenAI の汎用文字起こしモデルで、多言語を安定して認識します。</string>
-    <string name="settings_asr_gpt_mini_intro">OpenAI の軽量文字起こしモデルで、頻繁な利用時のコストと遅延を抑えます。</string>
-    <string name="settings_asr_doubao_intro">ByteDance の Doubao 文字起こしモデルで、複雑な状況や専門分野を正確に認識します。</string>
-    <string name="settings_asr_doubao_turbo_intro">ByteDance の高速 Doubao 文字起こしモデルで、遅延を抑えます。</string>
-    <string name="settings_asr_mock_intro">開発とテスト用のオフライン模擬認識です。</string>
-    <string name="settings_asr_stream_variant">ストリーミング入力は低遅延で途中結果を返します。</string>
-    <string name="settings_asr_non_stream_variant">一括入力は発話後により完全なテキストを返します。</string>
-    <string name="settings_tts_intro">合成音声を 24 kHz PCM でストリーミング再生します。</string>
     <string name="settings_supports">%1$sに対応します。</string>
     <string name="settings_does_not_support">%1$sには対応しません。</string>
     <string name="settings_also_supports">さらに%1$sにも対応します。</string>
-    <string name="settings_also_supports_more">さらに%1$sなど %2$d 言語にも対応します。</string>
-    <string name="settings_supports_dialects">さらに%1$sなどの方言にも対応します。</string>
+    <string name="settings_also_supports_more">さらに%1$sほか%2$d言語にも対応します。</string>
     <string name="settings_asr_service">認識サービス</string>
     <string name="settings_provider_dashscope">DashScope</string>
     <string name="settings_provider_openai">OpenAI</string>
@@ -222,6 +211,12 @@
     <string name="settings_tts_minimax_turbo">MiniMax Speech 2.8 Turbo</string>
     <string name="settings_tts_minimax_hd">MiniMax Speech 2.8 HD</string>
     <string name="settings_tts_mock">模擬音声（オフライン）</string>
+    <string name="settings_tts_qwen_audio_flash_desc">Alibaba Qwen のリアルタイム音声合成モデルで、遅延が少なく、発音が自然で滑らかです。1 つの音声でこのアプリのすべての言語を読み上げられ、費用もごくわずかです。</string>
+    <string name="settings_tts_cosy_v3_flash_desc">Alibaba Tongyi の音声合成モデルで、中国語の音声が豊富で表現力に優れています。外国語の音声は少なく、日本語と韓国語の音声は北京リージョンのみで提供されます。</string>
+    <string name="settings_tts_doubao_desc">ByteDance Doubao の音声合成モデルで、意味の理解と感情表現に優れ、音声も自然です。ほとんどの言語にネイティブの音声があります。</string>
+    <string name="settings_tts_minimax_turbo_desc">MiniMax の音声合成モデルで、言語ごとの品質にばらつきが少なく、各言語にネイティブの音声があります。Turbo 版は遅延が少なく、費用も抑えられます。</string>
+    <string name="settings_tts_minimax_hd_desc">MiniMax の音声合成モデルで、言語ごとの品質にばらつきが少なく、各言語にネイティブの音声があります。HD 版は音質と表現力が高く、費用は高めです。</string>
+    <string name="settings_tts_mock_desc">読み上げの代わりにトーンを再生します。ネットワークサービスに接続せず、認証情報も不要です。開発とテスト用です。</string>
     <string name="settings_tts_price_free">無料。クラウド音声は使用しません。</string>
     <string name="settings_tts_price_qwen_audio_flash">入力 100 万トークンあたり ¥1.5、出力 ¥12。実測で 1 万文字あたり約 ¥0.3。</string>
     <string name="settings_tts_price_cosy_v3_flash">1 万文字あたり ¥1。漢字 1 文字は 2 文字として数えます。</string>

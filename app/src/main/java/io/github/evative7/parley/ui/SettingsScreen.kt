@@ -1,5 +1,6 @@
 package io.github.evative7.parley.ui
 
+import android.icu.text.ListFormatter
 import kotlin.math.roundToLong
 import androidx.compose.material3.Slider
 import androidx.activity.compose.BackHandler
@@ -118,7 +119,8 @@ import io.github.evative7.parley.mock.MockTranslationFault
 import io.github.evative7.parley.mock.MockTtsFault
 import io.github.evative7.parley.model.Lang
 import io.github.evative7.parley.model.LanguageSupport
-import io.github.evative7.parley.model.SupportTextTemplates
+import io.github.evative7.parley.model.SupportWording
+import io.github.evative7.parley.model.withSupportLine
 import io.github.evative7.parley.model.render
 import io.github.evative7.parley.model.summarize
 import io.github.evative7.parley.state.SettingsViewModel
@@ -251,7 +253,6 @@ fun SettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
             Modifier
                 .fillMaxSize()
                 .verticalScroll(contentScroll)
-                .fadingScrollbar(contentScroll)
                 .padding(padding)
                 .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -573,6 +574,10 @@ private fun AsrServiceField(
             modifier = Modifier.padding(start = 16.dp),
         )
     }
+    selected.forEach { service ->
+        // With several services, each description is headed by its name.
+        SelectedDescription(title = service.label().takeIf { selected.size > 1 }, text = service.fullDescription())
+    }
     if (open) {
         BasicAlertDialog(onDismissRequest = { open = false }) {
             Surface(
@@ -591,21 +596,16 @@ private fun AsrServiceField(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                     )
-                    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-                    LazyColumn(
-                        Modifier.heightIn(max = 480.dp).fadingScrollbar(listState),
-                        state = listState,
-                    ) {
+                    val listScroll = rememberScrollState()
+                    Column(Modifier.heightIn(max = 480.dp).scrollbar(listScroll).verticalScroll(listScroll)) {
                         AsrProvider.available.forEach { provider ->
-                            item(key = "provider-${provider.name}") {
-                                Text(
-                                    provider.label(),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 4.dp),
-                                )
-                            }
-                            items(AsrService.available.filter { it.provider == provider }, key = { it.id }) { service ->
+                            Text(
+                                provider.label(),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 4.dp),
+                            )
+                            AsrService.available.filter { it.provider == provider }.forEach { service ->
                                 // A pill clips the corners of multi-line descriptions; a rounded rect does not.
                                 val isSelected = service in selected
                                 Surface(
@@ -682,6 +682,7 @@ private fun TtsServiceField(
             Icon(painterResource(R.drawable.ic_chevron_right), null, tint = colors.onSurfaceVariant)
         }
     }
+    selected?.let { SelectedDescription(title = null, text = it.fullDescription(region)) }
     if (open) {
         BasicAlertDialog(onDismissRequest = { open = false }) {
             Surface(
@@ -694,31 +695,25 @@ private fun TtsServiceField(
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
                     )
-                    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-                    LazyColumn(
-                        Modifier.heightIn(max = 480.dp).fadingScrollbar(listState),
-                        state = listState,
-                    ) {
-                        item(key = "off") {
-                            ServiceChoiceRow(
-                                title = stringResource(R.string.settings_tts_off),
-                                description = null,
-                                selected = selected == null,
-                                onClick = { onChange(null); open = false },
-                            )
-                        }
-                        AsrProvider.available.filter { provider ->
+                    val listScroll = rememberScrollState()
+                    Column(Modifier.heightIn(max = 480.dp).scrollbar(listScroll).verticalScroll(listScroll)) {
+                        ServiceChoiceRow(
+                            title = stringResource(R.string.settings_tts_off),
+                            description = null,
+                            selected = selected == null,
+                            onClick = { onChange(null); open = false },
+                        )
+                        // MiniMax only offers speech, so it isn't among the ASR providers.
+                        AsrProvider.entries.filter { provider ->
                             TtsService.available.any { it.provider == provider }
                         }.forEach { provider ->
-                            item(key = "provider-${provider.name}") {
-                                Text(
-                                    provider.label(),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = colors.primary,
-                                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 4.dp),
-                                )
-                            }
-                            items(TtsService.available.filter { it.provider == provider }, key = { it.id }) { service ->
+                            Text(
+                                provider.label(),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = colors.primary,
+                                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 4.dp),
+                            )
+                            TtsService.available.filter { it.provider == provider }.forEach { service ->
                                 ServiceChoiceRow(
                                     title = service.label(),
                                     description = service.fullDescription(region),
@@ -731,6 +726,15 @@ private fun TtsServiceField(
                 }
             }
         }
+    }
+}
+
+/** The description of a chosen service, shown under its selector. */
+@Composable
+private fun SelectedDescription(title: String?, text: String) {
+    Column(Modifier.padding(horizontal = 16.dp)) {
+        title?.let { Text(it, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface) }
+        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -862,26 +866,39 @@ internal fun AsrService.labelResource(): Int = when (this) {
     AsrService.MockNonStream -> R.string.settings_asr_mock_non_stream
 }
 
-@Composable
-private fun AsrService.intro(): String = stringResource(when (this) {
-    AsrService.FunAsrRealtimeStream, AsrService.FunAsrRealtimeNonStream -> R.string.settings_asr_fun_intro
-    AsrService.GptRealtimeWhisper, AsrService.Gpt4oTranscribeNonStream -> R.string.settings_asr_gpt_intro
-    AsrService.Gpt4oMiniTranscribeNonStream -> R.string.settings_asr_gpt_mini_intro
-    AsrService.DoubaoSeedAsr20Stream, AsrService.DoubaoSeedAsr20NonStream -> R.string.settings_asr_doubao_intro
-    AsrService.DoubaoSeedAsr20NonStreamTurbo -> R.string.settings_asr_doubao_turbo_intro
-    AsrService.MockStream, AsrService.MockNonStream -> R.string.settings_asr_mock_intro
-})
+@StringRes
+private fun AsrService.descriptionResource(): Int = when (this) {
+    AsrService.FunAsrRealtimeStream -> R.string.settings_asr_fun_stream_desc
+    AsrService.FunAsrRealtimeNonStream -> R.string.settings_asr_fun_non_stream_desc
+    AsrService.GptRealtimeWhisper -> R.string.settings_asr_gpt_realtime_desc
+    AsrService.Gpt4oTranscribeNonStream -> R.string.settings_asr_gpt_4o_desc
+    AsrService.Gpt4oMiniTranscribeNonStream -> R.string.settings_asr_gpt_4o_mini_desc
+    AsrService.DoubaoSeedAsr20Stream -> R.string.settings_asr_doubao_stream_desc
+    AsrService.DoubaoSeedAsr20NonStream -> R.string.settings_asr_doubao_non_stream_desc
+    AsrService.DoubaoSeedAsr20NonStreamTurbo -> R.string.settings_asr_doubao_turbo_desc
+    AsrService.MockStream -> R.string.settings_asr_mock_stream_desc
+    AsrService.MockNonStream -> R.string.settings_asr_mock_non_stream_desc
+}
 
+/** The written description with the language line slotted in before its last sentence, the variant's. */
 @Composable
-private fun AsrService.fullDescription(): String = listOf(
-    intro(),
-    languageSupport.supportDescription(),
-    stringResource(if (streaming) R.string.settings_asr_stream_variant else R.string.settings_asr_non_stream_variant),
-).joinToString("\n")
+private fun AsrService.fullDescription(): String =
+    withSupportLine(stringResource(descriptionResource()), languageSupport.supportDescription())
 
+@StringRes
+private fun TtsService.descriptionResource(): Int = when (this) {
+    TtsService.QwenAudioTtsFlash -> R.string.settings_tts_qwen_audio_flash_desc
+    TtsService.CosyVoiceV3Flash -> R.string.settings_tts_cosy_v3_flash_desc
+    TtsService.DoubaoSeedTts20 -> R.string.settings_tts_doubao_desc
+    TtsService.MiniMaxSpeech28Turbo -> R.string.settings_tts_minimax_turbo_desc
+    TtsService.MiniMaxSpeech28Hd -> R.string.settings_tts_minimax_hd_desc
+    TtsService.Mock -> R.string.settings_tts_mock_desc
+}
+
+/** What the service is, which languages it reads in this region, and what it costs. */
 @Composable
 private fun TtsService.fullDescription(region: DashScopeRegion): String = listOf(
-    stringResource(R.string.settings_tts_intro),
+    stringResource(descriptionResource()),
     support(region).supportDescription(),
     stringResource(priceDescription()),
 ).joinToString("\n")
@@ -890,17 +907,24 @@ private fun TtsService.fullDescription(region: DashScopeRegion): String = listOf
 private fun LanguageSupport.supportDescription(): String {
     val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
     val resources = LocalContext.current.resources
-    val templates = SupportTextTemplates(
+    val formatter = remember(locale) { ListFormatter.getInstance(locale) }
+    val wording = SupportWording(
         supports = { resources.getString(R.string.settings_supports, it) },
         unsupported = { resources.getString(R.string.settings_does_not_support, it) },
         extras = { resources.getString(R.string.settings_also_supports, it) },
-        extrasRemaining = { names, count -> resources.getString(R.string.settings_also_supports_more, names, count) },
-        dialects = { resources.getString(R.string.settings_supports_dialects, it) },
+        extrasMore = { names, more, total -> resources.getString(R.string.settings_also_supports_more, names, more) },
+        list = { formatter.format(it) },
+        // The separator the language puts between the first items of a list, e.g. ", " or "、".
+        series = { names ->
+            val separator = formatter.format("\u0001", "\u0002", "\u0003").substringAfter('\u0001').substringBefore('\u0002')
+            names.joinToString(separator)
+        },
+        sentenceGap = if (locale.language in setOf("zh", "ja")) "" else " ",
     )
     return summarize().render(
-        languageName = { Locale.forLanguageTag(it).getDisplayName(locale).replaceFirstChar(Char::titlecase) },
+        languageName = { Locale.forLanguageTag(it).getDisplayName(locale).replaceFirstChar { c -> c.titlecase(locale) } },
         projectName = { it.displayName(locale) },
-        templates = templates,
+        wording = wording,
     )
 }
 
@@ -1056,7 +1080,7 @@ private fun TranslationServiceDialog(
         title = { Text(stringResource(if (isNew) R.string.settings_translation_new else R.string.settings_translation_edit)) },
         text = {
             Column(
-                Modifier.verticalScroll(contentScroll).fadingScrollbar(contentScroll),
+                Modifier.scrollbar(contentScroll).verticalScroll(contentScroll).padding(end = ScrollbarGutter),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 // Simulated services only exist in debug builds; one saved earlier can still be edited.
@@ -1240,17 +1264,20 @@ private fun <T> ChoiceField(
                 Column(Modifier.padding(vertical = 20.dp)) {
                     Text(label, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(horizontal = 24.dp))
                     Spacer(Modifier.size(12.dp))
-                    options.forEach { option ->
-                        val isSelected = option == selected
-                        Surface(
-                            onClick = { onPick(option); open = false },
-                            shape = MaterialTheme.shapes.large,
-                            color = if (isSelected) colors.secondaryContainer else Color.Transparent,
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp),
-                        ) {
-                            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Text(optionLabel(option), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                                if (isSelected) Icon(painterResource(R.drawable.ic_check), null)
+                    val listScroll = rememberScrollState()
+                    Column(Modifier.heightIn(max = 480.dp).scrollbar(listScroll).verticalScroll(listScroll)) {
+                        options.forEach { option ->
+                            val isSelected = option == selected
+                            Surface(
+                                onClick = { onPick(option); open = false },
+                                shape = MaterialTheme.shapes.large,
+                                color = if (isSelected) colors.secondaryContainer else Color.Transparent,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp),
+                            ) {
+                                Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Text(optionLabel(option), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                                    if (isSelected) Icon(painterResource(R.drawable.ic_check), null)
+                                }
                             }
                         }
                     }
