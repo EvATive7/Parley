@@ -162,7 +162,7 @@ app/src/main/java/io/github/evative7/parley/
 ├─ model/     言語と端末上の言語識別
 ├─ data/      設定、翻訳サービス、Keystore によるキー保管
 ├─ debug/     アプリ内デバッグログ
-├─ tts/       システム/クラウド音声合成、PCM 再生、ルーティング、メモリキャッシュ
+├─ tts/       クラウド音声合成、PCM 再生、ルーティング、メモリキャッシュ
 └─ di/        Hilt バインディングとネットワーク設定
 ```
 

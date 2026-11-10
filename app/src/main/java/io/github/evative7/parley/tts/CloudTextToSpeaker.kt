@@ -31,7 +31,7 @@ class CloudTextToSpeaker(
                 session.audio.onEach(pcm::write)
             }
             var first = true
-            player.play(audio) {
+            val whole = player.play(audio) {
                 if (first) {
                     first = false
                     val firstMs = (System.nanoTime() - started) / 1_000_000
@@ -39,7 +39,8 @@ class CloudTextToSpeaker(
                     send(PlaybackState.Playing)
                 }
             }
-            if (cached == null) cache.put(key, pcm.toByteArray())
+            // A clip cut short is not kept, or a replay would stop at the same place.
+            if (cached == null && whole) cache.put(key, pcm.toByteArray())
             send(PlaybackState.Done)
         } catch (e: CancellationException) {
             throw e

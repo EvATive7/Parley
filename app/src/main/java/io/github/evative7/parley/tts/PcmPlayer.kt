@@ -9,6 +9,8 @@ import android.media.AudioTrack
 import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
@@ -29,22 +31,47 @@ class PcmPlayer @Inject constructor(@ApplicationContext context: Context) {
     private var focusRequest: AudioFocusRequest? = null
     @Volatile private var active: AudioTrack? = null
 
-    suspend fun play(audio: Flow<ByteArray>, onFirstAudio: suspend () -> Unit) = withContext(Dispatchers.IO) {
+    /**
+     * Plays [audio] as it arrives. Returns true when all of it was heard; false when [stop] or a lost audio
+     * focus cut it short, so a partial clip is never mistaken for a whole one.
+     */
+    suspend fun play(audio: Flow<ByteArray>, onFirstAudio: suspend () -> Unit): Boolean = withContext(Dispatchers.IO) {
         requestFocus()
         var track: AudioTrack? = null
+        var frames = 0L
         try {
-            audio.collect { pcm ->
-                if (pcm.isEmpty()) return@collect
-                if (track == null) {
-                    track = newTrack().also {
+            val whole = run {
+                audio.collect { pcm ->
+                    if (pcm.isEmpty()) return@collect
+                    val current = track ?: newTrack().also {
+                        track = it
                         active = it
                         it.play()
+                        onFirstAudio()
                     }
-                    onFirstAudio()
+                    // Never block in write(): a stopped track would hold this thread forever.
+                    var offset = 0
+                    while (offset < pcm.size) {
+                        ensureActive()
+                        if (active !== current) throw Interrupted()
+                        val written = current.write(pcm, offset, pcm.size - offset, AudioTrack.WRITE_NON_BLOCKING)
+                        check(written >= 0) { "AudioTrack write failed: $written" }
+                        offset += written
+                        if (offset < pcm.size) delay(BUFFER_WAIT_MS)
+                    }
+                    frames += pcm.size / BYTES_PER_FRAME
                 }
-                val written = track!!.write(pcm, 0, pcm.size, AudioTrack.WRITE_BLOCKING)
-                check(written >= 0) { "AudioTrack write failed: $written" }
+                // Let the buffered tail play out before the track is released.
+                val current = track ?: return@run true
+                val deadline = System.nanoTime() + (frames * 1_000_000_000L / SAMPLE_RATE) + TAIL_SLACK_NS
+                while (active === current && current.playbackHeadPosition.toLong() < frames && System.nanoTime() < deadline) {
+                    delay(BUFFER_WAIT_MS)
+                }
+                active === current
             }
+            whole
+        } catch (_: Interrupted) {
+            false
         } finally {
             val current = track
             if (active === current) active = null
@@ -53,6 +80,9 @@ class PcmPlayer @Inject constructor(@ApplicationContext context: Context) {
             abandonFocus()
         }
     }
+
+    /** Thrown inside [play] when [stop] took the track away. */
+    private class Interrupted : Exception()
 
     fun stop() {
         val track = active
@@ -112,5 +142,8 @@ class PcmPlayer @Inject constructor(@ApplicationContext context: Context) {
 
     private companion object {
         const val SAMPLE_RATE = 24_000
+        const val BYTES_PER_FRAME = 2
+        const val BUFFER_WAIT_MS = 10L
+        const val TAIL_SLACK_NS = 1_000_000_000L
     }
 }

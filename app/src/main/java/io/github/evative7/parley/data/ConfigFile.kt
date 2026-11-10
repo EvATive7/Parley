@@ -140,30 +140,17 @@ object ConfigFile {
                 JsonObject(root + ("asr" to JsonObject(asr - "service" + ("services" to services))))
             }
         },
-        // 2 → 3: provider credentials became shared, and TTS settings were added.
+        // 2 → 3: provider credentials moved out of `asr` to be shared with TTS.
         { root ->
             val asr = root.obj("asr") ?: JsonObject(emptyMap())
             val providers = buildJsonObject {
                 asr["dashscope"]?.let { put("dashscope", it) }
                 asr["openai"]?.let { put("openai", it) }
                 asr["volcengine"]?.let { put("volcengine", it) }
-                putJsonObject("minimax") {
-                    put("region", MiniMaxRegion.China.name)
-                    put("key", "")
-                }
             }
             val migratedAsr = JsonObject(asr - "dashscope" - "openai" - "volcengine")
-            val tts = buildJsonObject {
-                put("service", TtsService.Default.id)
-                put("auto_play", false)
-                put("auto_play_face_to_face", false)
-                putJsonObject("voices") {}
-                putJsonObject("mock") {
-                    put("speed", MockSpeed.Normal.name)
-                    put("fault", MockTtsFault.None.name)
-                }
-            }
-            JsonObject(root + ("providers" to providers) + ("asr" to migratedAsr) + ("tts" to tts))
+            // No `tts` or MiniMax entry: the reader's defaults apply, and this step stays fixed even if they change.
+            JsonObject(root + ("providers" to providers) + ("asr" to migratedAsr))
         },
     )
 

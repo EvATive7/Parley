@@ -169,7 +169,7 @@ class TranslateViewModel @Inject constructor(
             updateCard(id) {
                 copy(translations = translations.map {
                     if (it.to == lang && it.text == translation.text) {
-                        it.copy(playback = PlaybackState.Failed("No built-in voice supports this language"))
+                        it.copy(playback = PlaybackState.Failed(noVoice = true))
                     } else it
                 })
             }

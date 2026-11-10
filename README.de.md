@@ -74,7 +74,7 @@ Streaming-Dienste liefern Ergebnisse bereits während des Sprechens. Nicht-Strea
 | Volcengine | Doubao Seed TTS 2.0 | Gemeinsame AppID und Access Token; Speech Synthesis 2.0 aktivieren | 3 ¥/10.000 Zeichen; ein chinesisches Schriftzeichen zählt als eins |
 | MiniMax | Speech 2.8 Turbo / HD | API Key und Region China oder International | Turbo: 2 ¥/10.000 (China) oder 60 $/Mio.; HD: 3,5 ¥/10.000 oder 100 $/Mio.; ein chinesisches Schriftzeichen zählt doppelt |
 
-Karten können manuell oder nach der Übersetzung automatisch vorgelesen werden, auch im Gegenüber-Modus. Cloud-Audio wird als 24-kHz-PCM gestreamt, nur im Arbeitsspeicher für bis zu 20 Ergebnisse zwischengespeichert und beim Aufnahmestart unterbrochen.
+Karten können manuell oder nach der Übersetzung automatisch vorgelesen werden, auch im Gegenüber-Modus. Cloud-Audio wird als 24-kHz-PCM gestreamt, nur im Arbeitsspeicher für bis zu 20 Ergebnisse zwischengespeichert und beim Aufnahmestart unterbrochen. Sprachen ohne eingebaute Stimme im gewählten Dienst können nicht vorgelesen werden.
 
 ## 🌏 Unterstützte Sprachen
 
@@ -162,7 +162,7 @@ app/src/main/java/io/github/evative7/parley/
 ├─ model/     Sprachen und lokale Spracherkennung
 ├─ data/      Einstellungen, Übersetzungsdienste, Schlüsselablage mit Keystore
 ├─ debug/     App-internes Debug-Protokoll
-├─ tts/       System-/Cloud-Sprachsynthese, PCM-Wiedergabe, Routing und Speichercache
+├─ tts/       Cloud-Sprachsynthese, PCM-Wiedergabe, Routing und Speichercache
 └─ di/        Hilt-Bindings und Netzwerkkonfiguration
 ```
 

@@ -2,7 +2,6 @@ package io.github.evative7.parley.ui
 
 import android.icu.text.ListFormatter
 import android.content.ClipData
-import android.content.res.Resources
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.view.HapticFeedbackConstants
@@ -87,7 +86,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
@@ -454,16 +453,6 @@ private fun UnsupportedLanguageDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val deviceResources = LocalContext.current.resources
-    val pickedResources = rememberLangResources(pending.lang)
-    val bilingual = !pickedResources.configuration.locales[0].toLanguageTag().equals(
-        deviceResources.configuration.locales[0].toLanguageTag(), ignoreCase = true,
-    )
-    // The picked language first: whoever chose it is most likely the one reading.
-    fun label(resource: Int): String = buildList {
-        add(pickedResources.getString(resource))
-        if (bilingual) add(deviceResources.getString(resource))
-    }.joinToString(" / ")
     BasicAlertDialog(
         onDismissRequest = onDismiss,
         modifier = if (turn == Turn.None) Modifier else Modifier.padding(vertical = 24.dp).turned(turn),
@@ -476,39 +465,30 @@ private fun UnsupportedLanguageDialog(
         ) {
             Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    label(R.string.language_unsupported_title),
+                    stringResource(R.string.language_unsupported_title),
                     style = MaterialTheme.typography.headlineSmall,
                 )
-                UnsupportedLanguageMessage(pickedResources, pending)
-                if (bilingual) UnsupportedLanguageMessage(deviceResources, pending)
+                val locale = LocalConfiguration.current.locales[0]
+                val services = buildList {
+                    addAll(pending.unsupported.asr.map { stringResource(it.labelResource()) })
+                    pending.unsupported.tts?.let { add(stringResource(it.labelResource())) }
+                }
+                Text(
+                    stringResource(
+                        R.string.language_unsupported_body,
+                        pending.lang.displayName(locale),
+                        ListFormatter.getInstance(locale).format(services),
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(onClick = onDismiss) {
-                        Text(label(R.string.action_cancel))
-                    }
-                    TextButton(onClick = onConfirm) {
-                        Text(label(R.string.action_continue))
-                    }
+                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+                    TextButton(onClick = onConfirm) { Text(stringResource(R.string.action_continue)) }
                 }
             }
         }
     }
-}
-
-@Composable
-private fun UnsupportedLanguageMessage(resources: Resources, pending: PendingLanguage) {
-    val serviceNames = buildList {
-        addAll(pending.unsupported.asr.map { resources.getString(it.labelResource()) })
-        pending.unsupported.tts?.let { add(resources.getString(it.labelResource())) }
-    }.let { ListFormatter.getInstance(resources.configuration.locales[0]).format(it) }
-    Text(
-        resources.getString(
-            R.string.language_unsupported_body,
-            pending.lang.displayName(resources.configuration.locales[0]),
-            serviceNames,
-        ),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
 }
 
 /**

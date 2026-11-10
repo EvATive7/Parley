@@ -74,7 +74,7 @@ Les services en streaming renvoient les résultats pendant que vous parlez. Les 
 | Volcengine | Doubao Seed TTS 2.0 | AppID et Access Token partagés ; activer Speech Synthesis 2.0 | 3 ¥/10 000 caractères ; un caractère chinois compte pour un |
 | MiniMax | Speech 2.8 Turbo / HD | Clé API et région Chine ou internationale | Turbo : 2 ¥/10 000 (Chine) ou 60 $/million ; HD : 3,5 ¥/10 000 ou 100 $/million ; un caractère chinois compte double |
 
-Les cartes peuvent être lues manuellement ou automatiquement après traduction, y compris en mode face à face. L’audio cloud est diffusé en PCM 24 kHz, avec un cache uniquement en mémoire de 20 résultats maximum, et s’interrompt au début d’un enregistrement.
+Les cartes peuvent être lues manuellement ou automatiquement après traduction, y compris en mode face à face. L’audio cloud est diffusé en PCM 24 kHz, avec un cache uniquement en mémoire de 20 résultats maximum, et s’interrompt au début d’un enregistrement. Les langues sans voix intégrée dans le service choisi ne peuvent pas être lues.
 
 ## 🌏 Langues prises en charge
 
@@ -162,7 +162,7 @@ app/src/main/java/io/github/evative7/parley/
 ├─ model/     Langues et identification locale de la langue
 ├─ data/      Paramètres, services de traduction, stockage des clés avec Keystore
 ├─ debug/     Journal de débogage intégré
-├─ tts/       Synthèse système/cloud, lecture PCM, routage et cache mémoire
+├─ tts/       Synthèse cloud, lecture PCM, routage et cache mémoire
 └─ di/        Liaisons Hilt et configuration réseau
 ```
 

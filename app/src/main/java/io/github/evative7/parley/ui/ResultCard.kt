@@ -485,9 +485,10 @@ private fun SpeechButton(translation: CardTranslation, onClick: () -> Unit) {
                 )
             }
         }
-        if (failed) {
+        // Service errors are in the debug log; only a missing voice needs saying here.
+        if (playback is PlaybackState.Failed && playback.noVoice) {
             Text(
-                playback.message ?: stringResource(R.string.tts_unsupported_language),
+                stringResource(R.string.tts_unsupported_language),
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.error,
                 maxLines = 2,

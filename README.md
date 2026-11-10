@@ -74,7 +74,7 @@ Streaming services return results while you speak. Non-streaming services return
 | Volcengine | Doubao Seed TTS 2.0 | Shared AppID and Access Token; enable Speech Synthesis 2.0 | ¥3/10k characters; one Chinese character counts as one |
 | MiniMax | Speech 2.8 Turbo / HD | API key and China or International region | Turbo: ¥2/10k (China) or $60/M (international); HD: ¥3.5/10k or $100/M; one Chinese character counts as two |
 
-Cards can be read manually or automatically after translation, including in face-to-face mode. Audio is streamed as 24 kHz PCM, cached only in memory (up to 20 results), and interrupted when recording starts.
+Cards can be read manually or automatically after translation, including in face-to-face mode. Audio is streamed as 24 kHz PCM, cached only in memory (up to 20 results), and interrupted when recording starts. Languages the selected service has no built-in voice for can't be read aloud.
 
 ## 🌏 Supported languages
 
@@ -162,7 +162,7 @@ app/src/main/java/io/github/evative7/parley/
 ├─ model/     Languages and on-device language identification
 ├─ data/      Settings, translation services, Keystore-backed secret storage
 ├─ debug/     In-app debug log
-├─ tts/       System/cloud speech synthesis, PCM playback, routing, and memory cache
+├─ tts/       Cloud speech synthesis, PCM playback, routing, and memory cache
 └─ di/        Hilt bindings and network configuration
 ```
 

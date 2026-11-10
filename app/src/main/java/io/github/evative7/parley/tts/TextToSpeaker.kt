@@ -32,5 +32,6 @@ sealed interface PlaybackState {
     data object Preparing : PlaybackState
     data object Playing : PlaybackState
     data object Done : PlaybackState
-    data class Failed(val message: String? = null) : PlaybackState
+    /** [noVoice]: nothing was sent, because the service has no voice for the language. */
+    data class Failed(val message: String? = null, val noVoice: Boolean = false) : PlaybackState
 }
