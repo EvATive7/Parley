@@ -12,7 +12,7 @@
     <string name="swap_languages">Permuter les langues</string>
     <string name="face_to_face">Mode face à face</string>
     <string name="face_to_face_exit">Quitter le mode face à face</string>
-    <string name="lang_in_other_slot">Permuter</string>
+    <string name="select_language">Choisir la langue</string>
 
     <string name="ptt_hold_to_talk">Maintenez pour parler</string>
     <string name="ptt_release_to_send">Relâchez pour envoyer · Glissez vers le haut pour annuler</string>
@@ -203,7 +203,8 @@
     <string name="settings_tts_service">Service de synthèse vocale</string>
     <string name="settings_tts_voice">ID de voix (facultatif)</string>
     <string name="settings_tts_voice_default">Automatique selon la langue</string>
-    <string name="settings_tts_autoplay">Lire automatiquement les traductions</string>
+    <string name="settings_tts_autogenerate">Générer automatiquement la lecture des traductions</string>
+    <string name="settings_tts_autoplay">Lire automatiquement les traductions en mode portrait</string>
     <string name="settings_tts_autoplay_face_to_face">Lecture automatique en mode face à face</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>

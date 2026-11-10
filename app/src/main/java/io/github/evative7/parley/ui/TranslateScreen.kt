@@ -405,7 +405,6 @@ private fun ConversationScreen(
     picking?.let { slot ->
         LanguagePickerDialog(
             selected = state.langs[slot],
-            other = state.langs[1 - slot],
             onPick = { lang ->
                 // Taking the other side's language only swaps the pair; both are already in use.
                 val unsupported = settings?.takeIf { lang != state.langs[1 - slot] }?.unsupportedServices(lang)

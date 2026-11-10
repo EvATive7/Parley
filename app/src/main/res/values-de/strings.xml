@@ -12,7 +12,7 @@
     <string name="swap_languages">Sprachen tauschen</string>
     <string name="face_to_face">Gegenüber-Modus</string>
     <string name="face_to_face_exit">Gegenüber-Modus beenden</string>
-    <string name="lang_in_other_slot">Tauschen</string>
+    <string name="select_language">Sprache auswählen</string>
 
     <string name="ptt_hold_to_talk">Zum Sprechen gedrückt halten</string>
     <string name="ptt_release_to_send">Zum Senden loslassen · Zum Abbrechen nach oben wischen</string>
@@ -203,7 +203,8 @@
     <string name="settings_tts_service">Sprachsynthesedienst</string>
     <string name="settings_tts_voice">Stimmen-ID (optional)</string>
     <string name="settings_tts_voice_default">Automatisch je Sprache</string>
-    <string name="settings_tts_autoplay">Übersetzungen automatisch vorlesen</string>
+    <string name="settings_tts_autogenerate">Sprachausgabe für Übersetzungen automatisch erzeugen</string>
+    <string name="settings_tts_autoplay">Übersetzungen im Hochformat automatisch vorlesen</string>
     <string name="settings_tts_autoplay_face_to_face">Im Gegenüber-Modus automatisch vorlesen</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>

@@ -12,7 +12,7 @@
     <string name="swap_languages">สลับภาษา</string>
     <string name="face_to_face">โหมดตัวต่อตัว</string>
     <string name="face_to_face_exit">ออกจากโหมดตัวต่อตัว</string>
-    <string name="lang_in_other_slot">สลับ</string>
+    <string name="select_language">เลือกภาษา</string>
 
     <string name="ptt_hold_to_talk">กดค้างเพื่อพูด</string>
     <string name="ptt_release_to_send">ปล่อยเพื่อส่ง · เลื่อนขึ้นเพื่อยกเลิก</string>
@@ -201,7 +201,8 @@
     <string name="settings_tts_service">Speech synthesis service</string>
     <string name="settings_tts_voice">Voice ID (optional)</string>
     <string name="settings_tts_voice_default">Automatic for each language</string>
-    <string name="settings_tts_autoplay">Automatically read translations</string>
+    <string name="settings_tts_autogenerate">สร้างเสียงอ่านคำแปลโดยอัตโนมัติ</string>
+    <string name="settings_tts_autoplay">อ่านคำแปลโดยอัตโนมัติในโหมดแนวตั้ง</string>
     <string name="settings_tts_autoplay_face_to_face">Automatically read in face-to-face mode</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>

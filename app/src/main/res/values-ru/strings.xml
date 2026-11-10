@@ -12,7 +12,7 @@
     <string name="swap_languages">Поменять языки местами</string>
     <string name="face_to_face">Режим лицом к лицу</string>
     <string name="face_to_face_exit">Выйти из режима лицом к лицу</string>
-    <string name="lang_in_other_slot">Поменять</string>
+    <string name="select_language">Выберите язык</string>
 
     <string name="ptt_hold_to_talk">Удерживайте, чтобы говорить</string>
     <string name="ptt_release_to_send">Отпустите — отправить · Вверх — отмена</string>
@@ -204,7 +204,8 @@
     <string name="settings_tts_service">Speech synthesis service</string>
     <string name="settings_tts_voice">Voice ID (optional)</string>
     <string name="settings_tts_voice_default">Automatic for each language</string>
-    <string name="settings_tts_autoplay">Automatically read translations</string>
+    <string name="settings_tts_autogenerate">Автоматически создавать озвучку перевода</string>
+    <string name="settings_tts_autoplay">Автоматически читать переводы в портретном режиме</string>
     <string name="settings_tts_autoplay_face_to_face">Automatically read in face-to-face mode</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>

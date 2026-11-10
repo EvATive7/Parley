@@ -12,7 +12,7 @@
     <string name="swap_languages">Đổi ngôn ngữ</string>
     <string name="face_to_face">Chế độ đối diện</string>
     <string name="face_to_face_exit">Thoát chế độ đối diện</string>
-    <string name="lang_in_other_slot">Đổi</string>
+    <string name="select_language">Chọn ngôn ngữ</string>
 
     <string name="ptt_hold_to_talk">Nhấn giữ để nói</string>
     <string name="ptt_release_to_send">Thả để gửi · Vuốt lên để hủy</string>
@@ -201,7 +201,8 @@
     <string name="settings_tts_service">Speech synthesis service</string>
     <string name="settings_tts_voice">Voice ID (optional)</string>
     <string name="settings_tts_voice_default">Automatic for each language</string>
-    <string name="settings_tts_autoplay">Automatically read translations</string>
+    <string name="settings_tts_autogenerate">Tự động tạo giọng đọc bản dịch</string>
+    <string name="settings_tts_autoplay">Tự động đọc bản dịch ở chế độ dọc</string>
     <string name="settings_tts_autoplay_face_to_face">Automatically read in face-to-face mode</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>

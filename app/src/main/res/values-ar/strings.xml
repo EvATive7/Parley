@@ -12,7 +12,7 @@
     <string name="swap_languages">تبديل اللغتين</string>
     <string name="face_to_face">وضع وجهًا لوجه</string>
     <string name="face_to_face_exit">الخروج من وضع وجهًا لوجه</string>
-    <string name="lang_in_other_slot">تبديل</string>
+    <string name="select_language">اختر اللغة</string>
 
     <string name="ptt_hold_to_talk">اضغط مطولاً للتحدث</string>
     <string name="ptt_release_to_send">أفلت للإرسال · اسحب لأعلى للإلغاء</string>
@@ -206,7 +206,8 @@
     <string name="settings_tts_service">Speech synthesis service</string>
     <string name="settings_tts_voice">Voice ID (optional)</string>
     <string name="settings_tts_voice_default">Automatic for each language</string>
-    <string name="settings_tts_autoplay">Automatically read translations</string>
+    <string name="settings_tts_autogenerate">إنشاء قراءة الترجمة تلقائيًا</string>
+    <string name="settings_tts_autoplay">قراءة الترجمات تلقائيًا في الوضع الرأسي</string>
     <string name="settings_tts_autoplay_face_to_face">Automatically read in face-to-face mode</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>

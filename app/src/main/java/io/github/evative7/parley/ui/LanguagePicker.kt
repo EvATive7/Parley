@@ -9,12 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.painterResource
@@ -39,17 +37,15 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import io.github.evative7.parley.R
-import java.util.Locale
 import io.github.evative7.parley.model.Lang
 
 /**
- * Picks the language for one side of the conversation; [other] is what the other side currently uses.
+ * Picks the language for one side of the conversation.
  * Face to face, [turn] points the dialog toward the person who opened it.
  */
 @Composable
 fun LanguagePickerDialog(
     selected: Lang,
-    other: Lang,
     onPick: (Lang) -> Unit,
     onDismiss: () -> Unit,
     turn: Turn = Turn.None,
@@ -67,9 +63,8 @@ fun LanguagePickerDialog(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
         ) {
             Column(Modifier.padding(top = 24.dp, bottom = 12.dp)) {
-                // English only: whoever picks may not read the device language or the current pair.
                 Text(
-                    "Select language",
+                    stringResource(R.string.select_language),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = 24.dp),
@@ -95,7 +90,6 @@ fun LanguagePickerDialog(
                         LanguageRow(
                             lang = lang,
                             selected = lang == selected,
-                            inOtherSlot = lang == other,
                             onClick = { onPick(lang) },
                             modifier = if (lang == selected) {
                                 Modifier.onPlaced { selectedTop = it.positionInParent().y }
@@ -112,7 +106,6 @@ fun LanguagePickerDialog(
 private fun LanguageRow(
     lang: Lang,
     selected: Boolean,
-    inOtherSlot: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -128,36 +121,19 @@ private fun LanguageRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            // Each language in its own script, so the other party can find theirs; English under it.
+            // Each language in its own script, so the other party can find theirs; the device language under it.
             val native = lang.nativeName()
             Text(native, style = MaterialTheme.typography.bodyLarge, color = content)
-            val english = lang.displayName(Locale.ENGLISH)
-            if (english != native) {
+            val device = LocalConfiguration.current.locales[0]
+            val local = lang.displayName(device)
+            if (local != native) {
                 Text(
-                    english,
+                    local,
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (selected) content.copy(alpha = 0.72f) else colors.onSurfaceVariant,
                 )
             }
         }
-        when {
-            selected -> Icon(painterResource(R.drawable.ic_check), null, tint = content)
-            inOtherSlot -> SwapBadge()
-        }
-    }
-}
-
-/** Marks the language the other side holds: picking it swaps the two. */
-@Composable
-private fun SwapBadge() {
-    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.tertiaryContainer) {
-        Row(
-            Modifier.padding(start = 8.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(painterResource(R.drawable.ic_swap_horiz), null, Modifier.size(16.dp))
-            Spacer(Modifier.width(4.dp))
-            Text(stringResource(R.string.lang_in_other_slot), style = MaterialTheme.typography.labelMedium)
-        }
+        if (selected) Icon(painterResource(R.drawable.ic_check), null, tint = content)
     }
 }

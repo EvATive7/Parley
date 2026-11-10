@@ -13,7 +13,7 @@
     <string name="swap_languages">互换语言</string>
     <string name="face_to_face">面对面模式</string>
     <string name="face_to_face_exit">退出面对面模式</string>
-    <string name="lang_in_other_slot">互换</string>
+    <string name="select_language">选择语言</string>
 
     <string name="ptt_hold_to_talk">按住说话</string>
     <string name="ptt_release_to_send">松开发送 · 上滑取消</string>
@@ -205,7 +205,8 @@
     <string name="settings_tts_service">语音合成服务</string>
     <string name="settings_tts_voice">音色 ID（可选）</string>
     <string name="settings_tts_voice_default">按语言自动选择</string>
-    <string name="settings_tts_autoplay">自动朗读译文</string>
+    <string name="settings_tts_autogenerate">自动生成译文朗读</string>
+    <string name="settings_tts_autoplay">竖屏模式下自动朗读译文</string>
     <string name="settings_tts_autoplay_face_to_face">面对面模式下自动朗读</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>

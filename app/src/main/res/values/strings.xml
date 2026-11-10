@@ -13,7 +13,7 @@
     <string name="swap_languages">Swap languages</string>
     <string name="face_to_face">Face-to-face mode</string>
     <string name="face_to_face_exit">Exit face-to-face mode</string>
-    <string name="lang_in_other_slot">Swap</string>
+    <string name="select_language">Select language</string>
 
     <!-- Push-to-talk phrases, shown at the bottom in both conversation languages. -->
     <string name="ptt_hold_to_talk">Hold to talk</string>
@@ -203,7 +203,8 @@
     <string name="settings_tts_service">Speech synthesis service</string>
     <string name="settings_tts_voice">Voice ID (optional)</string>
     <string name="settings_tts_voice_default">Automatic for each language</string>
-    <string name="settings_tts_autoplay">Automatically read translations</string>
+    <string name="settings_tts_autogenerate">Automatically generate translation speech</string>
+    <string name="settings_tts_autoplay">Automatically read translations in portrait mode</string>
     <string name="settings_tts_autoplay_face_to_face">Automatically read in face-to-face mode</string>
     <string name="settings_tts_qwen_audio_flash">Qwen Audio 3.1 TTS Flash</string>
     <string name="settings_tts_cosy_v3_flash">CosyVoice 3 Flash</string>
