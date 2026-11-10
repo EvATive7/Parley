@@ -28,8 +28,24 @@ enum class TtsService(
             "en", "zh-CN" -> "zh_female_gaolengyujie_uranus_bigtts"
             else -> null
         }
+        MiniMaxSpeech28Turbo, MiniMaxSpeech28Hd -> when (lang.tag) {
+            "en" -> "English_expressive_narrator"
+            "zh-CN", "zh-TW" -> "Chinese (Mandarin)_Reliable_Executive"
+            "ja" -> "Japanese_IntellectualSenior"
+            "ko" -> "Korean_CalmGentleman"
+            "fr" -> "French_Male_Speech_New"
+            "de" -> "German_FriendlyMan"
+            "es" -> "Spanish_Narrator"
+            "it" -> "Italian_Narrator"
+            "pt" -> "Portuguese_Narrator"
+            "ru" -> "Russian_ReliableMan"
+            "ar" -> "Arabic_FriendlyGuy"
+            "th" -> "Thai_male_1_sample8"
+            "vi" -> "Vietnamese_kindhearted_girl"
+            "id" -> "Indonesian_CaringMan"
+            else -> null
+        }
         Mock -> "mock"
-        else -> null
     }
 
     companion object {
