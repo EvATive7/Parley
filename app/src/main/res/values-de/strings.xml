@@ -201,8 +201,13 @@
     <string name="settings_tts">Vorlesen</string>
     <string name="settings_tts_off">Aus</string>
     <string name="settings_tts_service">Sprachsynthesedienst</string>
-    <string name="settings_tts_voice">Stimmen-ID (optional)</string>
-    <string name="settings_tts_voice_default">Automatisch je Sprache</string>
+    <string name="settings_tts_voice">Stimmen-ID je Sprache</string>
+    <string name="settings_tts_voice_default">Integrierte Stimme für jede Sprache</string>
+    <string name="settings_tts_voice_none">Keine integrierte Stimme</string>
+    <plurals name="settings_tts_voice_custom">
+        <item quantity="one">Eigene Stimme für %1$d Sprache</item>
+        <item quantity="other">Eigene Stimme für %1$d Sprachen</item>
+    </plurals>
     <string name="settings_tts_autogenerate">Sprachausgabe für Übersetzungen automatisch erzeugen</string>
     <string name="settings_tts_autoplay">Übersetzungen im Hochformat automatisch vorlesen</string>
     <string name="settings_tts_autoplay_face_to_face">Im Gegenüber-Modus automatisch vorlesen</string>

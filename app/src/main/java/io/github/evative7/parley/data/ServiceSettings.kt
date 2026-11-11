@@ -42,7 +42,8 @@ data class ServiceSettings(
     val ttsAutoPlayPortrait: Boolean = false,
     /** Play the generated speech by itself in face-to-face mode. */
     val ttsAutoPlayFaceToFace: Boolean = false,
-    val ttsVoices: Map<String, String> = emptyMap(),
+    /** Custom voice IDs, first by TTS service ID and then by the exact BCP 47 language tag. */
+    val ttsVoices: Map<String, Map<String, String>> = emptyMap(),
     /** Used by the mock speech synthesizer only. */
     val mockTtsSpeed: MockSpeed = MockSpeed.Normal,
     val mockTtsFault: MockTtsFault = MockTtsFault.None,
@@ -116,7 +117,7 @@ data class ServiceSettings(
     fun unsupportedServices(lang: Lang): UnsupportedServices {
         val unsupportedAsr = asrServices.filterNot { it.supports(lang) }
         val selectedTts = ttsService
-        val customVoice = selectedTts?.let { ttsVoices[it.id]?.trim().orEmpty() }.orEmpty()
+        val customVoice = selectedTts?.let { customVoice(it, lang) }.orEmpty()
         val unsupportedTts = selectedTts?.takeIf {
             customVoice.isEmpty() && !it.supports(lang, dashScopeRegion)
         }
@@ -126,11 +127,21 @@ data class ServiceSettings(
     /** Resolves a configured service and voice, or null when no built-in or custom voice can read [lang]. */
     fun speechChoice(cardId: Long, lang: Lang, text: String): SpeechChoice? {
         val selected = ttsService ?: return null
-        val custom = ttsVoices[selected.id]?.trim().orEmpty()
+        val custom = customVoice(selected, lang)
         val voice = custom.ifEmpty { selected.defaultVoice(lang, dashScopeRegion).orEmpty() }
         return voice.takeIf(String::isNotEmpty)?.let {
             SpeechChoice(SpeechKey(cardId, lang, selected, it, text))
         }
+    }
+
+    private fun customVoice(service: TtsService, lang: Lang): String =
+        ttsVoices[service.id]?.get(lang.tag)?.trim().orEmpty()
+
+    /** Sets the custom voice of [service] for [lang]; a blank [voice] goes back to the built-in one. */
+    fun withTtsVoice(service: TtsService, lang: Lang, voice: String): ServiceSettings {
+        val serviceVoices = ttsVoices[service.id].orEmpty()
+        val changed = if (voice.isBlank()) serviceVoices - lang.tag else serviceVoices + (lang.tag to voice.trim())
+        return copy(ttsVoices = if (changed.isEmpty()) ttsVoices - service.id else ttsVoices + (service.id to changed))
     }
 
     /** The invalid credentials of one provider, in screen order. */

@@ -203,8 +203,12 @@
     <string name="settings_tts">语音朗读</string>
     <string name="settings_tts_off">关闭</string>
     <string name="settings_tts_service">语音合成服务</string>
-    <string name="settings_tts_voice">音色 ID（可选）</string>
-    <string name="settings_tts_voice_default">按语言自动选择</string>
+    <string name="settings_tts_voice">按语言设置音色 ID</string>
+    <string name="settings_tts_voice_default">每种语言使用内置音色</string>
+    <string name="settings_tts_voice_none">无内置音色</string>
+    <plurals name="settings_tts_voice_custom">
+        <item quantity="other">%1$d 种语言使用自定义音色</item>
+    </plurals>
     <string name="settings_tts_autogenerate">自动生成译文朗读</string>
     <string name="settings_tts_autoplay">竖屏模式下自动朗读译文</string>
     <string name="settings_tts_autoplay_face_to_face">面对面模式下自动朗读</string>

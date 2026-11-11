@@ -200,8 +200,14 @@
     <string name="settings_tts">Read aloud</string>
     <string name="settings_tts_off">Off</string>
     <string name="settings_tts_service">Speech synthesis service</string>
-    <string name="settings_tts_voice">Voice ID (optional)</string>
-    <string name="settings_tts_voice_default">Automatic for each language</string>
+    <string name="settings_tts_voice">ID de voz por idioma</string>
+    <string name="settings_tts_voice_default">Voz integrada para cada idioma</string>
+    <string name="settings_tts_voice_none">Sem voz integrada</string>
+    <plurals name="settings_tts_voice_custom">
+        <item quantity="one">Voz personalizada para %1$d idioma</item>
+        <item quantity="many">Voz personalizada para %1$d idiomas</item>
+        <item quantity="other">Voz personalizada para %1$d idiomas</item>
+    </plurals>
     <string name="settings_tts_autogenerate">Gerar automaticamente a leitura das traduções</string>
     <string name="settings_tts_autoplay">Ler traduções automaticamente no modo retrato</string>
     <string name="settings_tts_autoplay_face_to_face">Automatically read in face-to-face mode</string>

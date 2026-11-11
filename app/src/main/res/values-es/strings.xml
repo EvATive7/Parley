@@ -201,8 +201,14 @@
     <string name="settings_tts">Lectura en voz alta</string>
     <string name="settings_tts_off">Desactivada</string>
     <string name="settings_tts_service">Servicio de síntesis de voz</string>
-    <string name="settings_tts_voice">ID de voz (opcional)</string>
-    <string name="settings_tts_voice_default">Automático según el idioma</string>
+    <string name="settings_tts_voice">ID de voz por idioma</string>
+    <string name="settings_tts_voice_default">Voz integrada para cada idioma</string>
+    <string name="settings_tts_voice_none">Sin voz integrada</string>
+    <plurals name="settings_tts_voice_custom">
+        <item quantity="one">Voz personalizada para %1$d idioma</item>
+        <item quantity="many">Voz personalizada para %1$d idiomas</item>
+        <item quantity="other">Voz personalizada para %1$d idiomas</item>
+    </plurals>
     <string name="settings_tts_autogenerate">Generar automáticamente la lectura de traducciones</string>
     <string name="settings_tts_autoplay">Leer traducciones automáticamente en modo vertical</string>
     <string name="settings_tts_autoplay_face_to_face">Lectura automática en modo cara a cara</string>

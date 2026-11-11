@@ -89,7 +89,7 @@ class ServiceSettingsTest {
     @Test fun `voice selection refuses unmapped languages but always accepts a custom ID`() {
         val cosy = live.copy(ttsService = TtsService.CosyVoiceV3Flash)
         assertNull(cosy.speechChoice(7, Lang("fr"), "bonjour"))
-        val custom = cosy.copy(ttsVoices = mapOf(TtsService.CosyVoiceV3Flash.id to "custom"))
+        val custom = cosy.copy(ttsVoices = mapOf(TtsService.CosyVoiceV3Flash.id to mapOf("fr" to "custom")))
             .speechChoice(7, Lang("fr"), "bonjour")!!
         assertEquals(TtsService.CosyVoiceV3Flash, custom.key.service)
         assertEquals("custom", custom.key.voice)
@@ -111,10 +111,20 @@ class ServiceSettingsTest {
         val settings = live.copy(
             asrServices = listOf(AsrService.MockStream),
             ttsService = TtsService.CosyVoiceV3Flash,
-            ttsVoices = mapOf(TtsService.CosyVoiceV3Flash.id to "custom-fr"),
+            ttsVoices = mapOf(TtsService.CosyVoiceV3Flash.id to mapOf("fr" to "custom-fr")),
         )
         assertTrue(settings.unsupportedServices(Lang("fr")).isEmpty)
         assertNotNull(settings.speechChoice(7, Lang("fr"), "bonjour"))
+        assertEquals(TtsService.CosyVoiceV3Flash, settings.unsupportedServices(Lang("de")).tts)
+        assertNull(settings.speechChoice(7, Lang("de"), "hallo"))
+    }
+
+    @Test fun `setting a voice touches one language and a blank voice removes it`() {
+        val cosy = TtsService.CosyVoiceV3Flash
+        val set = live.withTtsVoice(cosy, Lang("fr"), " custom-fr ").withTtsVoice(cosy, Lang("de"), "custom-de")
+        assertEquals(mapOf(cosy.id to mapOf("fr" to "custom-fr", "de" to "custom-de")), set.ttsVoices)
+        val cleared = set.withTtsVoice(cosy, Lang("fr"), "").withTtsVoice(cosy, Lang("de"), "  ")
+        assertTrue(cleared.ttsVoices.isEmpty())
     }
 
     @Test fun `unsupported built-in TTS produces no synthesis choice`() {

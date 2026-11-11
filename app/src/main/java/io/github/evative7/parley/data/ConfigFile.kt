@@ -35,7 +35,7 @@ import kotlinx.serialization.json.putJsonObject
  */
 object ConfigFile {
     const val FORMAT = "parley-config"
-    const val VERSION = 4
+    const val VERSION = 5
 
     private val json = Json { prettyPrint = true }
 
@@ -75,7 +75,9 @@ object ConfigFile {
                 put("auto_generate", settings.ttsAutoGenerate)
                 put("auto_play_portrait", settings.ttsAutoPlayPortrait)
                 put("auto_play_face_to_face", settings.ttsAutoPlayFaceToFace)
-                put("voices", JsonObject(settings.ttsVoices.mapValues { JsonPrimitive(it.value) }))
+                put("voices", JsonObject(settings.ttsVoices.mapValues { (_, voices) ->
+                    JsonObject(voices.mapValues { JsonPrimitive(it.value) })
+                }))
                 putJsonObject("mock") {
                     put("speed", settings.mockTtsSpeed.name)
                     put("fault", settings.mockTtsFault.name)
@@ -169,6 +171,25 @@ object ConfigFile {
                 JsonObject(root + ("tts" to migrated))
             }
         },
+        // 4 → 5: one custom voice per service became one per service and language. Copying the old voice to
+        // every language offered in version 4 preserves the old behaviour while making each value editable.
+        { root ->
+            val tts = root.obj("tts")
+            if (tts == null) root else {
+                val version4Languages = listOf(
+                    "en", "zh-CN", "ja", "ko", "zh-TW", "fr", "de", "es", "it", "pt", "ru", "ar", "th", "vi", "id",
+                )
+                val migratedVoices = buildJsonObject {
+                    tts.obj("voices").orEmpty().forEach { (service, value) ->
+                        val voice = (value as? JsonPrimitive)?.takeIf { it.isString }?.content
+                        if (voice != null) putJsonObject(service) {
+                            version4Languages.forEach { language -> put(language, voice) }
+                        }
+                    }
+                }
+                JsonObject(root + ("tts" to JsonObject(tts + ("voices" to migratedVoices))))
+            }
+        },
     )
 
     init {
@@ -198,7 +219,9 @@ object ConfigFile {
             else -> TtsService.Default
         }
         val voices = tts?.obj("voices").orEmpty().mapNotNull { (service, value) ->
-            (value as? JsonPrimitive)?.takeIf { it.isString }?.content?.let { service to it }
+            (value as? JsonObject)?.mapNotNull { (language, voice) ->
+                (voice as? JsonPrimitive)?.takeIf { it.isString }?.content?.let { language to it }
+            }?.toMap()?.let { service to it }
         }.toMap()
         val presets = root.obj("translation")?.get("services")?.jsonArray.orEmpty().mapNotNull { element ->
             val o = element.jsonObject

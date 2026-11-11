@@ -36,7 +36,7 @@ class ConfigFileTest {
         ttsAutoGenerate = true,
         ttsAutoPlayPortrait = true,
         ttsAutoPlayFaceToFace = true,
-        ttsVoices = mapOf(TtsService.MiniMaxSpeech28Hd.id to "voice-id"),
+        ttsVoices = mapOf(TtsService.MiniMaxSpeech28Hd.id to mapOf("en" to "voice-id", "zh-CN" to "中文音色")),
         mockTtsSpeed = MockSpeed.Slow,
         mockTtsFault = MockTtsFault.Timeout,
     ).putTranslationPreset(real).putTranslationPreset(mock).selectTranslation(real)
@@ -113,6 +113,15 @@ class ConfigFileTest {
         assertFalse(off.ttsAutoGenerate)
         assertFalse(off.ttsAutoPlayPortrait)
         assertFalse(off.ttsAutoPlayFaceToFace)
+    }
+
+    @Test fun `a version 4 service voice is copied to every language that version offered`() {
+        val text = """{"format":"parley-config","version":4,"tts":{"voices":{"cosyvoice-v3-flash":"custom"}}}"""
+        val voices = ConfigFile.decode(text).ttsVoices.getValue(TtsService.CosyVoiceV3Flash.id)
+        assertEquals(15, voices.size)
+        assertTrue(voices.values.all { it == "custom" })
+        assertEquals("custom", voices["zh-CN"])
+        assertEquals("custom", voices["en"])
     }
 
     @Test fun `system and unknown TTS services use the current default while null stays off`() {

@@ -202,8 +202,12 @@
     <string name="settings_tts">語音朗讀</string>
     <string name="settings_tts_off">關閉</string>
     <string name="settings_tts_service">語音合成服務</string>
-    <string name="settings_tts_voice">音色 ID（選填）</string>
-    <string name="settings_tts_voice_default">依語言自動選擇</string>
+    <string name="settings_tts_voice">依語言設定音色 ID</string>
+    <string name="settings_tts_voice_default">每種語言使用內建音色</string>
+    <string name="settings_tts_voice_none">無內建音色</string>
+    <plurals name="settings_tts_voice_custom">
+        <item quantity="other">%1$d 種語言使用自訂音色</item>
+    </plurals>
     <string name="settings_tts_autogenerate">自動生成譯文朗讀</string>
     <string name="settings_tts_autoplay">直式模式下自動朗讀譯文</string>
     <string name="settings_tts_autoplay_face_to_face">面對面模式下自動朗讀</string>

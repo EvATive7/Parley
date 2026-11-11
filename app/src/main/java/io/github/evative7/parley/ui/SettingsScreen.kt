@@ -404,17 +404,7 @@ private fun TtsCard(draft: ServiceSettings, enabled: Boolean, onChange: (Service
             enabled = enabled,
         ) { onChange(draft.copy(ttsService = it)) }
         if (service != null && service != TtsService.Mock) {
-            SettingField(
-                label = stringResource(R.string.settings_tts_voice),
-                value = draft.ttsVoices[service.id].orEmpty(),
-                enabled = enabled,
-                error = null,
-                keyboardType = KeyboardType.Text,
-                placeholder = stringResource(R.string.settings_tts_voice_default),
-            ) { voice ->
-                val voices = if (voice.isBlank()) draft.ttsVoices - service.id else draft.ttsVoices + (service.id to voice)
-                onChange(draft.copy(ttsVoices = voices))
-            }
+            TtsVoiceList(draft, service, enabled, onChange)
         }
         if (service == TtsService.Mock) {
             MockSpeedField(draft.mockTtsSpeed, enabled) { onChange(draft.copy(mockTtsSpeed = it)) }
@@ -443,6 +433,63 @@ private fun TtsCard(draft: ServiceSettings, enabled: Boolean, onChange: (Service
             checked = draft.ttsAutoPlayFaceToFace,
             enabled = enabled && draft.ttsAutoGenerate,
         ) { onChange(draft.copy(ttsAutoPlayFaceToFace = it)) }
+    }
+}
+
+/**
+ * One optional voice ID per language, folded away by default. An empty field shows the built-in voice
+ * it falls back to, so every language's voice can be read and changed in place.
+ */
+@Composable
+private fun TtsVoiceList(draft: ServiceSettings, service: TtsService, enabled: Boolean, onChange: (ServiceSettings) -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val deviceLocale = LocalConfiguration.current.locales[0]
+    val first = Lang.defaultFirst(deviceLocale)
+    val languages = listOf(first) + (Lang.targets - first)
+    val serviceVoices = draft.ttsVoices[service.id].orEmpty()
+    val customCount = languages.count { !serviceVoices[it.tag].isNullOrBlank() }
+    var open by rememberSaveable { mutableStateOf(false) }
+    val turn by animateFloatAsState(if (open) 90f else 0f, MaterialTheme.motionScheme.fastSpatialSpec(), label = "chevron")
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .clickable { open = !open }
+            .padding(horizontal = 4.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.settings_tts_voice), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+            Text(
+                if (customCount == 0) stringResource(R.string.settings_tts_voice_default)
+                else pluralStringResource(R.plurals.settings_tts_voice_custom, customCount, customCount),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+            )
+        }
+        Icon(painterResource(R.drawable.ic_chevron_right), null, Modifier.size(20.dp).rotate(turn), tint = colors.onSurfaceVariant)
+    }
+    AnimatedVisibility(
+        visible = open,
+        enter = expandVertically(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeIn(),
+        exit = shrinkVertically(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeOut(),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (lang in languages) {
+                // Keyed by service too: a field only reads its value when created.
+                key(service.id, lang.tag) {
+                    SettingField(
+                        label = lang.displayName(deviceLocale),
+                        value = serviceVoices[lang.tag].orEmpty(),
+                        enabled = enabled,
+                        error = null,
+                        keyboardType = KeyboardType.Text,
+                        placeholder = service.defaultVoice(lang, draft.dashScopeRegion)
+                            ?: stringResource(R.string.settings_tts_voice_none),
+                    ) { voice -> onChange(draft.withTtsVoice(service, lang, voice)) }
+                }
+            }
+        }
     }
 }
 

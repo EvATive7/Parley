@@ -199,8 +199,12 @@
     <string name="settings_tts">Read aloud</string>
     <string name="settings_tts_off">Off</string>
     <string name="settings_tts_service">Speech synthesis service</string>
-    <string name="settings_tts_voice">Voice ID (optional)</string>
-    <string name="settings_tts_voice_default">Automatic for each language</string>
+    <string name="settings_tts_voice">รหัสเสียงตามภาษา</string>
+    <string name="settings_tts_voice_default">ใช้เสียงในตัวสำหรับแต่ละภาษา</string>
+    <string name="settings_tts_voice_none">ไม่มีเสียงในตัว</string>
+    <plurals name="settings_tts_voice_custom">
+        <item quantity="other">เสียงที่กำหนดเอง %1$d ภาษา</item>
+    </plurals>
     <string name="settings_tts_autogenerate">สร้างเสียงอ่านคำแปลโดยอัตโนมัติ</string>
     <string name="settings_tts_autoplay">อ่านคำแปลโดยอัตโนมัติในโหมดแนวตั้ง</string>
     <string name="settings_tts_autoplay_face_to_face">Automatically read in face-to-face mode</string>

@@ -201,8 +201,12 @@
     <string name="settings_tts">소리 내어 읽기</string>
     <string name="settings_tts_off">끄기</string>
     <string name="settings_tts_service">음성 합성 서비스</string>
-    <string name="settings_tts_voice">음성 ID(선택 사항)</string>
-    <string name="settings_tts_voice_default">언어별 자동 선택</string>
+    <string name="settings_tts_voice">언어별 음성 ID</string>
+    <string name="settings_tts_voice_default">언어마다 기본 제공 음성 사용</string>
+    <string name="settings_tts_voice_none">기본 제공 음성 없음</string>
+    <plurals name="settings_tts_voice_custom">
+        <item quantity="other">%1$d개 언어에 사용자 지정 음성</item>
+    </plurals>
     <string name="settings_tts_autogenerate">번역 읽기 음성 자동 생성</string>
     <string name="settings_tts_autoplay">세로 모드에서 번역 자동 읽기</string>
     <string name="settings_tts_autoplay_face_to_face">대면 모드에서 자동 읽기</string>

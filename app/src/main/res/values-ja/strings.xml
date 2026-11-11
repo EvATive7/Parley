@@ -201,8 +201,12 @@
     <string name="settings_tts">読み上げ</string>
     <string name="settings_tts_off">オフ</string>
     <string name="settings_tts_service">音声合成サービス</string>
-    <string name="settings_tts_voice">音声 ID（任意）</string>
-    <string name="settings_tts_voice_default">言語ごとに自動選択</string>
+    <string name="settings_tts_voice">言語ごとの音声 ID</string>
+    <string name="settings_tts_voice_default">各言語で内蔵の音声を使用</string>
+    <string name="settings_tts_voice_none">内蔵の音声なし</string>
+    <plurals name="settings_tts_voice_custom">
+        <item quantity="other">%1$d 言語でカスタム音声</item>
+    </plurals>
     <string name="settings_tts_autogenerate">翻訳の読み上げ音声を自動生成</string>
     <string name="settings_tts_autoplay">縦向きモードで翻訳を自動で読み上げる</string>
     <string name="settings_tts_autoplay_face_to_face">対面モードで自動読み上げ</string>

@@ -199,8 +199,12 @@
     <string name="settings_tts">Read aloud</string>
     <string name="settings_tts_off">Off</string>
     <string name="settings_tts_service">Speech synthesis service</string>
-    <string name="settings_tts_voice">Voice ID (optional)</string>
-    <string name="settings_tts_voice_default">Automatic for each language</string>
+    <string name="settings_tts_voice">ID suara per bahasa</string>
+    <string name="settings_tts_voice_default">Suara bawaan untuk setiap bahasa</string>
+    <string name="settings_tts_voice_none">Tidak ada suara bawaan</string>
+    <plurals name="settings_tts_voice_custom">
+        <item quantity="other">Suara kustom untuk %1$d bahasa</item>
+    </plurals>
     <string name="settings_tts_autogenerate">Buat suara terjemahan secara otomatis</string>
     <string name="settings_tts_autoplay">Bacakan terjemahan secara otomatis dalam mode potret</string>
     <string name="settings_tts_autoplay_face_to_face">Automatically read in face-to-face mode</string>
