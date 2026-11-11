@@ -76,7 +76,7 @@ Streaming services return results while you speak. Non-streaming services return
 | Volcengine | Doubao Seed TTS 2.0 | Shared AppID and Access Token; enable Speech Synthesis 2.0 | ¥3/10k characters; one Chinese character counts as one |
 | MiniMax | Speech 2.8 Turbo / HD | API key and China or International region | Turbo: ¥2/10k (China) or $60/M (international); HD: ¥3.5/10k or $100/M; one Chinese character counts as two |
 
-Cards can be read with a tap. With **Automatically generate translation speech** on, each finished translation’s speech is prepared right away so a tap plays it at once; it can also be read automatically, switched separately for portrait and face-to-face mode. Audio is streamed as 24 kHz PCM, cached only in memory (up to 20 results), and interrupted when recording starts. Languages the selected service has no built-in voice for can't be read aloud.
+Cards can be read with a tap. With **Automatically generate translation speech** on, each finished translation’s speech is prepared right away so a tap plays it at once; it can also be read automatically, switched separately for portrait and face-to-face mode. Audio is streamed as 24 kHz PCM, cached only in memory (up to 20 results), and interrupted when recording starts. Each language uses the service's built-in voice; under **Voice ID per language** you can set your own voice for any language, which also makes languages without a built-in voice readable.
 
 ## 🌏 Supported languages
 

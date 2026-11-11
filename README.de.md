@@ -76,7 +76,7 @@ Streaming-Dienste liefern Ergebnisse bereits während des Sprechens. Nicht-Strea
 | Volcengine | Doubao Seed TTS 2.0 | Gemeinsame AppID und Access Token; Speech Synthesis 2.0 aktivieren | 3 ¥/10.000 Zeichen; ein chinesisches Schriftzeichen zählt als eins |
 | MiniMax | Speech 2.8 Turbo / HD | API Key und Region China oder International | Turbo: 2 ¥/10.000 (China) oder 60 $/Mio.; HD: 3,5 ¥/10.000 oder 100 $/Mio.; ein chinesisches Schriftzeichen zählt doppelt |
 
-Karten werden per Tippen vorgelesen. Mit **Sprachausgabe für Übersetzungen automatisch erzeugen** wird das Audio jeder fertigen Übersetzung sofort vorbereitet und startet beim Tippen ohne Wartezeit; automatisches Vorlesen lässt sich für Hochformat und Gegenüber-Modus getrennt einschalten. Cloud-Audio wird als 24-kHz-PCM gestreamt, nur im Arbeitsspeicher für bis zu 20 Ergebnisse zwischengespeichert und beim Aufnahmestart unterbrochen. Sprachen ohne eingebaute Stimme im gewählten Dienst können nicht vorgelesen werden.
+Karten werden per Tippen vorgelesen. Mit **Sprachausgabe für Übersetzungen automatisch erzeugen** wird das Audio jeder fertigen Übersetzung sofort vorbereitet und startet beim Tippen ohne Wartezeit; automatisches Vorlesen lässt sich für Hochformat und Gegenüber-Modus getrennt einschalten. Cloud-Audio wird als 24-kHz-PCM gestreamt, nur im Arbeitsspeicher für bis zu 20 Ergebnisse zwischengespeichert und beim Aufnahmestart unterbrochen. Jede Sprache nutzt die integrierte Stimme des Dienstes; unter **Stimmen-ID je Sprache** lässt sich für jede Sprache eine eigene Stimme festlegen, womit auch Sprachen ohne integrierte Stimme vorgelesen werden können.
 
 ## 🌏 Unterstützte Sprachen
 

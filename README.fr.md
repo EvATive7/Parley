@@ -76,7 +76,7 @@ Les services en streaming renvoient les résultats pendant que vous parlez. Les 
 | Volcengine | Doubao Seed TTS 2.0 | AppID et Access Token partagés ; activer Speech Synthesis 2.0 | 3 ¥/10 000 caractères ; un caractère chinois compte pour un |
 | MiniMax | Speech 2.8 Turbo / HD | Clé API et région Chine ou internationale | Turbo : 2 ¥/10 000 (Chine) ou 60 $/million ; HD : 3,5 ¥/10 000 ou 100 $/million ; un caractère chinois compte double |
 
-Les cartes se lisent d’un toucher. Avec **Générer automatiquement la lecture des traductions**, l’audio de chaque traduction terminée est préparé aussitôt et se lance sans attendre ; la lecture automatique se règle séparément en mode portrait et en mode face à face. L’audio cloud est diffusé en PCM 24 kHz, avec un cache uniquement en mémoire de 20 résultats maximum, et s’interrompt au début d’un enregistrement. Les langues sans voix intégrée dans le service choisi ne peuvent pas être lues.
+Les cartes se lisent d’un toucher. Avec **Générer automatiquement la lecture des traductions**, l’audio de chaque traduction terminée est préparé aussitôt et se lance sans attendre ; la lecture automatique se règle séparément en mode portrait et en mode face à face. L’audio cloud est diffusé en PCM 24 kHz, avec un cache uniquement en mémoire de 20 résultats maximum, et s’interrompt au début d’un enregistrement. Chaque langue utilise la voix intégrée du service ; **ID de voix par langue** permet de choisir sa propre voix pour n’importe quelle langue, ce qui rend aussi lisibles les langues sans voix intégrée.
 
 ## 🌏 Langues prises en charge
 
